@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROVY STORE</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fff;
+    color: #222;
+}
+
+.top {
+    background: #171717;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 13px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 6%;
+    border-bottom: 1px solid #eee;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.logo span {
+    color: #b58a61;
+}
+
+nav {
+    display: flex;
+    gap: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #222;
+    font-size: 14px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.lang {
+    padding: 9px 14px;
+    background: white;
+    border: 1px solid #ddd;
+}
+
+.hero {
+    margin: 25px auto;
+    width: 90%;
+    min-height: 430px;
+    background: linear-gradient(90deg,#2229,#2222),
+    url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    padding: 50px;
+    color: white;
+}
+
+.hero h1 {
+    font-size: 55px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+.shop {
+    background: #b58a61;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+}
+
+section {
+    padding: 45px 6%;
+}
+
+.title {
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 30px;
+}
+
+.categories {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 15px;
+}
+
+.category {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+}
+
+.category img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.category h3 {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    color: white;
+    background: #0008;
+    padding: 10px;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 20px;
+}
+
+.product {
+    border: 1px solid #eee;
+    padding-bottom: 15px;
+    text-align: center;
+}
+
+.product img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.product h3 {
+    margin: 12px;
+}
+
+.price {
+    color: #b58a61;
+    font-weight: bold;
+}
+
+.add {
+    background: #171717;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin-top: 12px;
+}
+
+footer {
+    background: #171717;
+    color: white;
+    text-align: center;
+    padding: 35px;
+}
+
+@media(max-width:800px) {
+    nav {
+        display: none;
+    }
+
+    .categories {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .products {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .hero {
+        padding: 25px;
+    }
+
+    .hero h1 {
+        font-size: 35px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="top" id="top">
+توصيل لجميع المحافظات
+</div>
+
+<header>
+
+<div class="logo">ROVY<span>.</span></div>
+
+<nav>
+<a href="#categories">الأقسام</a>
+<a href="#products">المنتجات</a>
+<a href="#footer">تواصل معنا</a>
+</nav>
+
+<div>
+<button class="lang" onclick="changeLanguage()" id="lang">
+English
+</button>
+</div>
+
+</header>
+
+<div class="hero">
+<div>
+<h1 id="heroTitle">اكتشف ستايلك</h1>
+<p id="heroText">
+أحدث صيحات الموضة لجميع أفراد العائلة
+</p>
+<button class="shop" onclick="location.href='#products'" id="shop">
+تسوق الآن
+</button>
+</div>
+</div>
+
+<section id="categories">
+
+<h2 class="title" id="catTitle">تسوق حسب القسم</h2>
+
+<div class="categories">
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500">
+<h3>Women</h3>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500">
+<h3>Men</h3>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500">
+<h3>Kids</h3>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500">
+<h3>Sportswear</h3>
+</div>
+
+<div class="category">
+<img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500">
+<h3>Accessories</h3>
+</div>
+
+</div>
+</section>
+
+<section id="products">
+
+<h2 class="title" id="productTitle">منتجات مميزة</h2>
+
+<div class="products">
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500">
+<h3>تيشيرت رجالي</h3>
+<div class="price">450 جنيه</div>
+<button class="add" onclick="addCart()">أضف للسلة</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500">
+<h3>فستان حريمي</h3>
+<div class="price">780 جنيه</div>
+<button class="add" onclick="addCart()">أضف للسلة</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1519238263530-99676cd6a3a7?w=500">
+<h3>ملابس أطفال</h3>
+<div class="price">520 جنيه</div>
+<button class="add" onclick="addCart()">أضف للسلة</button>
+</div>
+
+<div class="product">
+<img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500">
+<h3>إكسسوارات</h3>
+<div class="price">320 جنيه</div>
+<button class="add" onclick="addCart()">أضف للسلة</button>
+</div>
+
+</div>
+
+</section>
+
+<footer id="footer">
+<h2>ROVY STORE</h2>
+<p>Fashion for Everyone</p>
+<p>© 2026 ROVY STORE</p>
+</footer>
+
+<script>
+
+let cart = 0;
+
+function addCart() {
+    cart++;
+    alert("تمت إضافة المنتج للسلة");
+}
+
+let english = false;
+
+function changeLanguage() {
+
+    english = !english;
+
+    if(english) {
+
+        document.documentElement.lang = "en";
+        document.documentElement.dir = "ltr";
+
+        document.getElementById("top").innerText = "Delivery across Egypt";
+        document.getElementById("heroTitle").innerText = "Discover Your Style";
+        document.getElementById("heroText").innerText = "Latest fashion for everyone";
+        document.getElementById("shop").innerText = "SHOP NOW";
+        document.getElementById("catTitle").innerText = "SHOP BY CATEGORY";
+        document.getElementById("productTitle").innerText = "FEATURED PRODUCTS";
+        document.getElementById("lang").innerText = "العربية";
+
+    } else {
+
+        document.documentElement.lang = "ar";
+        document.documentElement.dir = "rtl";
+
+        document.getElementById("top").innerText = "توصيل لجميع المحافظات";
+        document.getElementById("heroTitle").innerText = "اكتشف ستايلك";
+        document.getElementById("heroText").innerText = "أحدث صيحات الموضة لجميع أفراد العائلة";
+        document.getElementById("shop").innerText = "تسوق الآن";
+        document.getElementById("catTitle").innerText = "تسوق حسب القسم";
+        document.getElementById("productTitle").innerText = "منتجات مميزة";
+        document.getElementById("lang").innerText = "English";
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
