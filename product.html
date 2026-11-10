@@ -15,10 +15,18 @@
         .logo span { color: #b58a61; }
         .product-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         @media(max-width: 768px) { .product-container { grid-template-columns: 1fr; } }
-        .product-image { width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .gallery-container { display: flex; flex-direction: column; gap: 10px; }
+        .main-image { width: 100%; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); object-fit: cover; aspect-ratio: 3/4; }
+        .thumbnails { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid transparent; transition: 0.3s; }
+        .thumb-img:hover, .thumb-img.active { border-color: #b58a61; }
+
         .product-details { display: flex; flex-direction: column; justify-content: center; }
+        .product-category { color: #888; font-size: 14px; margin-bottom: 10px; text-transform: uppercase; }
         .product-title { font-size: 36px; font-weight: 900; margin-bottom: 15px; }
         .product-price { font-size: 28px; color: #b58a61; font-weight: bold; margin-bottom: 20px; }
+        .product-desc { color: #555; line-height: 1.8; margin-bottom: 30px; font-size: 16px; background: #f9f9f9; padding: 15px; border-radius: 8px; border-right: 3px solid #b58a61; }
         
         .options-group { margin-bottom: 20px; }
         .options-label { font-weight: bold; margin-bottom: 10px; display: block; }
@@ -76,30 +84,53 @@
         function renderProduct() {
             const container = document.getElementById('productContainer');
             
+            // تجهيز الصور (تأمين قراءة الـ JSONB)
+            let allImages = [currentProduct.image_url];
+            let gallery = currentProduct.gallery_images;
+            
+            // لو سوبابيز رجعت الصور كنص، بنحولها لمصفوفة
+            if (typeof gallery === 'string') {
+                try { gallery = JSON.parse(gallery); } catch(e) { gallery = []; }
+            }
+            
+            if (gallery && Array.isArray(gallery) && gallery.length > 0) {
+                allImages = allImages.concat(gallery);
+            }
+
+            // بناء معرض الصور
+            let galleryHtml = `
+                <div class="gallery-container">
+                    <img src="${allImages[0]}" class="main-image" id="mainImage">
+                    <div class="thumbnails">
+                        ${allImages.map((img, index) => `<img src="${img}" class="thumb-img ${index === 0 ? 'active' : ''}" onclick="changeImage(this, '${img}')">`).join('')}
+                    </div>
+                </div>
+            `;
+
             let sizesHtml = '';
             let colorsHtml = '';
             let allSizes = [];
             let allColors = [];
 
-            // تجميع المقاسات والألوان الفريدة
             if (variants.length > 0) {
                 variants.forEach(v => { if(v.size && !allSizes.includes(v.size)) allSizes.push(v.size); });
                 variants.forEach(v => { if(v.color && !allColors.includes(v.color)) allColors.push(v.color); });
             }
 
-            // رسم أزرار المقاسات
-            if(allSizes.length > 0) {
-                sizesHtml = `<div class="options-group"><span class="options-label">المقاس:</span><div class="options-list" id="sizesList"></div></div>`;
-            }
-            if(allColors.length > 0) {
-                colorsHtml = `<div class="options-group"><span class="options-label">اللون:</span><div class="options-list" id="colorsList"></div></div>`;
-            }
+            if(allSizes.length > 0) sizesHtml = `<div class="options-group"><span class="options-label">المقاس:</span><div class="options-list" id="sizesList"></div></div>`;
+            if(allColors.length > 0) colorsHtml = `<div class="options-group"><span class="options-label">اللون:</span><div class="options-list" id="colorsList"></div></div>`;
+
+            const descText = currentProduct.description || 'لا يوجد وصف تفصيلي لهذا المنتج.';
 
             container.innerHTML = `
-                <img src="${currentProduct.image_url}" class="product-image">
+                ${galleryHtml}
                 <div class="product-details">
+                    <div class="product-category">${currentProduct.category}</div>
                     <h1 class="product-title">${currentProduct.name}</h1>
                     <div class="product-price">${currentProduct.price} جنيه</div>
+                    
+                    <div class="product-desc">${descText}</div>
+                    
                     ${sizesHtml}
                     ${colorsHtml}
                     <button class="add-btn" id="addToCartBtn" onclick="addToCart()" ${variants.length === 0 ? '' : 'disabled'}>
@@ -108,46 +139,43 @@
                 </div>
             `;
 
-            if (variants.length > 0) {
-                renderOptions(allSizes, allColors);
-            } else {
-                // لو مفيش متغيرات، يتفعل الزرار علطول
-                document.getElementById('addToCartBtn').disabled = false;
-            }
+            if (variants.length > 0) renderOptions(allSizes, allColors);
+            else document.getElementById('addToCartBtn').disabled = false;
+        }
+
+        function changeImage(thumb, imgUrl) {
+            document.getElementById('mainImage').src = imgUrl;
+            document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
         }
 
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList');
             const colorsList = document.getElementById('colorsList');
 
-            // رسم المقاسات
             if (sizesList) {
                 allSizes.forEach(size => {
-                    // هل المقاس ده متوفر في أي لون؟
                     const isAvailable = variants.some(v => v.size === size && v.stock > 0);
-                    sizesList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" 
-                        onclick="selectSize('${size}')" ${!isAvailable ? 'disabled' : ''}>${size}</button>`;
+                    sizesList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvailable ? 'disabled' : ''}>${size}</button>`;
                 });
             }
 
-            // رسم الألوان
             if (colorsList) {
                 allColors.forEach(color => {
                     const isAvailable = variants.some(v => v.color === color && v.stock > 0);
-                    colorsList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" 
-                        onclick="selectColor('${color}')" ${!isAvailable ? 'disabled' : ''}>${color}</button>`;
+                    colorsList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvailable ? 'disabled' : ''}>${color}</button>`;
                 });
             }
         }
 
-        function selectSize(size) {
+        function selectSize(size, event) {
             selectedSize = size;
             document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected'));
             event.target.classList.add('selected');
             checkSelection();
         }
 
-        function selectColor(color) {
+        function selectColor(color, event) {
             selectedColor = color;
             document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected'));
             event.target.classList.add('selected');
@@ -155,14 +183,11 @@
         }
 
         function checkSelection() {
-            // البحث عن المتغير اللي بيطابق الاختيار
             const variant = variants.find(v => 
                 (v.size === selectedSize || (!v.size && !selectedSize)) && 
                 (v.color === selectedColor || (!v.color && !selectedColor))
             );
-
             const btn = document.getElementById('addToCartBtn');
-
             if (variant && variant.stock > 0) {
                 selectedVariantId = variant.id;
                 btn.disabled = false;
@@ -177,18 +202,9 @@
         function addToCart() {
             const uniqueId = `${currentProduct.id}-${selectedVariantId || 'no-variant'}`;
             const existingItem = cart.find(item => item.cartItemId === uniqueId);
-
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ 
-                    ...currentProduct, 
-                    cartItemId: uniqueId,
-                    variantId: selectedVariantId,
-                    size: selectedSize || '',
-                    color: selectedColor || '',
-                    quantity: 1 
-                });
+            if (existingItem) existingItem.quantity += 1;
+            else {
+                cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
             }
             localStorage.setItem('rovyCart', JSON.stringify(cart));
             const toast = document.getElementById('toast');
