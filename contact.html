@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اتصل بنا | ROVY STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #fafafa; color: #222; line-height: 1.8; }
+        header { background: #fff; text-align: center; padding: 20px; border-bottom: 1px solid #eee; }
+        .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
+        .logo span { color: #b58a61; }
+        
+        .container { max-width: 1000px; margin: 50px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media(max-width: 768px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1, h2 { color: #b58a61; margin-bottom: 20px; }
+        
+        .info-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+        .info-item i { font-size: 20px; color: #b58a61; margin-top: 5px; }
+        .info-item h4 { margin-bottom: 5px; }
+        .info-item p { color: #555; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 15px; }
+        .btn-submit { background: #171717; color: white; border: none; padding: 15px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: #b58a61; }
+    </style>
+</head>
+<body>
+    <header><a href="index.html" class="logo">ROVY<span>.</span></a></header>
+    
+    <div class="container">
+        <div class="card">
+            <h2>تواصل معنا</h2>
+            <p style="color:#666; margin-bottom:30px;">فريق ROVY STORE في خدمتك دائماً. لو عندك أي استفسار، شكوى، أو اقتراح، يسعدنا تواصلك معنا.</p>
+            
+            <div class="info-item">
+                <i class="fab fa-whatsapp"></i>
+                <div>
+                    <h4>واتساب (الأسرع للرد)</h4>
+                    <p><a href="https://wa.me/201012853009" target="_blank" style="color: #25d366; text-decoration: none; font-weight: bold;">01012853009</a></p>
+                </div>
+            </div>
+            
+            <div class="info-item">
+                <i class="fas fa-envelope"></i>
+                <div>
+                    <h4>البريد الإلكتروني</h4>
+                    <p>info@rovystore.com</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <h4>مواعيد العمل</h4>
+                    <p>يومياً من 10 صباحاً حتى 10 مساءً (عدا الجمعة).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>أرسل لنا رسالة</h2>
+            <form id="contactForm">
+                <div class="form-group">
+                    <label>الاسم بالكامل</label>
+                    <input type="text" id="name" required placeholder="اسمك هنا">
+                </div>
+                <div class="form-group">
+                    <label>رقم الموبايل</label>
+                    <input type="tel" id="phone" required placeholder="01xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>رسالتك</label>
+                    <textarea id="message" rows="5" required placeholder="اكتب رسالتك هنا..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">إرسال عبر واتساب</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // تحويل الرسالة للواتساب مباشرة
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const message = document.getElementById('message').value;
+            
+            const waText = `مرحباً، أنا ${name} برقم الموبايل ${phone}%0A%0A${message}`;
+            window.open(`https://wa.me/201012853009?text=${waText}`, '_blank');
+        });
+    </script>
+</body>
+</html>
