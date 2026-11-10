@@ -32,7 +32,14 @@
         .cart-item-title { font-weight: bold; font-size: 15px; }
         .cart-item-qty { color: #888; font-size: 13px; margin-top: 5px; }
         
+        .coupon-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+        .coupon-input-group { display: flex; gap: 10px; }
+        .coupon-input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .coupon-input-group button { padding: 10px 20px; background: #171717; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .coupon-msg { font-size: 13px; margin-top: 5px; font-weight: bold; }
+
         .total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 900; margin-top: 20px; color: #b58a61; }
+        .old-price { text-decoration: line-through; color: #888; font-size: 16px; margin-left: 10px; font-weight: normal; }
         
         .btn-submit { width: 100%; padding: 15px; background: #171717; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px; }
         .btn-submit:hover { background: #b58a61; }
@@ -78,9 +85,18 @@
         <div class="card">
             <h2>ملخص الطلب</h2>
             <div id="checkoutItems"></div>
+            
+            <div class="coupon-section">
+                <div class="coupon-input-group">
+                    <input type="text" id="couponCode" placeholder="أدخل كود الخصم هنا">
+                    <button type="button" onclick="applyCoupon()">تطبيق</button>
+                </div>
+                <div class="coupon-msg" id="couponMsg"></div>
+            </div>
+
             <div class="total-row">
                 <span>الإجمالي:</span>
-                <span id="checkoutTotal">0 جنيه</span>
+                <span id="checkoutTotalContainer">0 جنيه</span>
             </div>
         </div>
     </div>
@@ -94,7 +110,6 @@
         </div>
     </div>
 
-    <!-- الفوتر الجديد -->
     <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
             <div>
@@ -105,6 +120,7 @@
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
                     <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
@@ -130,6 +146,9 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
+        let originalTotal = 0;
+        let finalTotal = 0;
+        let appliedDiscount = 0;
 
         function renderCheckout() {
             if(cart.length === 0) {
@@ -138,12 +157,12 @@
             }
 
             const itemsContainer = document.getElementById('checkoutItems');
-            const totalContainer = document.getElementById('checkoutTotal');
-            let total = 0;
+            const totalContainer = document.getElementById('checkoutTotalContainer');
             itemsContainer.innerHTML = '';
+            originalTotal = 0;
 
             cart.forEach(item => {
-                total += (item.price * item.quantity);
+                originalTotal += (item.price * item.quantity);
                 let variantText = '';
                 if (item.size) variantText += ` | مقاس: ${item.size}`;
                 if (item.color) variantText += ` | لون: ${item.color}`;
@@ -162,7 +181,40 @@
                 `;
             });
 
-            totalContainer.innerText = total + " جنيه";
+            finalTotal = originalTotal;
+            totalContainer.innerHTML = `${finalTotal} جنيه`;
+        }
+
+        async function applyCoupon() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const msg = document.getElementById('couponMsg');
+            
+            if(!code) return;
+
+            const { data, error } = await supabaseClient
+                .from('coupons')
+                .select('*')
+                .eq('code', code)
+                .eq('is_active', true)
+                .single();
+
+            if(error || !data) {
+                msg.style.color = 'red';
+                msg.innerText = 'كود الخصم غير صحيح أو منتهي الصلاحية.';
+                appliedDiscount = 0;
+                document.getElementById('checkoutTotalContainer').innerHTML = `${originalTotal} جنيه`;
+            } else {
+                appliedDiscount = data.discount_percentage;
+                const discountAmount = (originalTotal * appliedDiscount) / 100;
+                finalTotal = originalTotal - discountAmount;
+                
+                msg.style.color = 'green';
+                msg.innerText = `تم تطبيق الخصم! (${appliedDiscount}%)`;
+                
+                document.getElementById('checkoutTotalContainer').innerHTML = `
+                    <span class="old-price">${originalTotal} ج</span> ${finalTotal} جنيه
+                `;
+            }
         }
 
         document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
@@ -174,23 +226,24 @@
             const name = document.getElementById('cName').value;
             const phone = document.getElementById('cPhone').value;
             const address = document.getElementById('cAddress').value;
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             try {
+                // هنا سر حل المشكلة: تحويل كل البيانات لأرقام صحيحة (Integers / Floats) عشان الدالة تقبلها
                 const itemsPayload = cart.map(item => ({
-                    variant_id: item.variantId || null,
-                    product_id: item.id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    size: item.size || null,
-                    color: item.color || null
+                    variant_id: item.variantId ? parseInt(item.variantId) : null,
+                    product_id: parseInt(item.id),
+                    quantity: parseInt(item.quantity),
+                    price: parseFloat(item.price),
+                    size: item.size ? String(item.size) : null,
+                    color: item.color ? String(item.color) : null
                 }));
 
+                // نرسل السعر النهائي (finalTotal) كـ Float
                 const { data: rpcData, error: rpcError } = await supabaseClient.rpc('create_order_and_decrement_stock', {
                     p_customer_name: name,
                     p_customer_phone: phone,
                     p_customer_address: address,
-                    p_total_price: totalAmount,
+                    p_total_price: parseFloat(finalTotal), 
                     p_items: itemsPayload
                 });
 
@@ -201,8 +254,8 @@
                 document.getElementById('successSection').style.display = 'flex';
 
             } catch (error) {
-                console.error("Checkout error:", error);
-                alert("حدث خطأ أثناء تسجيل الطلب. يرجى المحاولة مرة أخرى.");
+                console.error("Checkout error details:", error); // دي هتوريك التفاصيل الحقيقية في الكونسول لو حصل خطأ
+                alert(`حدث خطأ: ${error.message || 'يرجى المحاولة مرة أخرى'}`);
                 btn.innerText = 'تأكيد الطلب';
                 btn.disabled = false;
             }
