@@ -44,7 +44,6 @@
         .whatsapp-float { position: fixed; bottom: 25px; left: 25px; background-color: #25d366; color: white; border-radius: 50px; text-align: center; font-size: 35px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
         .whatsapp-float:hover { background-color: #128c7e; transform: scale(1.1); }
 
-        /* قسم التقييمات */
         .reviews-section { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
         .reviews-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .reviews-title { font-size: 24px; font-weight: 900; }
@@ -57,7 +56,6 @@
         .review-date { color: #888; font-size: 13px; }
         .review-comment { color: #444; }
 
-        /* فورم إضافة تقييم */
         .add-review-form { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-top: 30px; }
         .add-review-form h3 { margin-bottom: 15px; }
         .form-group { margin-bottom: 15px; }
@@ -85,7 +83,6 @@
 
     <div class="product-container" id="productContainer"><p>جاري التحميل...</p></div>
 
-    <!-- قسم التقييمات -->
     <div class="reviews-section" id="reviewsSection" style="display:none;">
         <div class="reviews-header">
             <h2 class="reviews-title">التقييمات والمراجعات</h2>
@@ -98,7 +95,6 @@
 
         <div id="reviewsList"></div>
 
-        <!-- فورم إضافة تقييم -->
         <div class="add-review-form">
             <h3>أضف تقييمك</h3>
             <form id="addReviewForm">
@@ -125,7 +121,6 @@
         </div>
     </div>
 
-    <!-- منتجات مشابهة -->
     <div class="reviews-section" id="relatedSection" style="display:none;">
         <div class="reviews-header"><h2 class="reviews-title">قد يعجبك أيضاً</h2></div>
         <div class="products-grid" id="relatedGrid"></div>
@@ -140,8 +135,10 @@
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="contact.html" style="color: #aaa; text-decoration: none; font-size: 14px;">اتصل بنا</a></li>
                     <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
-                    <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال</a></li>
+                    <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
+                    <li style="margin-bottom: 10px;"><a href="privacy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الخصوصية</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
             </div>
@@ -259,7 +256,6 @@
             const toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // --- التقييمات ---
         async function loadReviews() {
             const { data } = await supabaseClient.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false });
             const reviewsSection = document.getElementById('reviewsSection');
@@ -311,7 +307,6 @@
             }
         }
 
-        // تحديد النجوم في الفورم
         document.querySelectorAll('#starRatingInput i').forEach(star => {
             star.addEventListener('click', function() {
                 selectedRating = parseInt(this.getAttribute('data-val'));
@@ -325,7 +320,6 @@
             });
         });
 
-        // إرسال التقييم
         document.getElementById('addReviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (selectedRating === 0) { alert("يرجى اختيار عدد النجوم أولاً"); return; }
