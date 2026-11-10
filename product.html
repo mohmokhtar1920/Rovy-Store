@@ -43,6 +43,17 @@
         .success-toast.show { bottom: 30px; }
         .whatsapp-float { position: fixed; bottom: 25px; left: 25px; background-color: #25d366; color: white; border-radius: 50px; text-align: center; font-size: 35px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
         .whatsapp-float:hover { background-color: #128c7e; transform: scale(1.1); }
+
+        /* قسم منتجات مشابهة */
+        .related-section { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
+        .related-title { font-size: 26px; font-weight: 900; margin-bottom: 30px; text-align: center; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .product-card { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; text-align: center; transition: 0.3s; }
+        .product-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.08); transform: translateY(-5px); }
+        .product-card img { width: 100%; height: 250px; object-fit: cover; }
+        .product-info { padding: 15px; }
+        .product-title-small { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
+        .product-price-small { color: #b58a61; font-weight: 900; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -53,32 +64,30 @@
     </header>
 
     <div class="product-container" id="productContainer"><p>جاري التحميل...</p></div>
+    
+    <!-- قسم منتجات مشابهة -->
+    <div class="related-section" id="relatedSection" style="display:none;">
+        <h2 class="related-title">قد يعجبك أيضاً</h2>
+        <div class="products-grid" id="relatedGrid"></div>
+    </div>
+
     <div class="success-toast" id="toast">تمت الإضافة للسلة!</div>
     
-    <!-- الفوتر الجديد -->
     <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
-            <div>
-                <h3 style="color: #b58a61; margin-bottom: 15px; font-size: 22px;">ROVY STORE</h3>
-                <p style="color: #aaa; font-size: 14px; line-height: 1.6;">وجهتك الأولى للموضة والأزياء العصرية. نقدم لك أفضل الخامات وأحدث الصيحات.</p>
-            </div>
+            <div><h3 style="color: #b58a61; margin-bottom: 15px; font-size: 22px;">ROVY STORE</h3><p style="color: #aaa; font-size: 14px; line-height: 1.6;">وجهتك الأولى للموضة والأزياء العصرية.</p></div>
             <div>
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
                     <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
             </div>
-            <div>
-                <h4 style="margin-bottom: 15px; font-size: 18px;">تواصل معنا</h4>
-                <p style="color: #aaa; font-size: 14px; margin-bottom: 10px;"><i class="fab fa-whatsapp" style="color: #25d366; margin-left: 5px;"></i> 01012853009</p>
-                <p style="color: #aaa; font-size: 14px;"><i class="fas fa-envelope" style="color: #b58a61; margin-left: 5px;"></i> info@rovystore.com</p>
-            </div>
+            <div><h4 style="margin-bottom: 15px; font-size: 18px;">تواصل معنا</h4><p style="color: #aaa; font-size: 14px;"><i class="fab fa-whatsapp" style="color: #25d366; margin-left: 5px;"></i> 01012853009</p></div>
         </div>
-        <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">
-            &copy; 2026 ROVY STORE. جميع الحقوق محفوظة.
-        </div>
+        <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">&copy; 2026 ROVY STORE. جميع الحقوق محفوظة.</div>
     </footer>
 
     <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -90,9 +99,7 @@
         
         let currentProduct = null;
         let variants = [];
-        let selectedSize = null;
-        let selectedColor = null;
-        let selectedVariantId = null;
+        let selectedSize = null, selectedColor = null, selectedVariantId = null;
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
         const productId = new URLSearchParams(window.location.search).get('id');
 
@@ -106,45 +113,56 @@
             variants = vars || [];
 
             renderProduct();
+            loadRelatedProducts();
+        }
+
+        async function loadRelatedProducts() {
+            const { data } = await supabaseClient.from('products')
+                .select('*')
+                .eq('category', currentProduct.category)
+                .neq('id', currentProduct.id)
+                .limit(4);
+
+            if(data && data.length > 0) {
+                document.getElementById('relatedSection').style.display = 'block';
+                const grid = document.getElementById('relatedGrid');
+                grid.innerHTML = '';
+                data.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="product-card">
+                            <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}"></a>
+                            <div class="product-info">
+                                <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                                    <div class="product-title-small">${p.name}</div>
+                                </a>
+                                <div class="product-price-small">${p.price} جنيه</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
         }
 
         function renderProduct() {
             const container = document.getElementById('productContainer');
-            
             let allImages = [currentProduct.image_url];
             let gallery = currentProduct.gallery_images;
-            
-            if (typeof gallery === 'string') {
-                try { gallery = JSON.parse(gallery); } catch(e) { gallery = []; }
-            }
-            
-            if (gallery && Array.isArray(gallery) && gallery.length > 0) {
-                allImages = allImages.concat(gallery);
-            }
+            if (typeof gallery === 'string') { try { gallery = JSON.parse(gallery); } catch(e) { gallery = []; } }
+            if (gallery && Array.isArray(gallery) && gallery.length > 0) allImages = allImages.concat(gallery);
 
             let galleryHtml = `
                 <div class="gallery-container">
                     <img src="${allImages[0]}" class="main-image" id="mainImage">
-                    <div class="thumbnails">
-                        ${allImages.map((img, index) => `<img src="${img}" class="thumb-img ${index === 0 ? 'active' : ''}" onclick="changeImage(this, '${img}')">`).join('')}
-                    </div>
-                </div>
-            `;
+                    <div class="thumbnails">${allImages.map((img, index) => `<img src="${img}" class="thumb-img ${index === 0 ? 'active' : ''}" onclick="changeImage(this, '${img}')">`).join('')}</div>
+                </div>`;
 
-            let sizesHtml = '';
-            let colorsHtml = '';
-            let allSizes = [];
-            let allColors = [];
-
+            let sizesHtml = '', colorsHtml = '', allSizes = [], allColors = [];
             if (variants.length > 0) {
                 variants.forEach(v => { if(v.size && !allSizes.includes(v.size)) allSizes.push(v.size); });
                 variants.forEach(v => { if(v.color && !allColors.includes(v.color)) allColors.push(v.color); });
             }
-
             if(allSizes.length > 0) sizesHtml = `<div class="options-group"><span class="options-label">المقاس:</span><div class="options-list" id="sizesList"></div></div>`;
             if(allColors.length > 0) colorsHtml = `<div class="options-group"><span class="options-label">اللون:</span><div class="options-list" id="colorsList"></div></div>`;
-
-            const descText = currentProduct.description || 'لا يوجد وصف تفصيلي لهذا المنتج.';
 
             container.innerHTML = `
                 ${galleryHtml}
@@ -152,88 +170,36 @@
                     <div class="product-category">${currentProduct.category}</div>
                     <h1 class="product-title">${currentProduct.name}</h1>
                     <div class="product-price">${currentProduct.price} جنيه</div>
-                    
-                    <div class="product-desc">${descText}</div>
-                    
-                    ${sizesHtml}
-                    ${colorsHtml}
-                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" ${variants.length === 0 ? '' : 'disabled'}>
-                        <i class="fas fa-shopping-bag"></i> أضف إلى السلة
-                    </button>
-                </div>
-            `;
+                    <div class="product-desc">${currentProduct.description || 'لا يوجد وصف تفصيلي.'}</div>
+                    ${sizesHtml}${colorsHtml}
+                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" ${variants.length === 0 ? '' : 'disabled'}><i class="fas fa-shopping-bag"></i> أضف إلى السلة</button>
+                </div>`;
 
             if (variants.length > 0) renderOptions(allSizes, allColors);
             else document.getElementById('addToCartBtn').disabled = false;
         }
 
-        function changeImage(thumb, imgUrl) {
-            document.getElementById('mainImage').src = imgUrl;
-            document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
-            thumb.classList.add('active');
-        }
-
+        function changeImage(thumb, imgUrl) { document.getElementById('mainImage').src = imgUrl; document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active')); thumb.classList.add('active'); }
         function renderOptions(allSizes, allColors) {
-            const sizesList = document.getElementById('sizesList');
-            const colorsList = document.getElementById('colorsList');
-
-            if (sizesList) {
-                allSizes.forEach(size => {
-                    const isAvailable = variants.some(v => v.size === size && v.stock > 0);
-                    sizesList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvailable ? 'disabled' : ''}>${size}</button>`;
-                });
-            }
-
-            if (colorsList) {
-                allColors.forEach(color => {
-                    const isAvailable = variants.some(v => v.color === color && v.stock > 0);
-                    colorsList.innerHTML += `<button class="option-btn ${!isAvailable ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvailable ? 'disabled' : ''}>${color}</button>`;
-                });
-            }
+            const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
+            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && v.stock > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}</button>`; });
+            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && v.stock > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}</button>`; });
         }
-
-        function selectSize(size, event) {
-            selectedSize = size;
-            document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected'));
-            event.target.classList.add('selected');
-            checkSelection();
-        }
-
-        function selectColor(color, event) {
-            selectedColor = color;
-            document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected'));
-            event.target.classList.add('selected');
-            checkSelection();
-        }
-
+        function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
+        function selectColor(color, event) { selectedColor = color; document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
         function checkSelection() {
-            const variant = variants.find(v => 
-                (v.size === selectedSize || (!v.size && !selectedSize)) && 
-                (v.color === selectedColor || (!v.color && !selectedColor))
-            );
+            const variant = variants.find(v => (v.size === selectedSize || (!v.size && !selectedSize)) && (v.color === selectedColor || (!v.color && !selectedColor)));
             const btn = document.getElementById('addToCartBtn');
-            if (variant && variant.stock > 0) {
-                selectedVariantId = variant.id;
-                btn.disabled = false;
-                btn.innerHTML = `<i class="fas fa-shopping-bag"></i> أضف إلى السلة`;
-            } else {
-                selectedVariantId = null;
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-times"></i> غير متوفر بهذه المواصفات`;
-            }
+            if (variant && variant.stock > 0) { selectedVariantId = variant.id; btn.disabled = false; btn.innerHTML = `<i class="fas fa-shopping-bag"></i> أضف إلى السلة`; } 
+            else { selectedVariantId = null; btn.disabled = true; btn.innerHTML = `<i class="fas fa-times"></i> غير متوفر`; }
         }
-
         function addToCart() {
             const uniqueId = `${currentProduct.id}-${selectedVariantId || 'no-variant'}`;
             const existingItem = cart.find(item => item.cartItemId === uniqueId);
             if (existingItem) existingItem.quantity += 1;
-            else {
-                cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
-            }
+            else cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
             localStorage.setItem('rovyCart', JSON.stringify(cart));
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+            const toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         loadProduct();
