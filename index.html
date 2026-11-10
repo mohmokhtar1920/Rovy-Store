@@ -87,7 +87,7 @@
     </div>
 
     <header>
-        <div class="logo">ROVY<span>.</span></div>
+        <div class="logo" onclick="filterCategory('All')" style="cursor:pointer;">ROVY<span>.</span></div>
         
         <div class="search-box">
             <i class="fas fa-search"></i>
@@ -107,18 +107,18 @@
         <div class="hero-content">
             <h1 id="heroTitle">اكتشف ستايلك</h1>
             <p id="heroText">أحدث صيحات الموضة لجميع أفراد العائلة</p>
-            <button class="shop-btn" onclick="location.href='#products'" id="shopBtn">تسوق الآن</button>
+            <button class="shop-btn" onclick="filterCategory('All')" id="shopBtn">تسوق الآن</button>
         </div>
     </div>
 
     <section id="categories">
         <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
         <div class="categories">
-            <div class="category"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500"><h3 id="cat1">نساء</h3></div>
-            <div class="category"><img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500"><h3 id="cat2">رجال</h3></div>
-            <div class="category"><img src="https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500"><h3 id="cat3">أطفال</h3></div>
-            <div class="category"><img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500"><h3 id="cat4">ملابس رياضية</h3></div>
-            <div class="category"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500"><h3 id="cat5">إكسسوارات</h3></div>
+            <div class="category" onclick="filterCategory('Women')"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500"><h3 id="cat1">نساء</h3></div>
+            <div class="category" onclick="filterCategory('Men')"><img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500"><h3 id="cat2">رجال</h3></div>
+            <div class="category" onclick="filterCategory('Kids')"><img src="https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500"><h3 id="cat3">أطفال</h3></div>
+            <div class="category" onclick="filterCategory('Sports')"><img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500"><h3 id="cat4">ملابس رياضية</h3></div>
+            <div class="category" onclick="filterCategory('Accessories')"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500"><h3 id="cat5">إكسسوارات</h3></div>
         </div>
     </section>
 
@@ -155,7 +155,8 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let products = [];
+        let allProducts = [];
+        let currentCategory = 'All';
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
         let english = false;
 
@@ -167,18 +168,26 @@
                 grid.innerHTML = '<p style="text-align:center; width:100%; color:red;">حدث خطأ في تحميل المنتجات</p>';
                 return;
             }
-            products = data;
+            allProducts = data;
             renderProducts();
         }
 
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
-            if(products.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات حالياً</p>';
+            
+            // فلترة المنتجات
+            let filtered = allProducts;
+            if (currentCategory !== 'All') {
+                filtered = allProducts.filter(p => p.category === currentCategory);
+            }
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات في هذا القسم حالياً</p>';
                 return;
             }
-            products.forEach(p => {
+
+            filtered.forEach(p => {
                 grid.innerHTML += `
                     <div class="product-card">
                         <img src="${p.image_url}" alt="${p.name}">
@@ -192,8 +201,15 @@
             });
         }
 
+        function filterCategory(cat) {
+            currentCategory = cat;
+            renderProducts();
+            // التمرير لقسم المنتجات
+            document.getElementById('products').scrollIntoView({behavior: 'smooth'});
+        }
+
         function addToCart(id) {
-            const product = products.find(p => p.id === id);
+            const product = allProducts.find(p => p.id === id);
             const existingItem = cart.find(item => item.id === id);
             if (existingItem) { existingItem.quantity += 1; } 
             else { cart.push({ ...product, quantity: 1 }); }
@@ -243,7 +259,6 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // التحويل لصفحة الدفع
         function checkout() {
             if (cart.length === 0) {
                 alert(english ? "Your cart is empty!" : "سلة المشتريات فارغة!");
