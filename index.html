@@ -94,11 +94,9 @@
         <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()"></div>
         
         <div class="header-icons">
-            <!-- زرار تتبع الطلب الجديد -->
             <a href="track.html" class="icon-btn" title="تتبع طلبك" style="margin-right: 10px;">
                 <i class="fas fa-map-location-dot"></i>
             </a>
-            
             <button class="lang-btn" onclick="changeLanguage()" id="langBtn">English</button>
             <button class="icon-btn" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
         </div>
@@ -112,7 +110,6 @@
         </div>
     </div>
 
-    <!-- الأقسام -->
     <section id="categories">
         <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
         <div class="categories">
@@ -124,19 +121,16 @@
         </div>
     </section>
 
-    <!-- وصل حديثاً -->
     <section id="newArrivals">
         <h2 class="section-title" id="newTitle">وصل حديثاً</h2>
         <div class="products-grid" id="newProductsGrid"><p style="text-align:center; width:100%;">جاري التحميل...</p></div>
     </section>
 
-    <!-- الأكثر مبيعاً -->
     <section id="bestSellers">
         <h2 class="section-title" id="bestTitle">الأكثر مبيعاً</h2>
         <div class="products-grid" id="bestProductsGrid"></div>
     </section>
 
-    <!-- سلة المشتريات -->
     <div class="cart-sidebar" id="cartSidebar">
         <div class="cart-header"><h3 id="cartTitle">سلة المشتريات</h3><button class="close-cart" onclick="toggleCart()">&times;</button></div>
         <div class="cart-items" id="cartItems"></div>
@@ -146,7 +140,6 @@
         </div>
     </div>
 
-    <!-- الفوتر -->
     <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
             <div>
@@ -157,8 +150,10 @@
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="contact.html" style="color: #aaa; text-decoration: none; font-size: 14px;">اتصل بنا</a></li>
                     <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
                     <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
+                    <li style="margin-bottom: 10px;"><a href="privacy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الخصوصية</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
             </div>
