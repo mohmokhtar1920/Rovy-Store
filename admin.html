@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | ROVY STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #f4f6f9; color: #333; }
+        header { background: #171717; color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 900; }
+        .logo span { color: #b58a61; }
+        .container { padding: 30px 5%; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
+        @media(max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .card h2 { font-size: 20px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; }
+        .btn { background: #b58a61; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        .btn:hover { background: #8f6b48; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { background: #f9f9f9; font-weight: bold; }
+        .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        
+        .order-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .order-status { background: #ffc107; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">ROVY<span>.</span> ADMIN</div>
+        <a href="index.html" style="color: white; text-decoration: none;">زيارة الموقع &larr;</a>
+    </header>
+
+    <div class="container">
+        <!-- إضافة منتج -->
+        <div class="card">
+            <h2>إضافة منتج جديد</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label>اسم المنتج</label>
+                    <input type="text" id="pName" required>
+                </div>
+                <div class="form-group">
+                    <label>السعر (جنيه)</label>
+                    <input type="number" id="pPrice" required>
+                </div>
+                <div class="form-group">
+                    <label>رابط الصورة (URL)</label>
+                    <input type="url" id="pImage" placeholder="https://..." required>
+                </div>
+                <div class="form-group">
+                    <label>القسم</label>
+                    <select id="pCategory" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                        <option value="Women">نساء</option>
+                        <option value="Men">رجال</option>
+                        <option value="Kids">أطفال</option>
+                        <option value="Sports">رياضة</option>
+                        <option value="Accessories">إكسسوارات</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">إضافة المنتج</button>
+            </form>
+        </div>
+
+        <!-- عرض المنتجات والطلبات -->
+        <div>
+            <div class="card">
+                <h2>المنتجات الحالية</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الصورة</th>
+                            <th>الاسم</th>
+                            <th>السعر</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductsList">
+                        <!-- سيتم تحميل المنتجات هنا -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>أحدث الطلبات</h2>
+                <div id="ordersList">
+                    <!-- سيتم تحميل الطلبات هنا -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // جلب المنتجات في لوحة التحكم
+        async function loadAdminProducts() {
+            const { data, error } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
+            const list = document.getElementById('adminProductsList');
+            list.innerHTML = '';
+            
+            if(data) {
+                data.forEach(p => {
+                    list.innerHTML += `
+                        <tr>
+                            <td><img src="${p.image_url}" class="product-img"></td>
+                            <td>${p.name}</td>
+                            <td>${p.price} ج</td>
+                            <td><button class="delete-btn" onclick="deleteProduct(${p.id})">حذف</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // إضافة منتج
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('pName').value;
+            const price = document.getElementById('pPrice').value;
+            const image_url = document.getElementById('pImage').value;
+            const category = document.getElementById('pCategory').value;
+
+            const btn = e.target.querySelector('button');
+            btn.innerText = 'جاري الإضافة...';
+            btn.disabled = true;
+
+            const { error } = await supabaseClient.from('products').insert([{ name, price, image_url, category }]);
+            
+            if(error) {
+                alert('حدث خطأ: ' + error.message);
+            } else {
+                alert('تمت إضافة المنتج بنجاح!');
+                e.target.reset();
+                loadAdminProducts();
+            }
+            btn.innerText = 'إضافة المنتج';
+            btn.disabled = false;
+        });
+
+        // حذف منتج
+        async function deleteProduct(id) {
+            if(!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            if(error) alert('خطأ في الحذف: ' + error.message);
+            else loadAdminProducts();
+        }
+
+        // جلب الطلبات
+        async function loadOrders() {
+            const { data, error } = await supabaseClient.from('orders').select('*').order('id', { ascending: false });
+            const list = document.getElementById('ordersList');
+            list.innerHTML = '';
+
+            if(data && data.length > 0) {
+                data.forEach(order => {
+                    list.innerHTML += `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <strong>طلب رقم #${order.id}</strong>
+                                <span class="order-status">${order.status}</span>
+                            </div>
+                            <p><strong>الاسم:</strong> ${order.customer_name}</p>
+                            <p><strong>الموبايل:</strong> ${order.customer_phone}</p>
+                            <p><strong>العنوان:</strong> ${order.customer_address}</p>
+                            <p style="margin-top: 10px; font-weight: bold; color: #b58a61;">الإجمالي: ${order.total_price} جنيه</p>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = '<p style="color:#888;">لا توجد طلبات حتى الآن.</p>';
+            }
+        }
+
+        // تشغيل الدوال
+        loadAdminProducts();
+        loadOrders();
+    </script>
+</body>
+</html>
