@@ -33,7 +33,9 @@
         .shop-btn:hover { background: #8f6b48; transform: translateY(-3px); }
 
         section { padding: 40px 5%; }
-        .section-title { text-align: center; font-size: 28px; margin-bottom: 30px; font-weight: 900; }
+        .section-title { text-align: center; font-size: 28px; margin-bottom: 30px; font-weight: 900; position: relative; }
+        .section-title::after { content: ''; display: block; width: 50px; height: 3px; background: #b58a61; margin: 10px auto 0; }
+        
         .categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .category { position: relative; height: 250px; border-radius: 10px; overflow: hidden; cursor: pointer; }
         .category img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
@@ -84,24 +86,14 @@
 
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
-    <div class="top-bar" id="topBar">
-        🚚 توصيل مجاني للطلبات فوق 1500 جنيه | توصيل لجميع المحافظات
-    </div>
+    <div class="top-bar" id="topBar">🚚 توصيل مجاني للطلبات فوق 1500 جنيه | توصيل لجميع المحافظات</div>
 
     <header>
-        <div class="logo" onclick="filterCategory('All')">ROVY<span>.</span></div>
-        
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()">
-        </div>
-
+        <div class="logo" onclick="window.location.reload()">ROVY<span>.</span></div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()"></div>
         <div class="header-icons">
             <button class="lang-btn" onclick="changeLanguage()" id="langBtn">English</button>
-            <button class="icon-btn" onclick="toggleCart()">
-                <i class="fas fa-shopping-bag"></i>
-                <span class="cart-count" id="cartCount">0</span>
-            </button>
+            <button class="icon-btn" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
         </div>
     </header>
 
@@ -109,10 +101,11 @@
         <div class="hero-content">
             <h1 id="heroTitle">اكتشف ستايلك</h1>
             <p id="heroText">أحدث صيحات الموضة لجميع أفراد العائلة</p>
-            <button class="shop-btn" onclick="filterCategory('All')" id="shopBtn">تسوق الآن</button>
+            <button class="shop-btn" onclick="document.getElementById('newArrivals').scrollIntoView({behavior: 'smooth'})" id="shopBtn">تسوق الآن</button>
         </div>
     </div>
 
+    <!-- الأقسام -->
     <section id="categories">
         <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
         <div class="categories">
@@ -124,29 +117,29 @@
         </div>
     </section>
 
-    <section id="products">
-        <h2 class="section-title" id="prodTitle">منتجات مميزة</h2>
-        <div class="products-grid" id="productsGrid">
-            <p style="text-align:center; width:100%;">جاري تحميل المنتجات...</p>
-        </div>
+    <!-- وصل حديثاً -->
+    <section id="newArrivals">
+        <h2 class="section-title" id="newTitle">وصل حديثاً</h2>
+        <div class="products-grid" id="newProductsGrid"><p style="text-align:center; width:100%;">جاري التحميل...</p></div>
     </section>
 
+    <!-- الأكثر مبيعاً -->
+    <section id="bestSellers">
+        <h2 class="section-title" id="bestTitle">الأكثر مبيعاً</h2>
+        <div class="products-grid" id="bestProductsGrid"></div>
+    </section>
+
+    <!-- سلة المشتريات -->
     <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h3 id="cartTitle">سلة المشتريات</h3>
-            <button class="close-cart" onclick="toggleCart()">&times;</button>
-        </div>
+        <div class="cart-header"><h3 id="cartTitle">سلة المشتريات</h3><button class="close-cart" onclick="toggleCart()">&times;</button></div>
         <div class="cart-items" id="cartItems"></div>
         <div class="cart-footer">
-            <div class="cart-total">
-                <span id="totalText">الإجمالي:</span>
-                <span id="totalPrice">0 جنيه</span>
-            </div>
+            <div class="cart-total"><span id="totalText">الإجمالي:</span><span id="totalPrice">0 جنيه</span></div>
             <button class="checkout-btn" onclick="checkout()" id="checkoutBtn">إتمام الطلب</button>
         </div>
     </div>
 
-    <!-- الفوتر الجديد -->
+    <!-- الفوتر -->
     <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
             <div>
@@ -157,6 +150,7 @@
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
                     <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
@@ -167,12 +161,10 @@
                 <p style="color: #aaa; font-size: 14px;"><i class="fas fa-envelope" style="color: #b58a61; margin-left: 5px;"></i> info@rovystore.com</p>
             </div>
         </div>
-        <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">
-            &copy; 2026 ROVY STORE. جميع الحقوق محفوظة.
-        </div>
+        <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">&copy; 2026 ROVY STORE. جميع الحقوق محفوظة.</div>
     </footer>
 
-    <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank" title="تواصل معنا على واتساب"><i class="fab fa-whatsapp"></i></a>
+    <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
     <script>
         const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
@@ -185,63 +177,77 @@
         let english = false;
 
         async function fetchProducts() {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '<p style="text-align:center; width:100%;">جاري تحميل المنتجات...</p>';
-            const { data, error } = await supabaseClient.from('products').select('*');
-            if (error) {
-                grid.innerHTML = '<p style="text-align:center; width:100%; color:red;">حدث خطأ في تحميل المنتجات</p>';
-                return;
-            }
+            const { data, error } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
+            if (error) return;
             allProducts = data;
-            renderProducts();
+            renderHomeSections();
         }
 
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '';
-            
-            let filtered = allProducts;
-            if (currentCategory !== 'All') {
-                filtered = allProducts.filter(p => p.category === currentCategory);
-            }
+        function renderHomeSections() {
+            if (currentCategory === 'All') {
+                document.getElementById('categories').style.display = 'block';
+                
+                // قسم وصل حديثاً (أول 4 منتجات)
+                const newGrid = document.getElementById('newProductsGrid');
+                newGrid.innerHTML = '';
+                allProducts.slice(0, 4).forEach(p => {
+                    newGrid.innerHTML += createProductCard(p);
+                });
 
-            if(filtered.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات في هذا القسم حالياً</p>';
-                return;
-            }
+                // قسم الأكثر مبيعاً (المنتجات من 4 لـ 8)
+                const bestGrid = document.getElementById('bestProductsGrid');
+                bestGrid.innerHTML = '';
+                const bestProducts = allProducts.slice(4, 8);
+                if(bestProducts.length > 0) {
+                    bestProducts.forEach(p => { bestGrid.innerHTML += createProductCard(p); });
+                    document.getElementById('bestSellers').style.display = 'block';
+                } else {
+                    document.getElementById('bestSellers').style.display = 'none';
+                }
 
-            filtered.forEach(p => {
-                grid.innerHTML += `
-                    <div class="product-card">
-                        <a href="product.html?id=${p.id}">
-                            <img src="${p.image_url}" alt="${p.name}">
-                        </a>
-                        <div class="product-info">
-                            <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
-                                <div class="product-title">${p.name}</div>
-                            </a>
-                            <div class="product-price">${p.price} جنيه</div>
-                            <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})">${english ? 'Add to Cart' : 'أضف للسلة'}</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function handleAddToCart(id) {
-            const product = allProducts.find(p => p.id === id);
-            // لو المنتج ليه متغيرات، نوديه صفحة المنتج
-            if (product.sizes || product.colors || product.gallery_images) {
-                window.location.href = `product.html?id=${id}`;
             } else {
-                addToCart(id);
+                // لو العميل اختار قسم معين
+                document.getElementById('categories').style.display = 'none';
+                document.getElementById('bestSellers').style.display = 'none';
+                document.getElementById('newTitle').innerText = english ? `Category: ${currentCategory}` : `قسم: ${currentCategory}`;
+                
+                const newGrid = document.getElementById('newProductsGrid');
+                newGrid.innerHTML = '';
+                const filtered = allProducts.filter(p => p.category === currentCategory);
+                if(filtered.length > 0) {
+                    filtered.forEach(p => { newGrid.innerHTML += createProductCard(p); });
+                } else {
+                    newGrid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات في هذا القسم.</p>';
+                }
+                document.getElementById('newArrivals').scrollIntoView({behavior: 'smooth'});
             }
+        }
+
+        function createProductCard(p) {
+            return `
+                <div class="product-card">
+                    <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}"></a>
+                    <div class="product-info">
+                        <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title">${p.name}</div></a>
+                        <div class="product-price">${p.price} جنيه</div>
+                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})">${english ? 'Add to Cart' : 'أضف للسلة'}</button>
+                    </div>
+                </div>
+            `;
         }
 
         function filterCategory(cat) {
             currentCategory = cat;
-            renderProducts();
-            document.getElementById('products').scrollIntoView({behavior: 'smooth'});
+            renderHomeSections();
+        }
+
+        function handleAddToCart(id) {
+            const product = allProducts.find(p => p.id === id);
+            if (product.sizes || product.colors || (product.gallery_images && product.gallery_images.length > 0)) {
+                window.location.href = `product.html?id=${id}`;
+            } else {
+                addToCart(id);
+            }
         }
 
         function addToCart(id) {
@@ -259,8 +265,7 @@
             const cartItemsContainer = document.getElementById('cartItems');
             const cartCount = document.getElementById('cartCount');
             const totalPrice = document.getElementById('totalPrice');
-            let totalCount = 0;
-            let totalAmount = 0;
+            let totalCount = 0, totalAmount = 0;
             cartItemsContainer.innerHTML = '';
 
             cart.forEach(item => {
@@ -285,59 +290,10 @@
             }
         }
 
-        function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
-            updateCart();
-        }
-
-        function toggleCart() {
-            document.getElementById('cartSidebar').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function checkout() {
-            if (cart.length === 0) {
-                alert(english ? "Your cart is empty!" : "سلة المشتريات فارغة!");
-                return;
-            }
-            window.location.href = 'checkout.html';
-        }
-
-        function searchProducts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const cards = document.querySelectorAll('.product-card');
-            cards.forEach(card => {
-                const title = card.querySelector('.product-title').innerText.toLowerCase();
-                if (title.includes(query)) { card.style.display = 'block'; } 
-                else { card.style.display = 'none'; }
-            });
-        }
-
-        function changeLanguage() {
-            english = !english;
-            document.documentElement.lang = english ? "en" : "ar";
-            document.documentElement.dir = english ? "ltr" : "rtl";
-            
-            document.getElementById('topBar').innerText = english ? "🚚 Free shipping on orders over 1500 EGP | Delivery to all governorates" : "🚚 توصيل مجاني للطلبات فوق 1500 جنيه | توصيل لجميع المحافظات";
-            document.getElementById('heroTitle').innerText = english ? "Discover Your Style" : "اكتشف ستايلك";
-            document.getElementById('heroText').innerText = english ? "Latest fashion for the whole family" : "أحدث صيحات الموضة لجميع أفراد العائلة";
-            document.getElementById('shopBtn').innerText = english ? "Shop Now" : "تسوق الآن";
-            document.getElementById('catTitle').innerText = english ? "Shop by Category" : "تسوق حسب القسم";
-            document.getElementById('prodTitle').innerText = english ? "Featured Products" : "منتجات مميزة";
-            document.getElementById('langBtn').innerText = english ? "العربية" : "English";
-            document.getElementById('cartTitle').innerText = english ? "Shopping Cart" : "سلة المشتريات";
-            document.getElementById('totalText').innerText = english ? "Total:" : "الإجمالي:";
-            document.getElementById('checkoutBtn').innerText = english ? "Checkout" : "إتمام الطلب";
-            document.getElementById('cat1').innerText = english ? "Women" : "نساء";
-            document.getElementById('cat2').innerText = english ? "Men" : "رجال";
-            document.getElementById('cat3').innerText = english ? "Kids" : "أطفال";
-            document.getElementById('cat4').innerText = english ? "Sportswear" : "ملابس رياضية";
-            document.getElementById('cat5').innerText = english ? "Accessories" : "إكسسوارات";
-            document.getElementById('searchInput').placeholder = english ? "Search for a product..." : "ابحث عن منتج...";
-
-            renderProducts();
-            updateCart();
-        }
+        function removeFromCart(id) { cart = cart.filter(item => item.id !== id); updateCart(); }
+        function toggleCart() { document.getElementById('cartSidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
+        function checkout() { if (cart.length === 0) { alert("السلة فارغة!"); return; } window.location.href = 'checkout.html'; }
+        function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
 
         fetchProducts();
         updateCart();
