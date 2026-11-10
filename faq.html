@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الأسئلة الشائعة | ROVY STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #fafafa; color: #222; line-height: 1.8; }
+        header { background: #fff; text-align: center; padding: 20px; border-bottom: 1px solid #eee; }
+        .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
+        .logo span { color: #b58a61; }
+        .container { max-width: 800px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #b58a61; margin-bottom: 30px; font-size: 32px; text-align: center; }
+        
+        .faq-item { margin-bottom: 15px; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }
+        .faq-question { background: #f9f9f9; padding: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-answer { padding: 15px; display: none; background: white; border-top: 1px solid #eee; color: #555; }
+        .faq-question i { transition: 0.3s; }
+        .faq-item.active .faq-answer { display: block; }
+        .faq-item.active .faq-question i { transform: rotate(180deg); }
+    </style>
+</head>
+<body>
+    <header><a href="index.html" class="logo">ROVY<span>.</span></a></header>
+    <div class="container">
+        <h1>الأسئلة الشائعة</h1>
+        
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">كم تستغرق مدة الشحن؟ <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">مدة الشحن تتراوح بين 2 إلى 5 أيام عمل داخل القاهرة والجيزة، ومن 3 إلى 7 أيام للمحافظات الأخرى.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">هل متاح الدفع عند الاستلام؟ <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">نعم، الدفع عند الاستلام متاح في جميع المحافظات، ويمكنك فحص المنتج قبل الدفع.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">كيف أعرف المقاس المناسب لي؟ <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">نوفر في صفحة كل منتج تفاصيل دقيقة، وإذا كنت غير متأكد يمكنك التواصل معنا عبر الواتساب وسنساعدك في اختيار المقاس المثالي.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">هل يمكنني تغيير أو إلغاء الطلب بعد تأكيده؟ <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">نعم، يمكنك تغيير أو إلغاء الطلب طالما لم يتم شحنه بعد. يرجى التواصل مع خدمة العملاء في أسرع وقت.</div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
