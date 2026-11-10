@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تتبع الطلب | ROVY STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #fafafa; color: #222; line-height: 1.8; }
+        header { background: #fff; text-align: center; padding: 20px; border-bottom: 1px solid #eee; }
+        .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
+        .logo span { color: #b58a61; }
+        
+        .container { max-width: 600px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #b58a61; margin-bottom: 20px; font-size: 28px; text-align: center; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        
+        .btn-track { width: 100%; padding: 15px; background: #171717; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-track:hover { background: #b58a61; }
+
+        /* نتيجة التتبع */
+        #resultBox { display: none; margin-top: 30px; padding: 20px; border-radius: 8px; border-right: 4px solid #b58a61; background: #f9f9f9; }
+        .order-status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 15px; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-shipped { background: #cce5ff; color: #004085; }
+        .status-delivered { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        
+        .error-msg { color: red; text-align: center; margin-top: 15px; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+    <header><a href="index.html" class="logo">ROVY<span>.</span></a></header>
+    
+    <div class="container">
+        <h1>تتبع طلبك</h1>
+        <p class="subtitle">أدخل رقم الطلب ورقم الموبايل اللي طلبت بيه عشان تعرف حالة طلبك.</p>
+        
+        <form id="trackForm">
+            <div class="form-group">
+                <label>رقم الطلب</label>
+                <input type="number" id="orderIdInput" placeholder="مثال: 15" required>
+            </div>
+            <div class="form-group">
+                <label>رقم الموبايل</label>
+                <input type="tel" id="phoneInput" placeholder="01xxxxxxxxx" required>
+            </div>
+            <button type="submit" class="btn-track" id="trackBtn">تتبع الطلب</button>
+        </form>
+
+        <p class="error-msg" id="errorMsg">لم يتم العثور على طلب بهذه البيانات. تأكد من رقم الطلب والموبايل.</p>
+
+        <div id="resultBox">
+            <h3 style="margin-bottom: 10px;">تفاصيل الطلب رقم #<span id="resOrderId"></span></h3>
+            <div id="resStatus" class="order-status-badge"></div>
+            <p><strong>التاريخ:</strong> <span id="resDate"></span></p>
+            <p><strong>الإجمالي:</strong> <span id="resTotal" style="color:#b58a61; font-weight:bold;"></span> جنيه</p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('trackForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('trackBtn');
+            btn.innerText = 'جاري البحث...';
+            btn.disabled = true;
+            
+            const orderId = document.getElementById('orderIdInput').value;
+            const phone = document.getElementById('phoneInput').value;
+
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .eq('customer_phone', phone)
+                .single();
+
+            const resultBox = document.getElementById('resultBox');
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (error || !data) {
+                resultBox.style.display = 'none';
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
+                resultBox.style.display = 'block';
+                
+                document.getElementById('resOrderId').innerText = data.id;
+                document.getElementById('resDate').innerText = new Date(data.created_at).toLocaleDateString('ar-EG');
+                document.getElementById('resTotal').innerText = data.total_price;
+                
+                const statusBadge = document.getElementById('resStatus');
+                let statusText = '';
+                let statusClass = '';
+                
+                if(data.status === 'pending') { statusText = 'قيد الانتظار'; statusClass = 'status-pending'; }
+                else if(data.status === 'shipped') { statusText = 'تم الشحن'; statusClass = 'status-shipped'; }
+                else if(data.status === 'delivered') { statusText = 'تم التوصيل'; statusClass = 'status-delivered'; }
+                else { statusText = 'ملغي'; statusClass = 'status-cancelled'; }
+
+                statusBadge.innerText = statusText;
+                statusBadge.className = 'order-status-badge ' + statusClass;
+            }
+
+            btn.innerText = 'تتبع الطلب';
+            btn.disabled = false;
+        });
+    </script>
+</body>
+</html>
