@@ -1,7 +1,185 @@
-        function checkout() {
-            if (cart.length === 0) {
-                alert("سلة المشتريات فارغة!");
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الطلب | ROVY STORE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #fafafa; color: #222; }
+        
+        header { background: #fff; text-align: center; padding: 20px; border-bottom: 1px solid #eee; }
+        .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; display: inline-block; }
+        .logo span { color: #b58a61; }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        @media(max-width: 768px) { .container { grid-template-columns: 1fr; } }
+
+        .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .card h2 { font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid #f1f1f1; padding-bottom: 15px; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 15px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; font-size: 15px; }
+        .form-group textarea { height: 100px; resize: vertical; }
+
+        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
+        .cart-item-info { display: flex; align-items: center; gap: 15px; }
+        .cart-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        .cart-item-title { font-weight: bold; font-size: 15px; }
+        .cart-item-qty { color: #888; font-size: 13px; }
+        
+        .total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 900; margin-top: 20px; color: #b58a61; }
+        
+        .btn-submit { width: 100%; padding: 15px; background: #171717; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 20px; }
+        .btn-submit:hover { background: #b58a61; }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+        .success-msg { display: none; text-align: center; padding: 50px 20px; }
+        .success-msg i { font-size: 60px; color: #25d366; margin-bottom: 20px; }
+        .success-msg h2 { color: #222; margin-bottom: 15px; }
+        .success-msg a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #b58a61; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="logo">ROVY<span>.</span></a>
+    </header>
+
+    <div class="container" id="checkoutSection">
+        <!-- بيانات العميل -->
+        <div class="card">
+            <h2>بيانات التوصيل</h2>
+            <form id="checkoutForm">
+                <div class="form-group">
+                    <label>الاسم بالكامل</label>
+                    <input type="text" id="cName" required placeholder="مثال: محمد أحمد">
+                </div>
+                <div class="form-group">
+                    <label>رقم الموبايل</label>
+                    <input type="tel" id="cPhone" required placeholder="01xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>العنوان بالتفصيل</label>
+                    <textarea id="cAddress" required placeholder="المحافظة، المدينة، الشارع، رقم العمارة..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit" id="submitBtn">تأكيد الطلب</button>
+            </form>
+        </div>
+
+        <!-- ملخص الطلب -->
+        <div class="card">
+            <h2>ملخص الطلب</h2>
+            <div id="checkoutItems">
+                <!-- المنتجات ستظهر هنا -->
+            </div>
+            <div class="total-row">
+                <span>الإجمالي:</span>
+                <span id="checkoutTotal">0 جنيه</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- رسالة النجاح -->
+    <div class="container" id="successSection" style="display:none;">
+        <div class="card success-msg" style="grid-column: 1 / -1;">
+            <i class="fas fa-check-circle"></i>
+            <h2>تم استلام طلبك بنجاح!</h2>
+            <p>شكراً لثقتك في ROVY STORE. سيتم التواصل معك قريباً لتأكيد الشحن.</p>
+            <a href="index.html">العودة للمتجر</a>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
+
+        // عرض ملخص الطلب
+        function renderCheckout() {
+            if(cart.length === 0) {
+                window.location.href = 'index.html'; // لو السلة فاضية يرجع للرئيسية
                 return;
             }
-            window.location.href = 'checkout.html';
+
+            const itemsContainer = document.getElementById('checkoutItems');
+            const totalContainer = document.getElementById('checkoutTotal');
+            let total = 0;
+            itemsContainer.innerHTML = '';
+
+            cart.forEach(item => {
+                total += (item.price * item.quantity);
+                itemsContainer.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <img src="${item.image_url}">
+                            <div>
+                                <div class="cart-item-title">${item.name}</div>
+                                <div class="cart-item-qty">الكمية: ${item.quantity}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:bold;">${item.price * item.quantity} ج</div>
+                    </div>
+                `;
+            });
+
+            totalContainer.innerText = total + " جنيه";
         }
+
+        // إرسال الطلب
+        document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = 'جاري تأكيد الطلب...';
+            btn.disabled = true;
+
+            const name = document.getElementById('cName').value;
+            const phone = document.getElementById('cPhone').value;
+            const address = document.getElementById('cAddress').value;
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            try {
+                // 1. إنشاء الطلب
+                const { data: orderData, error: orderError } = await supabaseClient
+                    .from('orders')
+                    .insert([{ customer_name: name, customer_phone: phone, customer_address: address, total_price: totalAmount }])
+                    .select();
+
+                if (orderError) throw orderError;
+                
+                const orderId = orderData[0].id;
+
+                // 2. إضافة تفاصيل الطلب
+                const orderItems = cart.map(item => ({
+                    order_id: orderId,
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+                const { error: itemsError } = await supabaseClient.from('order_items').insert(orderItems);
+                if (itemsError) throw itemsError;
+
+                // 3. النجاح
+                localStorage.removeItem('rovyCart');
+                document.getElementById('checkoutSection').style.display = 'none';
+                document.getElementById('successSection').style.display = 'block';
+
+            } catch (error) {
+                console.error("Checkout error:", error);
+                alert("حدث خطأ أثناء تسجيل الطلب. يرجى المحاولة مرة أخرى.");
+                btn.innerText = 'تأكيد الطلب';
+                btn.disabled = false;
+            }
+        });
+
+        renderCheckout();
+    </script>
+</body>
+</html>
