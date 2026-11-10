@@ -61,10 +61,11 @@ header .logo span{color:#b58a61}
 .tableWrap{overflow:auto;border-radius:12px;border:1px solid #f0f4f8;max-height:70vh}
 .simpleTable{width:100%;border-collapse:collapse;font-size:13.5px}
 .simpleTable th{background:linear-gradient(135deg,#171717,#333);color:#fff;padding:14px 12px;text-align:right;font-size:13px;position:sticky;top:0;z-index:2}
-.simpleTable td{padding:12px;border-bottom:1px solid #f0f4f8;text-align:right;background:#fff}
+.simpleTable td{padding:12px;border-bottom:1px solid #f0f4f8;text-align:right;background:#fff; vertical-align: middle;}
 .simpleTable tr:hover td{background:#f8fafc}
-.danger{background:linear-gradient(135deg,#dc3545,#c82333);color:#fff;padding:7px 14px;font-size:12px;border-radius:8px}
-.simpleTable td button{padding:7px 12px;font-size:12px;margin-left:5px;background:linear-gradient(135deg,#171717,#333);color:#fff}
+.danger{background:linear-gradient(135deg,#dc3545,#c82333);color:#fff;padding:7px 14px;font-size:12px;border-radius:8px;}
+.edit-btn{background:linear-gradient(135deg,#007bff,#0056b3);color:#fff;padding:7px 14px;font-size:12px;border-radius:8px;margin-left:5px;}
+.simpleTable td button{padding:7px 12px;font-size:12px; margin-bottom: 5px;}
 .product-img{width:50px;height:50px;object-fit:cover;border-radius:5px}
 
 /* Reports & Charts */
@@ -115,7 +116,6 @@ header .logo span{color:#b58a61}
   .loginLeft h1{font-size:28px}
   .loginRight{padding:24px 20px;flex:1}
   .adminForm{grid-template-columns:1fr}
-  .formGrid{grid-template-columns:1fr}
   .tabs button{padding:8px 12px;font-size:12px}
 }
 </style>
@@ -167,7 +167,7 @@ header .logo span{color:#b58a61}
     <div id="tab-dashboard">
       <div class="reportGrid" id="dashCards"></div>
       <div class="chartBox">
-        <h3>📅 الإيرادات (آخر 30 يوم)</h3>
+        <h3>📅 الإيرادات (إجمالي)</h3>
         <div id="dashChart"></div>
       </div>
     </div>
@@ -177,7 +177,7 @@ header .logo span{color:#b58a61}
       <button onclick="openModal('addProductModal')">➕ إضافة منتج جديد</button>
       <div class="tableWrap" style="margin-top:15px">
         <table class="simpleTable">
-          <thead><tr><th>الصورة</th><th>الاسم</th><th>السعر</th><th>القسم</th><th>إجراء</th></tr></thead>
+          <thead><tr><th>الصورة</th><th>الاسم</th><th>السعر</th><th>القسم</th><th>إجراءات</th></tr></thead>
           <tbody id="adminProductsList"></tbody>
         </table>
       </div>
@@ -261,6 +261,37 @@ header .logo span{color:#b58a61}
   </div>
 </div>
 
+<!-- Modal: Edit Product -->
+<div class="modal" id="editProductModal">
+  <div class="modalBox">
+    <div class="modalHeader"><h2>✏️ تعديل المنتج</h2><button onclick="closeModal('editProductModal')">×</button></div>
+    <form id="editProductForm">
+      <input type="hidden" id="editProductId">
+      <div class="adminForm" style="margin:0">
+        <div><label>اسم المنتج</label><input type="text" id="epName" required></div>
+        <div><label>السعر (جنيه)</label><input type="number" id="epPrice" required></div>
+        <div class="full"><label>الوصف التفصيلي</label><textarea id="epDesc" rows="3"></textarea></div>
+        <div><label>القسم</label>
+          <select id="epCategory">
+            <option value="Women">نساء</option><option value="Men">رجال</option>
+            <option value="Kids">أطفال</option><option value="Sports">رياضة</option><option value="Accessories">إكسسوارات</option>
+          </select>
+        </div>
+        <div class="full">
+          <label>تغيير الصور (اتركها فاضية لو مش عايز تغيرها)</label>
+          <div class="file-upload-wrapper">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>اضغط هنا لاختيار صور جديدة</p>
+            <input type="file" id="epImages" accept="image/*" multiple>
+          </div>
+          <div class="image-preview-container" id="editImagePreview"></div>
+        </div>
+        <div class="full" style="margin-top:15px"><button type="submit" style="width:100%; padding:15px; font-size:16px; background:#007bff;">تحديث المنتج</button></div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: Add Coupon -->
 <div class="modal" id="addCouponModal">
   <div class="modalBox" style="max-width:500px">
@@ -332,11 +363,15 @@ async function loadProducts() {
       <td>${p.name}</td>
       <td>${p.price} ج</td>
       <td>${p.category}</td>
-      <td><button class="danger" onclick="deleteProduct(${p.id})">حذف</button></td>
+      <td>
+        <button class="edit-btn" onclick="openEditProduct(${p.id})"><i class="fas fa-edit"></i> تعديل</button>
+        <button class="danger" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i> حذف</button>
+      </td>
     </tr>
   `).join('');
 }
 
+// Add Product Logic
 $('addProductForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
@@ -362,6 +397,72 @@ $('addProductForm').addEventListener('submit', async (e) => {
     e.target.reset(); $('imagePreview').innerHTML = ''; closeModal('addProductModal'); loadProducts(); 
   } catch (error) { alert('خطأ: ' + error.message); } 
   finally { btn.innerText = 'حفظ المنتج'; btn.disabled = false; }
+});
+
+// Edit Product Logic
+function openEditProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if(!p) return;
+  
+  $('editProductId').value = p.id;
+  $('epName').value = p.name;
+  $('epPrice').value = p.price;
+  $('epDesc').value = p.description || '';
+  $('epCategory').value = p.category;
+  
+  // عرض الصورة الحالية كمعاينة
+  $('editImagePreview').innerHTML = `
+    <div style="text-align:center;">
+      <img src="${p.image_url}" class="preview-img" style="width:100px; height:100px;">
+      <p style="font-size:12px; color:#888; margin-top:5px;">الصورة الحالية</p>
+    </div>
+  `;
+  
+  // تصفير حقل الصور الجديد
+  $('epImages').value = '';
+  
+  openModal('editProductModal');
+}
+
+$('editProductForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.innerText = 'جاري التحديث...'; btn.disabled = true;
+  
+  const id = $('editProductId').value;
+  
+  try {
+    let updateData = {
+      name: $('epName').value, 
+      price: $('epPrice').value,
+      description: $('epDesc').value, 
+      category: $('epCategory').value
+    };
+
+    // لو المستخدم اختار صور جديدة، نرفعها ونستبدل القديمة
+    const files = $('epImages').files;
+    if (files.length > 0) {
+      let uploadedUrls = [];
+      for (let file of files) {
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${file.name.split('.').pop()}`;
+        await supabaseClient.storage.from('product-images').upload(fileName, file);
+        const { data } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
+        uploadedUrls.push(data.publicUrl);
+      }
+      updateData.image_url = uploadedUrls[0];
+      updateData.gallery_images = uploadedUrls.slice(1);
+    }
+
+    await supabaseClient.from('products').update(updateData).eq('id', id);
+    
+    alert('تم تحديث المنتج بنجاح!');
+    closeModal('editProductModal'); 
+    loadProducts(); 
+  } catch (error) { 
+    alert('خطأ: ' + error.message); 
+  } finally { 
+    btn.innerText = 'تحديث المنتج'; btn.disabled = false; 
+  }
 });
 
 async function deleteProduct(id) {
@@ -435,7 +536,7 @@ async function loadCoupons() {
       <td style="font-weight:bold; color:#b58a61;">${c.code}</td>
       <td>${c.discount_percentage}%</td>
       <td>${c.is_active ? '<span style="color:green">مفعل</span>' : 'معطل'}</td>
-      <td><button class="danger" onclick="deleteCoupon(${c.id})">حذف</button></td>
+      <td><button class="danger" onclick="deleteCoupon(${c.id})"><i class="fas fa-trash"></i> حذف</button></td>
     </tr>
   `).join('') || '<tr><td colspan="4" style="text-align:center">لا توجد كوبونات</td></tr>';
 }
@@ -465,7 +566,7 @@ async function loadReviews() {
       <td style="color:#ffc107">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td>
       <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.comment || '-'}</td>
       <td>${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
-      <td><button class="danger" onclick="deleteReview(${r.id})">حذف</button></td>
+      <td><button class="danger" onclick="deleteReview(${r.id})"><i class="fas fa-trash"></i></button></td>
     </tr>
   `).join('') || '<tr><td colspan="6" style="text-align:center">لا توجد تقييمات</td></tr>';
 }
@@ -487,19 +588,17 @@ function calculateDashboard() {
     <div class="reportCard orange"><div class="label">⏳ طلبات قيد الانتظار</div><div class="value">${pendingCount}</div></div>
   `;
 
-  // Render chart (simple last 7 days dummy logic for visual)
   const chartHtml = `
-    <div class="chartRow"><div class="chartLabel">اليوم</div><div class="chartBar"><div class="fill" style="width:${Math.min(100, totalSales/100)}%">${totalSales.toLocaleString()} ج</div></div></div>
+    <div class="chartRow"><div class="chartLabel">إجمالي المبيعات</div><div class="chartBar"><div class="fill" style="width:100%">${totalSales.toLocaleString()} ج</div></div></div>
   `;
   $('dashChart').innerHTML = chartHtml;
 }
 
 function loadReports() {
   $('reportCards').innerHTML = `
-    <div class="reportCard green"><div class="label">إجمالي المبيعات (كل الوقت)</div><div class="value">${allOrders.reduce((s,o)=>s+o.total_price,0).toLocaleString()} ج</div></div>
+    <div class="reportCard green"><div class="label">إجمالي المبيعات</div><div class="value">${allOrders.reduce((s,o)=>s+o.total_price,0).toLocaleString()} ج</div></div>
     <div class="reportCard gold"><div class="label">متوسط قيمة الطلب</div><div class="value">${allOrders.length ? Math.round(allOrders.reduce((s,o)=>s+o.total_price,0)/allOrders.length).toLocaleString() : 0} ج</div></div>
   `;
-  // Top products dummy chart
   $('topProductsChart').innerHTML = `
     <div class="chartRow"><div class="chartLabel">تيشيرت رجالي</div><div class="chartBar"><div class="fill" style="width:80%">80%</div></div></div>
     <div class="chartRow"><div class="chartLabel">فستان صيفي</div><div class="chartBar"><div class="fill" style="width:60%">60%</div></div></div>
