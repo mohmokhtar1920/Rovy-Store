@@ -108,7 +108,6 @@
         </div>
     </div>
 
-    <!-- شاشة النجاح -->
     <div id="successSection">
         <div class="success-card">
             <i class="fas fa-check-circle"></i>
@@ -139,8 +138,10 @@
                 <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
+                    <li style="margin-bottom: 10px;"><a href="contact.html" style="color: #aaa; text-decoration: none; font-size: 14px;">اتصل بنا</a></li>
                     <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
                     <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
+                    <li style="margin-bottom: 10px;"><a href="privacy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الخصوصية</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
             </div>
@@ -264,7 +265,6 @@
 
                 if (rpcError) throw rpcError;
 
-                // 🌟 هنا بنجيب رقم الطلب من رد الداتابيز ونعرضه
                 const newOrderId = rpcData.order_id;
                 document.getElementById('successOrderId').innerText = `#${newOrderId}`;
 
