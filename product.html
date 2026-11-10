@@ -44,9 +44,29 @@
         .whatsapp-float { position: fixed; bottom: 25px; left: 25px; background-color: #25d366; color: white; border-radius: 50px; text-align: center; font-size: 35px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
         .whatsapp-float:hover { background-color: #128c7e; transform: scale(1.1); }
 
-        /* قسم منتجات مشابهة */
-        .related-section { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
-        .related-title { font-size: 26px; font-weight: 900; margin-bottom: 30px; text-align: center; }
+        /* قسم التقييمات */
+        .reviews-section { max-width: 1100px; margin: 60px auto; padding: 0 20px; }
+        .reviews-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .reviews-title { font-size: 24px; font-weight: 900; }
+        .avg-rating { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: bold; }
+        .stars { color: #ffc107; }
+        
+        .review-card { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
+        .review-top { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .reviewer-name { font-weight: bold; }
+        .review-date { color: #888; font-size: 13px; }
+        .review-comment { color: #444; }
+
+        /* فورم إضافة تقييم */
+        .add-review-form { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-top: 30px; }
+        .add-review-form h3 { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; }
+        .rating-stars { display: flex; gap: 5px; font-size: 24px; color: #ddd; cursor: pointer; margin-bottom: 10px; }
+        .rating-stars .star.selected { color: #ffc107; }
+        .btn-review { background: #171717; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; }
+
         .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         .product-card { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; text-align: center; transition: 0.3s; }
         .product-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.08); transform: translateY(-5px); }
@@ -64,10 +84,50 @@
     </header>
 
     <div class="product-container" id="productContainer"><p>جاري التحميل...</p></div>
-    
-    <!-- قسم منتجات مشابهة -->
-    <div class="related-section" id="relatedSection" style="display:none;">
-        <h2 class="related-title">قد يعجبك أيضاً</h2>
+
+    <!-- قسم التقييمات -->
+    <div class="reviews-section" id="reviewsSection" style="display:none;">
+        <div class="reviews-header">
+            <h2 class="reviews-title">التقييمات والمراجعات</h2>
+            <div class="avg-rating">
+                <span id="avgRatingText">0</span> من 5
+                <span class="stars" id="avgStars"></span>
+                <span style="font-size:14px; color:#888; font-weight:normal;" id="reviewCount">(0 مراجعة)</span>
+            </div>
+        </div>
+
+        <div id="reviewsList"></div>
+
+        <!-- فورم إضافة تقييم -->
+        <div class="add-review-form">
+            <h3>أضف تقييمك</h3>
+            <form id="addReviewForm">
+                <div class="form-group">
+                    <label>تقييمك بالنجوم</label>
+                    <div class="rating-stars" id="starRatingInput">
+                        <i class="far fa-star" data-val="1"></i>
+                        <i class="far fa-star" data-val="2"></i>
+                        <i class="far fa-star" data-val="3"></i>
+                        <i class="far fa-star" data-val="4"></i>
+                        <i class="far fa-star" data-val="5"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>اسمك</label>
+                    <input type="text" id="reviewerName" required placeholder="اكتب اسمك هنا">
+                </div>
+                <div class="form-group">
+                    <label>رأيك في المنتج</label>
+                    <textarea id="reviewComment" rows="3" placeholder="إيه رأيك في الخامة والمقاس؟"></textarea>
+                </div>
+                <button type="submit" class="btn-review">إرسال التقييم</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- منتجات مشابهة -->
+    <div class="reviews-section" id="relatedSection" style="display:none;">
+        <div class="reviews-header"><h2 class="reviews-title">قد يعجبك أيضاً</h2></div>
         <div class="products-grid" id="relatedGrid"></div>
     </div>
 
@@ -81,7 +141,7 @@
                 <ul style="list-style: none; padding: 0;">
                     <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
                     <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
-                    <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
+                    <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال</a></li>
                     <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
                 </ul>
             </div>
@@ -101,6 +161,7 @@
         let variants = [];
         let selectedSize = null, selectedColor = null, selectedVariantId = null;
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
+        let selectedRating = 0;
         const productId = new URLSearchParams(window.location.search).get('id');
 
         async function loadProduct() {
@@ -113,16 +174,12 @@
             variants = vars || [];
 
             renderProduct();
+            loadReviews();
             loadRelatedProducts();
         }
 
         async function loadRelatedProducts() {
-            const { data } = await supabaseClient.from('products')
-                .select('*')
-                .eq('category', currentProduct.category)
-                .neq('id', currentProduct.id)
-                .limit(4);
-
+            const { data } = await supabaseClient.from('products').select('*').eq('category', currentProduct.category).neq('id', currentProduct.id).limit(4);
             if(data && data.length > 0) {
                 document.getElementById('relatedSection').style.display = 'block';
                 const grid = document.getElementById('relatedGrid');
@@ -132,13 +189,10 @@
                         <div class="product-card">
                             <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}"></a>
                             <div class="product-info">
-                                <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
-                                    <div class="product-title-small">${p.name}</div>
-                                </a>
+                                <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title-small">${p.name}</div></a>
                                 <div class="product-price-small">${p.price} جنيه</div>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
             }
         }
@@ -180,6 +234,7 @@
         }
 
         function changeImage(thumb, imgUrl) { document.getElementById('mainImage').src = imgUrl; document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active')); thumb.classList.add('active'); }
+        
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
             if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && v.stock > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}</button>`; });
@@ -187,12 +242,14 @@
         }
         function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
         function selectColor(color, event) { selectedColor = color; document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
+        
         function checkSelection() {
             const variant = variants.find(v => (v.size === selectedSize || (!v.size && !selectedSize)) && (v.color === selectedColor || (!v.color && !selectedColor)));
             const btn = document.getElementById('addToCartBtn');
             if (variant && variant.stock > 0) { selectedVariantId = variant.id; btn.disabled = false; btn.innerHTML = `<i class="fas fa-shopping-bag"></i> أضف إلى السلة`; } 
             else { selectedVariantId = null; btn.disabled = true; btn.innerHTML = `<i class="fas fa-times"></i> غير متوفر`; }
         }
+        
         function addToCart() {
             const uniqueId = `${currentProduct.id}-${selectedVariantId || 'no-variant'}`;
             const existingItem = cart.find(item => item.cartItemId === uniqueId);
@@ -201,6 +258,100 @@
             localStorage.setItem('rovyCart', JSON.stringify(cart));
             const toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
         }
+
+        // --- التقييمات ---
+        async function loadReviews() {
+            const { data } = await supabaseClient.from('reviews').select('*').eq('product_id', productId).order('created_at', { ascending: false });
+            const reviewsSection = document.getElementById('reviewsSection');
+            const reviewsList = document.getElementById('reviewsList');
+            const avgRatingText = document.getElementById('avgRatingText');
+            const avgStars = document.getElementById('avgStars');
+            const reviewCount = document.getElementById('reviewCount');
+
+            reviewsSection.style.display = 'block';
+
+            if (data && data.length > 0) {
+                let totalRating = 0;
+                reviewsList.innerHTML = '';
+                
+                data.forEach(review => {
+                    totalRating += review.rating;
+                    let starsHtml = '';
+                    for(let i=1; i<=5; i++) {
+                        starsHtml += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star" style="color:${i <= review.rating ? '#ffc107' : '#ddd'}; font-size:12px;"></i>`;
+                    }
+
+                    reviewsList.innerHTML += `
+                        <div class="review-card">
+                            <div class="review-top">
+                                <span class="reviewer-name">${review.customer_name}</span>
+                                <span class="review-date">${new Date(review.created_at).toLocaleDateString('ar-EG')}</span>
+                            </div>
+                            <div style="margin-bottom: 8px;">${starsHtml}</div>
+                            <p class="review-comment">${review.comment || 'لا يوجد تعليق'}</p>
+                        </div>
+                    `;
+                });
+
+                const avg = (totalRating / data.length).toFixed(1);
+                avgRatingText.innerText = avg;
+                reviewCount.innerText = `(${data.length} مراجعة)`;
+                
+                let avgStarsHtml = '';
+                for(let i=1; i<=5; i++) {
+                    avgStarsHtml += `<i class="${i <= Math.round(avg) ? 'fas' : 'far'} fa-star"></i>`;
+                }
+                avgStars.innerHTML = avgStarsHtml;
+
+            } else {
+                avgRatingText.innerText = "0";
+                avgStars.innerHTML = `<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>`;
+                reviewCount.innerText = `(0 مراجعة)`;
+                reviewsList.innerHTML = '<p style="color:#888;">لا توجد مراجعات لهذا المنتج حتى الآن. كن أول من يقيّمه!</p>';
+            }
+        }
+
+        // تحديد النجوم في الفورم
+        document.querySelectorAll('#starRatingInput i').forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.getAttribute('data-val'));
+                document.querySelectorAll('#starRatingInput i').forEach(s => {
+                    if (parseInt(s.getAttribute('data-val')) <= selectedRating) {
+                        s.classList.remove('far'); s.classList.add('fas', 'selected');
+                    } else {
+                        s.classList.remove('fas', 'selected'); s.classList.add('far');
+                    }
+                });
+            });
+        });
+
+        // إرسال التقييم
+        document.getElementById('addReviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (selectedRating === 0) { alert("يرجى اختيار عدد النجوم أولاً"); return; }
+
+            const name = document.getElementById('reviewerName').value;
+            const comment = document.getElementById('reviewComment').value;
+
+            const { error } = await supabaseClient.from('reviews').insert([{
+                product_id: productId,
+                customer_name: name,
+                rating: selectedRating,
+                comment: comment
+            }]);
+
+            if(error) {
+                alert('حدث خطأ أثناء إرسال التقييم.');
+            } else {
+                alert('شكراً لك! تم إضافة تقييمك بنجاح.');
+                e.target.reset();
+                selectedRating = 0;
+                document.querySelectorAll('#starRatingInput i').forEach(s => {
+                    s.classList.remove('fas', 'selected'); s.classList.add('far');
+                });
+                loadReviews();
+            }
+        });
 
         loadProduct();
     </script>
