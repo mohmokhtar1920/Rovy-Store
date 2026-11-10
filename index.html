@@ -22,7 +22,7 @@
         .search-box i { color: #888; }
         
         .header-icons { display: flex; align-items: center; gap: 20px; }
-        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; position: relative; color: #222; }
+        .icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; position: relative; color: #222; text-decoration: none; }
         .cart-count { position: absolute; top: -8px; right: -10px; background: #b58a61; color: #fff; font-size: 10px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .lang-btn { padding: 8px 15px; background: transparent; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
@@ -79,6 +79,7 @@
             .hero { padding: 30px; }
             .cart-sidebar { width: 100%; right: -100%; }
             .categories { grid-template-columns: repeat(2, 1fr); }
+            .header-icons { gap: 10px; }
         }
     </style>
 </head>
@@ -91,7 +92,13 @@
     <header>
         <div class="logo" onclick="window.location.reload()">ROVY<span>.</span></div>
         <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()"></div>
+        
         <div class="header-icons">
+            <!-- زرار تتبع الطلب الجديد -->
+            <a href="track.html" class="icon-btn" title="تتبع طلبك" style="margin-right: 10px;">
+                <i class="fas fa-map-location-dot"></i>
+            </a>
+            
             <button class="lang-btn" onclick="changeLanguage()" id="langBtn">English</button>
             <button class="icon-btn" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
         </div>
@@ -187,14 +194,12 @@
             if (currentCategory === 'All') {
                 document.getElementById('categories').style.display = 'block';
                 
-                // قسم وصل حديثاً (أول 4 منتجات)
                 const newGrid = document.getElementById('newProductsGrid');
                 newGrid.innerHTML = '';
                 allProducts.slice(0, 4).forEach(p => {
                     newGrid.innerHTML += createProductCard(p);
                 });
 
-                // قسم الأكثر مبيعاً (المنتجات من 4 لـ 8)
                 const bestGrid = document.getElementById('bestProductsGrid');
                 bestGrid.innerHTML = '';
                 const bestProducts = allProducts.slice(4, 8);
@@ -206,7 +211,6 @@
                 }
 
             } else {
-                // لو العميل اختار قسم معين
                 document.getElementById('categories').style.display = 'none';
                 document.getElementById('bestSellers').style.display = 'none';
                 document.getElementById('newTitle').innerText = english ? `Category: ${currentCategory}` : `قسم: ${currentCategory}`;
