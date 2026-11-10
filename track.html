@@ -14,7 +14,7 @@
         .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
         .logo span { color: #b58a61; }
         
-        .container { max-width: 600px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .container { max-width: 700px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h1 { color: #b58a61; margin-bottom: 20px; font-size: 28px; text-align: center; }
         p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
         
@@ -25,12 +25,28 @@
         .btn-track { width: 100%; padding: 15px; background: #171717; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-track:hover { background: #b58a61; }
 
-        #resultBox { display: none; margin-top: 30px; padding: 20px; border-radius: 8px; border-right: 4px solid #b58a61; background: #f9f9f9; }
-        .order-status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; margin-bottom: 15px; }
+        /* صندوق النتيجة */
+        #resultBox { display: none; margin-top: 30px; border-radius: 8px; border: 1px solid #eee; background: #fdfdfd; overflow: hidden; }
+        .result-header { background: #f9f9f9; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        .order-status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
         .status-pending { background: #fff3cd; color: #856404; }
         .status-shipped { background: #cce5ff; color: #004085; }
         .status-delivered { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
+
+        .order-info { padding: 20px; }
+        .order-info p { margin-bottom: 10px; color: #555; }
+        
+        .items-section { padding: 0 20px 20px; }
+        .items-title { font-weight: bold; margin-bottom: 15px; border-bottom: 2px dashed #eee; padding-bottom: 10px; display: block; }
+        
+        .track-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
+        .track-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
+        .track-item-info { flex: 1; }
+        .track-item-info h4 { font-size: 15px; margin-bottom: 5px; color: #333; }
+        .track-item-info p { font-size: 13px; color: #777; margin: 0; }
+        .track-item-price { font-weight: bold; color: #b58a61; }
         
         .error-msg { color: red; text-align: center; margin-top: 15px; font-weight: bold; display: none; }
     </style>
@@ -40,7 +56,7 @@
     
     <div class="container">
         <h1>تتبع طلبك</h1>
-        <p class="subtitle">أدخل رقم الطلب ورقم الموبايل اللي طلبت بيه عشان تعرف حالة طلبك.</p>
+        <p class="subtitle">أدخل رقم الطلب ورقم الموبايل اللي طلبت بيه عشان تعرف حالة طلبك وتفاصيله.</p>
         
         <form id="trackForm">
             <div class="form-group">
@@ -56,11 +72,22 @@
 
         <p class="error-msg" id="errorMsg">لم يتم العثور على طلب بهذه البيانات. تأكد من رقم الطلب والموبايل.</p>
 
+        <!-- نتيجة التتبع -->
         <div id="resultBox">
-            <h3 style="margin-bottom: 10px;">تفاصيل الطلب رقم #<span id="resOrderId"></span></h3>
-            <div id="resStatus" class="order-status-badge"></div>
-            <p><strong>التاريخ:</strong> <span id="resDate"></span></p>
-            <p><strong>الإجمالي:</strong> <span id="resTotal" style="color:#b58a61; font-weight:bold;"></span> جنيه</p>
+            <div class="result-header">
+                <h3>طلب رقم #<span id="resOrderId"></span></h3>
+                <div id="resStatus" class="order-status-badge"></div>
+            </div>
+            
+            <div class="order-info">
+                <p><strong>تاريخ الطلب:</strong> <span id="resDate"></span></p>
+                <p><strong>الإجمالي:</strong> <span id="resTotal" style="color:#b58a61; font-weight:bold; font-size:18px;"></span> جنيه</p>
+            </div>
+
+            <div class="items-section">
+                <span class="items-title">المنتجات المطلوبة:</span>
+                <div id="resItemsList"></div>
+            </div>
         </div>
     </div>
 
@@ -78,9 +105,19 @@
             const orderId = document.getElementById('orderIdInput').value;
             const phone = document.getElementById('phoneInput').value;
 
+            // جلب الطلب مع تفاصيل المنتجات المرتبطة بيه
             const { data, error } = await supabaseClient
                 .from('orders')
-                .select('*')
+                .select(`
+                    *,
+                    order_items (
+                        quantity,
+                        price,
+                        size,
+                        color,
+                        products (name, image_url)
+                    )
+                `)
                 .eq('id', orderId)
                 .eq('customer_phone', phone)
                 .single();
@@ -95,21 +132,44 @@
                 errorMsg.style.display = 'none';
                 resultBox.style.display = 'block';
                 
+                // بيانات الطلب الأساسية
                 document.getElementById('resOrderId').innerText = data.id;
                 document.getElementById('resDate').innerText = new Date(data.created_at).toLocaleDateString('ar-EG');
                 document.getElementById('resTotal').innerText = data.total_price;
                 
+                // حالة الطلب
                 const statusBadge = document.getElementById('resStatus');
-                let statusText = '';
-                let statusClass = '';
-                
+                let statusText = '', statusClass = '';
                 if(data.status === 'pending') { statusText = 'قيد الانتظار'; statusClass = 'status-pending'; }
                 else if(data.status === 'shipped') { statusText = 'تم الشحن'; statusClass = 'status-shipped'; }
                 else if(data.status === 'delivered') { statusText = 'تم التوصيل'; statusClass = 'status-delivered'; }
                 else { statusText = 'ملغي'; statusClass = 'status-cancelled'; }
-
                 statusBadge.innerText = statusText;
                 statusBadge.className = 'order-status-badge ' + statusClass;
+
+                // عرض المنتجات داخل الطلب
+                const itemsList = document.getElementById('resItemsList');
+                itemsList.innerHTML = '';
+                if(data.order_items && data.order_items.length > 0) {
+                    data.order_items.forEach(item => {
+                        let variant = '';
+                        if(item.size) variant += ` | مقاس: ${item.size}`;
+                        if(item.color) variant += ` | لون: ${item.color}`;
+                        
+                        itemsList.innerHTML += `
+                            <div class="track-item">
+                                <img src="${item.products?.image_url || 'https://via.placeholder.com/60'}" alt="صورة المنتج">
+                                <div class="track-item-info">
+                                    <h4>${item.products?.name || 'منتج غير معروف'}</h4>
+                                    <p>الكمية: ${item.quantity} ${variant}</p>
+                                </div>
+                                <div class="track-item-price">${item.price * item.quantity} ج</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    itemsList.innerHTML = '<p style="color:#888;">لا توجد تفاصيل للمنتجات.</p>';
+                }
             }
 
             btn.innerText = 'تتبع الطلب';
