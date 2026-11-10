@@ -6,6 +6,9 @@
     <title>ROVY STORE | روفي ستور</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: #fafafa; color: #222; transition: 0.3s; }
@@ -137,7 +140,8 @@
     <section id="products">
         <h2 class="section-title" id="prodTitle">منتجات مميزة</h2>
         <div class="products-grid" id="productsGrid">
-            <!-- سيتم إضافة المنتجات هنا ديناميكياً بواسطة JavaScript -->
+            <!-- سيتم جلب المنتجات من Supabase هنا -->
+            <p style="text-align:center; width:100%;">جاري تحميل المنتجات...</p>
         </div>
     </section>
 
@@ -168,28 +172,47 @@
 
     <!-- JavaScript -->
     <script>
-        // قاعدة بيانات وهمية للمنتجات (هنربطها بـ Supabase بعدين)
-        const products = [
-            { id: 1, nameAr: "تيشيرت رجالي أساسي", nameEn: "Men's Basic T-Shirt", price: 450, img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500" },
-            { id: 2, nameAr: "فستان حريمي صيفي", nameEn: "Women's Summer Dress", price: 780, img: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500" },
-            { id: 3, nameAr: "طقم ملابس أطفال", nameEn: "Kids Clothing Set", price: 520, img: "https://images.unsplash.com/photo-1519238263530-99676cd6a3a7?w=500" },
-            { id: 4, nameAr: "إكسسوارات (نظارة)", nameEn: "Accessories (Sunglasses)", price: 320, img: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500" },
-            { id: 5, nameAr: "حذاء رياضي", nameEn: "Sports Shoes", price: 1200, img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500" },
-            { id: 6, nameAr: "جاكيت شتوي", nameEn: "Winter Jacket", price: 1500, img: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500" }
-        ];
+        // إعدادات Supabase (جاهزة ومظبوطة)
+        const SUPABASE_URL = 'https://bkjwfmjmxmgxagxwrnsh.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
 
+        // تهيئة Supabase
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let products = [];
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
         let english = false;
+
+        // جلب المنتجات من الداتابيز
+        async function fetchProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '<p style="text-align:center; width:100%;">جاري تحميل المنتجات...</p>';
+            
+            const { data, error } = await supabaseClient.from('products').select('*');
+            
+            if (error) {
+                console.error('Error fetching products:', error);
+                grid.innerHTML = '<p style="text-align:center; width:100%; color:red;">حدث خطأ في تحميل المنتجات</p>';
+                return;
+            }
+
+            products = data;
+            renderProducts();
+        }
 
         // عرض المنتجات
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
+            if(products.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات حالياً</p>';
+                return;
+            }
             products.forEach(p => {
-                const name = english ? p.nameEn : p.nameAr;
+                const name = p.name;
                 grid.innerHTML += `
                     <div class="product-card">
-                        <img src="${p.img}" alt="${name}">
+                        <img src="${p.image_url}" alt="${name}">
                         <div class="product-info">
                             <div class="product-title">${name}</div>
                             <div class="product-price">${p.price} جنيه</div>
@@ -200,7 +223,7 @@
             });
         }
 
-        // إضافة للسلة
+        // السلة
         function addToCart(id) {
             const product = products.find(p => p.id === id);
             const existingItem = cart.find(item => item.id === id);
@@ -212,12 +235,10 @@
             }
             
             updateCart();
-            // تأثير بصري بسيط
             document.getElementById('cartCount').style.transform = 'scale(1.5)';
             setTimeout(() => document.getElementById('cartCount').style.transform = 'scale(1)', 200);
         }
 
-        // تحديث السلة
         function updateCart() {
             localStorage.setItem('rovyCart', JSON.stringify(cart));
             const cartItemsContainer = document.getElementById('cartItems');
@@ -231,13 +252,12 @@
             cart.forEach(item => {
                 totalCount += item.quantity;
                 totalAmount += (item.price * item.quantity);
-                const name = english ? item.nameEn : item.nameAr;
                 
                 cartItemsContainer.innerHTML += `
                     <div class="cart-item">
-                        <img src="${item.img}">
+                        <img src="${item.image_url}">
                         <div class="cart-item-info">
-                            <h4>${name}</h4>
+                            <h4>${item.name}</h4>
                             <p>${item.price} × ${item.quantity} = ${item.price * item.quantity} جنيه</p>
                         </div>
                         <button class="remove-item" onclick="removeFromCart(${item.id})"><i class="fas fa-trash"></i></button>
@@ -253,29 +273,77 @@
             }
         }
 
-        // إزالة من السلة
         function removeFromCart(id) {
             cart = cart.filter(item => item.id !== id);
             updateCart();
         }
 
-        // فتح وغلق السلة
         function toggleCart() {
             document.getElementById('cartSidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
         }
 
         // إتمام الطلب
-        function checkout() {
+        async function checkout() {
             if (cart.length === 0) {
                 alert(english ? "Your cart is empty!" : "سلة المشتريات فارغة!");
                 return;
             }
-            // هنا هنضيف كود إرسال الطلب لقاعدة البيانات بعدين
-            alert(english ? "Order placed successfully! We will contact you soon." : "تم تسجيل طلبك بنجاح! هنcontactك قريب لتأكيد الشحن.");
-            cart = [];
-            updateCart();
-            toggleCart();
+
+            const name = prompt(english ? "Enter your full name:" : "أدخل اسمك بالكامل:");
+            if(!name) return;
+            
+            const phone = prompt(english ? "Enter your phone number:" : "أدخل رقم هاتفك:");
+            if(!phone) return;
+            
+            const address = prompt(english ? "Enter your address:" : "أدخل عنوانك بالتفصيل:");
+            if(!address) return;
+
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            document.getElementById('checkoutBtn').innerText = "جاري تسجيل الطلب...";
+            document.getElementById('checkoutBtn').disabled = true;
+
+            try {
+                const { data: orderData, error: orderError } = await supabaseClient
+                    .from('orders')
+                    .insert([{ 
+                        customer_name: name, 
+                        customer_phone: phone, 
+                        customer_address: address, 
+                        total_price: totalAmount 
+                    }])
+                    .select();
+
+                if (orderError) throw orderError;
+                
+                const orderId = orderData[0].id;
+
+                const orderItems = cart.map(item => ({
+                    order_id: orderId,
+                    product_id: item.id,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+
+                const { error: itemsError } = await supabaseClient
+                    .from('order_items')
+                    .insert(orderItems);
+
+                if (itemsError) throw itemsError;
+
+                alert(english ? "Order placed successfully!" : "تم تسجيل طلبك بنجاح! هنcontactك قريب لتأكيد الشحن.");
+                cart = [];
+                updateCart();
+                toggleCart();
+
+            } catch (error) {
+                console.error("Checkout error:", error);
+                alert("حدث خطأ أثناء تسجيل الطلب. يرجى المحاولة مرة أخرى.");
+            } finally {
+                document.getElementById('checkoutBtn').innerText = english ? "Checkout" : "إتمام الطلب";
+                document.getElementById('checkoutBtn').disabled = false;
+            }
         }
 
         // البحث
@@ -293,7 +361,7 @@
             });
         }
 
-        // تغيير اللغة (مبدئي)
+        // تغيير اللغة
         function changeLanguage() {
             english = !english;
             document.documentElement.lang = english ? "en" : "ar";
@@ -322,7 +390,7 @@
         }
 
         // تشغيل عند فتح الصفحة
-        renderProducts();
+        fetchProducts();
         updateCart();
     </script>
 </body>
