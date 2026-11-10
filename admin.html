@@ -9,141 +9,120 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: #f4f6f9; color: #333; }
-        
         .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: #171717; display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .login-box { background: white; padding: 40px; border-radius: 10px; text-align: center; width: 90%; max-width: 400px; }
-        .login-box h2 { margin-bottom: 20px; }
-        .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; text-align: center; font-size: 18px; letter-spacing: 2px; }
-        .login-box button { width: 100%; padding: 12px; background: #b58a61; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
-
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; text-align: center; font-size: 18px; }
+        .login-box button { width: 100%; padding: 12px; background: #b58a61; color: white; border: none; border-radius: 5px; cursor: pointer; }
         #adminPanel { display: none; }
         header { background: #171717; color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 24px; font-weight: 900; }
         .logo span { color: #b58a61; }
         .container { padding: 30px 5%; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; }
-        @media(max-width: 768px) { .container { grid-template-columns: 1fr; } }
-        
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .card h2 { font-size: 20px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; }
-        .btn { background: #b58a61; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        
+        .btn { background: #b58a61; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 14px; }
-        th { background: #f9f9f9; font-weight: bold; }
         .product-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
         .delete-btn { background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+        .stock-btn { background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px; }
         
         .order-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fafafa; }
         .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 10px; align-items: center;}
-        
-        /* تنسيق القائمة المنسدلة للحالة */
-        .status-select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; outline: none; cursor: pointer; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-shipped { background: #cce5ff; color: #004085; }
-        .status-delivered { background: #d4edda; color: #155724; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
-
+        .status-select { padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-weight: bold; }
         .order-items-list { background: #fff; padding: 10px; border-radius: 5px; margin-top: 10px; border: 1px solid #eee; }
         .order-item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #eee; font-size: 13px; }
         
-        .logout-btn { background: transparent; color: #ff4d4d; border: 1px solid #ff4d4d; padding: 5px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; margin-right: 15px; }
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
-            <h2>تسجيل الدخول للإدارة</h2>
-            <input type="password" id="adminPass" placeholder="أدخل كلمة المرور">
+            <h2>تسجيل الدخول</h2>
+            <input type="password" id="adminPass" placeholder="كلمة المرور">
             <button onclick="checkPassword()">دخول</button>
-            <p id="loginError" style="color:red; margin-top:10px; display:none;">كلمة المرور غير صحيحة!</p>
         </div>
     </div>
 
     <div id="adminPanel">
         <header>
             <div class="logo">ROVY<span>.</span> ADMIN</div>
-            <div>
-                <a href="index.html" style="color: white; text-decoration: none;">زيارة الموقع &larr;</a>
-                <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
-            </div>
+            <button class="delete-btn" onclick="logout()">خروج</button>
         </header>
-
         <div class="container">
             <div class="card">
                 <h2>إضافة منتج جديد</h2>
                 <form id="addProductForm">
-                    <div class="form-group">
-                        <label>اسم المنتج</label>
-                        <input type="text" id="pName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>السعر (جنيه)</label>
-                        <input type="number" id="pPrice" required>
-                    </div>
-                    <div class="form-group">
-                        <label>رابط الصورة (URL)</label>
-                        <input type="url" id="pImage" placeholder="https://..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>القسم</label>
+                    <div class="form-group"><label>اسم المنتج</label><input type="text" id="pName" required></div>
+                    <div class="form-group"><label>السعر</label><input type="number" id="pPrice" required></div>
+                    <div class="form-group"><label>رابط الصورة</label><input type="url" id="pImage" required></div>
+                    <div class="form-group"><label>القسم</label>
                         <select id="pCategory">
-                            <option value="Women">نساء</option>
-                            <option value="Men">رجال</option>
-                            <option value="Kids">أطفال</option>
-                            <option value="Sports">رياضة</option>
-                            <option value="Accessories">إكسسوارات</option>
+                            <option value="Women">نساء</option><option value="Men">رجال</option>
+                            <option value="Kids">أطفال</option><option value="Sports">رياضة</option><option value="Accessories">إكسسوارات</option>
                         </select>
                     </div>
                     <button type="submit" class="btn">إضافة المنتج</button>
                 </form>
             </div>
-
             <div>
                 <div class="card">
-                    <h2>المنتجات الحالية</h2>
+                    <h2>المنتجات</h2>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>الصورة</th>
-                                <th>الاسم</th>
-                                <th>السعر</th>
-                                <th>إجراء</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th>الصورة</th><th>الاسم</th><th>إجراء</th></tr></thead>
                         <tbody id="adminProductsList"></tbody>
                     </table>
                 </div>
-
                 <div class="card">
-                    <h2>أحدث الطلبات</h2>
+                    <h2>الطلبات</h2>
                     <div id="ordersList"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- نافذة إدارة المخزون -->
+    <div class="modal" id="stockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalProductName">إدارة المخزون</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="addVariantForm" style="margin-bottom: 20px; display: flex; gap: 10px;">
+                <input type="hidden" id="vProductId">
+                <input type="text" id="vSize" placeholder="المقاس (مثال: M)" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:5px;">
+                <input type="text" id="vColor" placeholder="اللون (مثال: أحمر)" style="flex:1; padding:8px; border:1px solid #ddd; border-radius:5px;">
+                <input type="number" id="vStock" placeholder="الكمية" required style="flex:1; padding:8px; border:1px solid #ddd; border-radius:5px;">
+                <button type="submit" class="btn" style="width:auto; padding:8px 15px;">إضافة</button>
+            </form>
+            <table>
+                <thead><tr><th>المقاس</th><th>اللون</th><th>الكمية</th><th>إجراء</th></tr></thead>
+                <tbody id="variantsList"></tbody>
+            </table>
+        </div>
+    </div>
+
     <script>
         const ADMIN_PASSWORD = 'Rovy@2026'; 
+        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         function checkPassword() {
             if(document.getElementById('adminPass').value === ADMIN_PASSWORD) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                loadAdminProducts();
-                loadOrders();
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
+                loadAdminProducts(); loadOrders();
+            } else { alert('كلمة المرور غير صحيحة'); }
         }
         function logout() { location.reload(); }
-
-        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadAdminProducts() {
             const { data } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
@@ -155,8 +134,10 @@
                         <tr>
                             <td><img src="${p.image_url}" class="product-img"></td>
                             <td>${p.name}</td>
-                            <td>${p.price} ج</td>
-                            <td><button class="delete-btn" onclick="deleteProduct(${p.id})">حذف</button></td>
+                            <td>
+                                <button class="stock-btn" onclick="openStockModal(${p.id}, '${p.name}')">المخزون</button>
+                                <button class="delete-btn" onclick="deleteProduct(${p.id})">حذف</button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -165,84 +146,105 @@
 
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = 'جاري الإضافة...'; btn.disabled = true;
-            const { error } = await supabaseClient.from('products').insert([{ 
-                name: document.getElementById('pName').value, 
-                price: document.getElementById('pPrice').value, 
-                image_url: document.getElementById('pImage').value, 
-                category: document.getElementById('pCategory').value 
+            const btn = e.target.querySelector('button'); btn.innerText = '...'; btn.disabled = true;
+            await supabaseClient.from('products').insert([{ 
+                name: document.getElementById('pName').value, price: document.getElementById('pPrice').value, 
+                image_url: document.getElementById('pImage').value, category: document.getElementById('pCategory').value
             }]);
-            if(error) alert('حدث خطأ: ' + error.message);
-            else { alert('تمت الإضافة!'); e.target.reset(); loadAdminProducts(); }
-            btn.innerText = 'إضافة المنتج'; btn.disabled = false;
+            e.target.reset(); loadAdminProducts(); btn.innerText = 'إضافة المنتج'; btn.disabled = false;
         });
 
         async function deleteProduct(id) {
-            if(!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+            if(!confirm('حذف المنتج؟')) return;
             await supabaseClient.from('products').delete().eq('id', id);
             loadAdminProducts();
         }
 
-        // دالة تغيير حالة الطلب
-        async function updateOrderStatus(orderId, newStatus) {
-            const { error } = await supabaseClient
-                .from('orders')
-                .update({ status: newStatus })
-                .eq('id', orderId);
-            
-            if(error) {
-                alert('حدث خطأ أثناء تحديث الحالة');
-                console.error(error);
-            } else {
-                // تغيير لون القائمة حسب الحالة
-                const selectElement = document.getElementById(`status-${orderId}`);
-                selectElement.className = `status-select status-${newStatus}`;
+        // --- إدارة المخزون ---
+        let currentManageProductId = null;
+
+        async function openStockModal(productId, productName) {
+            currentManageProductId = productId;
+            document.getElementById('vProductId').value = productId;
+            document.getElementById('modalProductName').innerText = `مخزون: ${productName}`;
+            document.getElementById('stockModal').style.display = 'flex';
+            loadVariants(productId);
+        }
+
+        function closeModal() {
+            document.getElementById('stockModal').style.display = 'none';
+            document.getElementById('addVariantForm').reset();
+        }
+
+        async function loadVariants(productId) {
+            const { data } = await supabaseClient.from('product_variants').select('*').eq('product_id', productId);
+            const list = document.getElementById('variantsList');
+            list.innerHTML = '';
+            if(data) {
+                data.forEach(v => {
+                    list.innerHTML += `
+                        <tr>
+                            <td>${v.size || '-'}</td>
+                            <td>${v.color || '-'}</td>
+                            <td style="font-weight:bold; color:${v.stock > 0 ? 'green' : 'red'}">${v.stock}</td>
+                            <td><button class="delete-btn" onclick="deleteVariant(${v.id})">حذف</button></td>
+                        </tr>
+                    `;
+                });
             }
         }
 
+        document.getElementById('addVariantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pId = document.getElementById('vProductId').value;
+            await supabaseClient.from('product_variants').insert([{
+                product_id: pId,
+                size: document.getElementById('vSize').value || null,
+                color: document.getElementById('vColor').value || null,
+                stock: document.getElementById('vStock').value
+            }]);
+            document.getElementById('addVariantForm').reset();
+            document.getElementById('vProductId').value = pId;
+            loadVariants(pId);
+        });
+
+        async function deleteVariant(id) {
+            if(!confirm('حذف هذا المتغير؟')) return;
+            await supabaseClient.from('product_variants').delete().eq('id', id);
+            loadVariants(currentManageProductId);
+        }
+        // -----------------------
+
+        async function updateOrderStatus(orderId, newStatus) {
+            await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
+        }
+
         async function loadOrders() {
-            const { data } = await supabaseClient
-                .from('orders')
-                .select(`*, order_items (quantity, price, products (name))`)
-                .order('id', { ascending: false });
-
-            const list = document.getElementById('ordersList');
-            list.innerHTML = '';
-
-            if(data && data.length > 0) {
+            const { data } = await supabaseClient.from('orders').select(`*, order_items (quantity, price, size, color, products (name))`).order('id', { ascending: false });
+            const list = document.getElementById('ordersList'); list.innerHTML = '';
+            if(data) {
                 data.forEach(order => {
                     let itemsHtml = '';
                     if(order.order_items) {
                         order.order_items.forEach(item => {
-                            itemsHtml += `<div class="order-item-row"><span>${item.products ? item.products.name : 'منتج'} (${item.quantity})</span><span>${item.price * item.quantity} ج</span></div>`;
+                            let variant = (item.size ? ` (مقاس: ${item.size})` : '') + (item.color ? ` (لون: ${item.color})` : '');
+                            itemsHtml += `<div class="order-item-row"><span>${item.products?.name || 'منتج'}${variant} x${item.quantity}</span><span>${item.price * item.quantity} ج</span></div>`;
                         });
                     }
-
                     list.innerHTML += `
                         <div class="order-card">
                             <div class="order-header">
-                                <strong>طلب رقم #${order.id}</strong>
-                                <select id="status-${order.id}" class="status-select status-${order.status}" onchange="updateOrderStatus(${order.id}, this.value)">
-                                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>قيد الانتظار (Pending)</option>
-                                    <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>تم الشحن (Shipped)</option>
-                                    <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>تم التوصيل (Delivered)</option>
-                                    <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>ملغي (Cancelled)</option>
+                                <strong>طلب #${order.id}</strong>
+                                <select class="status-select" onchange="updateOrderStatus(${order.id}, this.value)">
+                                    <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
                                 </select>
                             </div>
-                            <p><strong>الاسم:</strong> ${order.customer_name}</p>
-                            <p><strong>الموبايل:</strong> <a href="tel:${order.customer_phone}">${order.customer_phone}</a></p>
-                            <p><strong>العنوان:</strong> ${order.customer_address}</p>
-                            <div class="order-items-list">
-                                <strong style="display:block; margin-bottom:5px; font-size:12px; color:#555;">المنتجات المطلوبة:</strong>
-                                ${itemsHtml}
-                            </div>
-                            <p style="margin-top: 10px; font-weight: bold; color: #b58a61; text-align:left;">الإجمالي: ${order.total_price} جنيه</p>
-                        </div>
-                    `;
+                            <p>${order.customer_name} | ${order.customer_phone}</p>
+                            <div class="order-items-list">${itemsHtml}</div>
+                        </div>`;
                 });
-            } else {
-                list.innerHTML = '<p style="color:#888;">لا توجد طلبات حتى الآن.</p>';
             }
         }
     </script>
