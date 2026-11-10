@@ -171,18 +171,17 @@
 
     <!-- JavaScript -->
     <script>
-        // إعدادات Supabase (الرابط والمفتاح بتوعك بالظبط)
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
 
-        // تهيئة Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let products = [];
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
         let english = false;
 
-        // جلب المنتجات من الداتابيز
+        // جلب المنتجات
         async function fetchProducts() {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '<p style="text-align:center; width:100%;">جاري تحميل المنتجات...</p>';
@@ -282,67 +281,13 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // إتمام الطلب
-        async function checkout() {
+        // الانتقال لصفحة الدفع
+        function checkout() {
             if (cart.length === 0) {
                 alert(english ? "Your cart is empty!" : "سلة المشتريات فارغة!");
                 return;
             }
-
-            const name = prompt(english ? "Enter your full name:" : "أدخل اسمك بالكامل:");
-            if(!name) return;
-            
-            const phone = prompt(english ? "Enter your phone number:" : "أدخل رقم هاتفك:");
-            if(!phone) return;
-            
-            const address = prompt(english ? "Enter your address:" : "أدخل عنوانك بالتفصيل:");
-            if(!address) return;
-
-            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            document.getElementById('checkoutBtn').innerText = "جاري تسجيل الطلب...";
-            document.getElementById('checkoutBtn').disabled = true;
-
-            try {
-                const { data: orderData, error: orderError } = await supabaseClient
-                    .from('orders')
-                    .insert([{ 
-                        customer_name: name, 
-                        customer_phone: phone, 
-                        customer_address: address, 
-                        total_price: totalAmount 
-                    }])
-                    .select();
-
-                if (orderError) throw orderError;
-                
-                const orderId = orderData[0].id;
-
-                const orderItems = cart.map(item => ({
-                    order_id: orderId,
-                    product_id: item.id,
-                    quantity: item.quantity,
-                    price: item.price
-                }));
-
-                const { error: itemsError } = await supabaseClient
-                    .from('order_items')
-                    .insert(orderItems);
-
-                if (itemsError) throw itemsError;
-
-                alert(english ? "Order placed successfully!" : "تم تسجيل طلبك بنجاح! هنcontactك قريب لتأكيد الشحن.");
-                cart = [];
-                updateCart();
-                toggleCart();
-
-            } catch (error) {
-                console.error("Checkout error:", error);
-                alert("حدث خطأ أثناء تسجيل الطلب. يرجى المحاولة مرة أخرى.");
-            } finally {
-                document.getElementById('checkoutBtn').innerText = english ? "Checkout" : "إتمام الطلب";
-                document.getElementById('checkoutBtn').disabled = false;
-            }
+            window.location.href = 'checkout.html';
         }
 
         // البحث
