@@ -30,7 +30,7 @@
         .cart-item-info { display: flex; align-items: center; gap: 15px; }
         .cart-item img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
         .cart-item-title { font-weight: bold; font-size: 15px; }
-        .cart-item-qty { color: #888; font-size: 13px; }
+        .cart-item-qty { color: #888; font-size: 13px; margin-top: 5px; }
         
         .total-row { display: flex; justify-content: space-between; font-size: 20px; font-weight: 900; margin-top: 20px; color: #b58a61; }
         
@@ -86,6 +86,7 @@
         </div>
     </div>
 
+    <!-- رسالة النجاح -->
     <div id="successSection">
         <div class="success-card">
             <i class="fas fa-check-circle"></i>
@@ -95,7 +96,7 @@
         </div>
     </div>
 
-    <!-- زرار الواتساب العائم (غير الرقم هنا) -->
+    <!-- زرار الواتساب العائم -->
     <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank" title="تواصل معنا على واتساب">
         <i class="fab fa-whatsapp"></i>
     </a>
@@ -120,13 +121,19 @@
 
             cart.forEach(item => {
                 total += (item.price * item.quantity);
+                
+                // عرض المقاس واللون لو موجودين
+                let variantText = '';
+                if (item.size) variantText += ` | مقاس: ${item.size}`;
+                if (item.color) variantText += ` | لون: ${item.color}`;
+
                 itemsContainer.innerHTML += `
                     <div class="cart-item">
                         <div class="cart-item-info">
                             <img src="${item.image_url}">
                             <div>
                                 <div class="cart-item-title">${item.name}</div>
-                                <div class="cart-item-qty">الكمية: ${item.quantity}</div>
+                                <div class="cart-item-qty">الكمية: ${item.quantity} ${variantText}</div>
                             </div>
                         </div>
                         <div style="font-weight:bold;">${item.price * item.quantity} ج</div>
@@ -149,25 +156,28 @@
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             try {
-                const { data: orderData, error: orderError } = await supabaseClient
-                    .from('orders')
-                    .insert([{ customer_name: name, customer_phone: phone, customer_address: address, total_price: totalAmount }])
-                    .select();
-
-                if (orderError) throw orderError;
-                
-                const orderId = orderData[0].id;
-
-                const orderItems = cart.map(item => ({
-                    order_id: orderId,
+                // تجهيز المنتجات عشان نبعتها للدالة
+                const itemsPayload = cart.map(item => ({
+                    variant_id: item.variantId || null, // لو المنتج ملوش مقاسات هيبعت null
                     product_id: item.id,
                     quantity: item.quantity,
-                    price: item.price
+                    price: item.price,
+                    size: item.size || null,
+                    color: item.color || null
                 }));
 
-                const { error: itemsError } = await supabaseClient.from('order_items').insert(orderItems);
-                if (itemsError) throw itemsError;
+                // استدعاء دالة الداتابيز اللي بتعمل الطلب وتخصم المخزون
+                const { data: rpcData, error: rpcError } = await supabaseClient.rpc('create_order_and_decrement_stock', {
+                    p_customer_name: name,
+                    p_customer_phone: phone,
+                    p_customer_address: address,
+                    p_total_price: totalAmount,
+                    p_items: itemsPayload
+                });
 
+                if (rpcError) throw rpcError;
+
+                // النجاح
                 localStorage.removeItem('rovyCart');
                 document.getElementById('checkoutSection').style.display = 'none';
                 document.getElementById('successSection').style.display = 'flex';
