@@ -14,7 +14,7 @@
         
         .top-bar { background: #171717; color: #fff; text-align: center; padding: 8px; font-size: 13px; }
         header { background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { font-size: 26px; font-weight: 900; letter-spacing: 2px; }
+        .logo { font-size: 26px; font-weight: 900; letter-spacing: 2px; cursor: pointer; }
         .logo span { color: #b58a61; }
         
         .search-box { display: flex; align-items: center; background: #f1f1f1; border-radius: 30px; padding: 8px 15px; width: 40%; }
@@ -43,7 +43,8 @@
         .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
         .product-card { background: #fff; border: 1px solid #eee; border-radius: 10px; overflow: hidden; text-align: center; transition: 0.3s; }
         .product-card:hover { box-shadow: 0 10px 20px rgba(0,0,0,0.08); transform: translateY(-5px); }
-        .product-card img { width: 100%; height: 300px; object-fit: cover; }
+        .product-card img { width: 100%; height: 300px; object-fit: cover; transition: 0.3s; }
+        .product-card img:hover { opacity: 0.9; }
         .product-info { padding: 15px; }
         .product-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
         .product-price { color: #b58a61; font-weight: 900; font-size: 20px; margin-bottom: 15px; }
@@ -87,7 +88,7 @@
     </div>
 
     <header>
-        <div class="logo" onclick="filterCategory('All')" style="cursor:pointer;">ROVY<span>.</span></div>
+        <div class="logo" onclick="filterCategory('All')">ROVY<span>.</span></div>
         
         <div class="search-box">
             <i class="fas fa-search"></i>
@@ -176,7 +177,6 @@
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = '';
             
-            // فلترة المنتجات
             let filtered = allProducts;
             if (currentCategory !== 'All') {
                 filtered = allProducts.filter(p => p.category === currentCategory);
@@ -190,9 +190,13 @@
             filtered.forEach(p => {
                 grid.innerHTML += `
                     <div class="product-card">
-                        <img src="${p.image_url}" alt="${p.name}">
+                        <a href="product.html?id=${p.id}">
+                            <img src="${p.image_url}" alt="${p.name}">
+                        </a>
                         <div class="product-info">
-                            <div class="product-title">${p.name}</div>
+                            <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;">
+                                <div class="product-title">${p.name}</div>
+                            </a>
                             <div class="product-price">${p.price} جنيه</div>
                             <button class="add-to-cart-btn" onclick="addToCart(${p.id})">${english ? 'Add to Cart' : 'أضف للسلة'}</button>
                         </div>
@@ -204,7 +208,6 @@
         function filterCategory(cat) {
             currentCategory = cat;
             renderProducts();
-            // التمرير لقسم المنتجات
             document.getElementById('products').scrollIntoView({behavior: 'smooth'});
         }
 
