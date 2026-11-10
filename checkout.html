@@ -38,10 +38,13 @@
         .btn-submit:hover { background: #b58a61; }
         .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
 
-        .success-msg { display: none; text-align: center; padding: 50px 20px; }
-        .success-msg i { font-size: 60px; color: #25d366; margin-bottom: 20px; }
-        .success-msg h2 { color: #222; margin-bottom: 15px; }
-        .success-msg a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #b58a61; color: white; text-decoration: none; border-radius: 5px; }
+        /* تنسيق رسالة النجاح */
+        #successSection { display: none; width: 100%; min-height: 60vh; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .success-card { background: white; padding: 50px 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; width: 100%; }
+        .success-card i { font-size: 70px; color: #25d366; margin-bottom: 20px; }
+        .success-card h2 { color: #222; margin-bottom: 15px; font-size: 24px; }
+        .success-card p { color: #666; margin-bottom: 30px; font-size: 16px; }
+        .success-card a { display: inline-block; padding: 12px 30px; background: #b58a61; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -50,6 +53,7 @@
         <a href="index.html" class="logo">ROVY<span>.</span></a>
     </header>
 
+    <!-- قسم إدخال البيانات -->
     <div class="container" id="checkoutSection">
         <!-- بيانات العميل -->
         <div class="card">
@@ -74,9 +78,7 @@
         <!-- ملخص الطلب -->
         <div class="card">
             <h2>ملخص الطلب</h2>
-            <div id="checkoutItems">
-                <!-- المنتجات ستظهر هنا -->
-            </div>
+            <div id="checkoutItems"></div>
             <div class="total-row">
                 <span>الإجمالي:</span>
                 <span id="checkoutTotal">0 جنيه</span>
@@ -84,9 +86,9 @@
         </div>
     </div>
 
-    <!-- رسالة النجاح -->
-    <div class="container" id="successSection" style="display:none;">
-        <div class="card success-msg" style="grid-column: 1 / -1;">
+    <!-- قسم رسالة النجاح (مخفي في البداية) -->
+    <div id="successSection">
+        <div class="success-card">
             <i class="fas fa-check-circle"></i>
             <h2>تم استلام طلبك بنجاح!</h2>
             <p>شكراً لثقتك في ROVY STORE. سيتم التواصل معك قريباً لتأكيد الشحن.</p>
@@ -145,7 +147,7 @@
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
             try {
-                // 1. إنشاء الطلب
+                // 1. إنشاء الطلب في الداتابيز
                 const { data: orderData, error: orderError } = await supabaseClient
                     .from('orders')
                     .insert([{ customer_name: name, customer_phone: phone, customer_address: address, total_price: totalAmount }])
@@ -166,10 +168,10 @@
                 const { error: itemsError } = await supabaseClient.from('order_items').insert(orderItems);
                 if (itemsError) throw itemsError;
 
-                // 3. النجاح
+                // 3. النجاح (مسح السلة وإخفاء الفورم وإظهار رسالة النجاح)
                 localStorage.removeItem('rovyCart');
                 document.getElementById('checkoutSection').style.display = 'none';
-                document.getElementById('successSection').style.display = 'block';
+                document.getElementById('successSection').style.display = 'flex';
 
             } catch (error) {
                 console.error("Checkout error:", error);
