@@ -72,7 +72,6 @@
         .form-group textarea { resize: vertical; height: 80px; }
         .btn-submit { background: #b58a61; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; }
 
-        /* تنسيق رفع الصور */
         .file-upload-wrapper { border: 2px dashed #b58a61; padding: 20px; text-align: center; border-radius: 8px; background: #fff8f0; cursor: pointer; position: relative; }
         .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .file-upload-wrapper i { font-size: 30px; color: #b58a61; margin-bottom: 10px; }
@@ -111,6 +110,7 @@
                 <li class="active" onclick="switchTab('overview', this)"><i class="fas fa-home"></i> الرئيسية</li>
                 <li onclick="switchTab('products', this)"><i class="fas fa-box"></i> المنتجات</li>
                 <li onclick="switchTab('orders', this)"><i class="fas fa-shopping-cart"></i> الطلبات</li>
+                <li onclick="switchTab('coupons', this)"><i class="fas fa-tags"></i> الكوبونات</li>
                 <li onclick="switchTab('cs', this)"><i class="fas fa-headset"></i> خدمة العملاء</li>
             </ul>
             <div class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</div>
@@ -123,6 +123,7 @@
             </div>
 
             <div class="content-wrapper">
+                <!-- الرئيسية -->
                 <div id="overview" class="content-section active">
                     <div class="stats-grid">
                         <div class="stat-card"><i class="fas fa-money-bill-wave"></i><h3 id="totalSales">0 ج</h3><p>إجمالي المبيعات</p></div>
@@ -131,6 +132,7 @@
                     </div>
                 </div>
 
+                <!-- المنتجات -->
                 <div id="products" class="content-section">
                     <div class="card">
                         <div class="card-header">
@@ -144,6 +146,7 @@
                     </div>
                 </div>
 
+                <!-- الطلبات -->
                 <div id="orders" class="content-section">
                     <div class="card">
                         <div class="card-header">
@@ -157,6 +160,21 @@
                     </div>
                 </div>
 
+                <!-- الكوبونات -->
+                <div id="coupons" class="content-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>كوبونات الخصم</h3>
+                            <button class="btn-add" onclick="openModal('addCouponModal')"><i class="fas fa-plus"></i> إضافة كوبون</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>الكود</th><th>نسبة الخصم</th><th>الحالة</th><th>حذف</th></tr></thead>
+                            <tbody id="couponsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- خدمة العملاء -->
                 <div id="cs" class="content-section">
                     <div class="card">
                         <div class="card-header"><h3>خدمة العملاء</h3></div>
@@ -189,8 +207,7 @@
                     <div class="image-preview-container" id="imagePreview"></div>
                 </div>
 
-                <div class="form-group"><label>الوصف التفصيلي (الخامة، العناية، إلخ)</label><textarea id="pDesc" placeholder="مثال: قطن مصري 100%، مناسب للصيف..."></textarea></div>
-                
+                <div class="form-group"><label>الوصف التفصيلي (الخامة، العناية، إلخ)</label><textarea id="pDesc" placeholder="مثال: قطن مصري 100%..."></textarea></div>
                 <div class="form-group"><label>القسم</label>
                     <select id="pCategory">
                         <option value="Women">نساء</option><option value="Men">رجال</option>
@@ -198,6 +215,21 @@
                     </select>
                 </div>
                 <button type="submit" class="btn-submit">حفظ المنتج</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: إضافة كوبون -->
+    <div class="modal" id="addCouponModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة كوبون خصم</h3>
+                <button class="close-modal" onclick="closeModal('addCouponModal')">&times;</button>
+            </div>
+            <form id="addCouponForm">
+                <div class="form-group"><label>كود الخصم (بالإنجليزي)</label><input type="text" id="cCode" required placeholder="مثال: ROVY10"></div>
+                <div class="form-group"><label>نسبة الخصم (%)</label><input type="number" id="cDiscount" required min="1" max="100"></div>
+                <button type="submit" class="btn-submit">حفظ الكوبون</button>
             </form>
         </div>
     </div>
@@ -235,7 +267,7 @@
             if(document.getElementById('adminPass').value === ADMIN_PASSWORD) {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'flex';
-                loadAdminProducts(); loadOrders();
+                loadAdminProducts(); loadOrders(); loadCoupons();
             } else { document.getElementById('loginError').style.display = 'block'; }
         }
         function logout() { location.reload(); }
@@ -245,14 +277,14 @@
             document.querySelectorAll('.menu li').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             element.classList.add('active');
-            const titles = { overview: 'نظرة عامة', products: 'إدارة المنتجات', orders: 'الطلبات', cs: 'خدمة العملاء' };
+            const titles = { overview: 'نظرة عامة', products: 'إدارة المنتجات', orders: 'الطلبات', coupons: 'كوبونات الخصم', cs: 'خدمة العملاء' };
             document.getElementById('pageTitle').innerText = titles[tabId];
         }
 
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-        // عرض معاينة للصور المختارة
+        // --- المنتجات ---
         document.getElementById('pImages').addEventListener('change', function(event) {
             const preview = document.getElementById('imagePreview');
             preview.innerHTML = '';
@@ -294,59 +326,33 @@
 
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button'); btn.innerText = 'جاري الرفع والحفظ...'; btn.disabled = true;
-            
+            const btn = e.target.querySelector('button'); btn.innerText = 'جاري الرفع...'; btn.disabled = true;
             try {
                 const fileInput = document.getElementById('pImages');
                 const files = fileInput.files;
-                
                 if (files.length === 0) throw new Error("يرجى اختيار صورة واحدة على الأقل");
 
                 let uploadedUrls = [];
-                
-                // رفع الصور واحدة تلو الأخرى إلى Supabase Storage
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
                     const fileExt = file.name.split('.').pop();
                     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-                    
-                    const { error: uploadError } = await supabaseClient.storage
-                        .from('product-images')
-                        .upload(fileName, file);
-
+                    const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(fileName, file);
                     if (uploadError) throw uploadError;
-
-                    const { data: publicUrlData } = supabaseClient.storage
-                        .from('product-images')
-                        .getPublicUrl(fileName);
-                        
+                    const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
                     uploadedUrls.push(publicUrlData.publicUrl);
                 }
 
-                const mainImage = uploadedUrls[0]; // أول صورة كصورة رئيسية
-                const galleryImages = uploadedUrls.slice(1); // باقي الصور
-
                 await supabaseClient.from('products').insert([{ 
-                    name: document.getElementById('pName').value, 
-                    price: document.getElementById('pPrice').value, 
-                    image_url: mainImage, 
-                    category: document.getElementById('pCategory').value,
-                    description: document.getElementById('pDesc').value,
-                    gallery_images: galleryImages
+                    name: document.getElementById('pName').value, price: document.getElementById('pPrice').value, 
+                    image_url: uploadedUrls[0], category: document.getElementById('pCategory').value,
+                    description: document.getElementById('pDesc').value, gallery_images: uploadedUrls.slice(1)
                 }]);
                 
                 alert('تمت إضافة المنتج بنجاح!');
-                e.target.reset(); 
-                document.getElementById('imagePreview').innerHTML = '';
-                closeModal('addProductModal'); 
-                loadAdminProducts(); 
-                
-            } catch (error) {
-                alert('حدث خطأ: ' + error.message);
-            } finally {
-                btn.innerText = 'حفظ المنتج'; 
-                btn.disabled = false;
-            }
+                e.target.reset(); document.getElementById('imagePreview').innerHTML = ''; closeModal('addProductModal'); loadAdminProducts(); 
+            } catch (error) { alert('حدث خطأ: ' + error.message); } 
+            finally { btn.innerText = 'حفظ المنتج'; btn.disabled = false; }
         });
 
         async function deleteProduct(id) {
@@ -355,6 +361,7 @@
             loadAdminProducts();
         }
 
+        // --- المخزون ---
         let currentManageProductId = null;
         async function openStockModal(productId, productName) {
             currentManageProductId = productId;
@@ -366,8 +373,7 @@
 
         async function loadVariants(productId) {
             const { data } = await supabaseClient.from('product_variants').select('*').eq('product_id', productId);
-            const list = document.getElementById('variantsList');
-            list.innerHTML = '';
+            const list = document.getElementById('variantsList'); list.innerHTML = '';
             if(data && data.length > 0) {
                 data.forEach(v => {
                     list.innerHTML += `<tr><td>${v.size || '-'}</td><td>${v.color || '-'}</td><td style="font-weight:bold; color:${v.stock > 0 ? 'green' : 'red'}">${v.stock}</td><td><button class="btn-delete" onclick="deleteVariant(${v.id})">حذف</button></td></tr>`;
@@ -382,9 +388,7 @@
                 product_id: pId, size: document.getElementById('vSize').value || null,
                 color: document.getElementById('vColor').value || null, stock: document.getElementById('vStock').value
             }]);
-            document.getElementById('addVariantForm').reset();
-            document.getElementById('vProductId').value = pId;
-            loadVariants(pId);
+            document.getElementById('addVariantForm').reset(); document.getElementById('vProductId').value = pId; loadVariants(pId);
         });
 
         async function deleteVariant(id) {
@@ -393,6 +397,45 @@
             loadVariants(currentManageProductId);
         }
 
+        // --- الكوبونات ---
+        async function loadCoupons() {
+            const { data } = await supabaseClient.from('coupons').select('*').order('id', { ascending: false });
+            const list = document.getElementById('couponsList'); list.innerHTML = '';
+            if(data && data.length > 0) {
+                data.forEach(c => {
+                    list.innerHTML += `
+                        <tr>
+                            <td style="font-weight:bold; color:#b58a61;">${c.code}</td>
+                            <td>${c.discount_percentage}%</td>
+                            <td>${c.is_active ? '<span style="color:green;">مفعل</span>' : '<span style="color:red;">معطل</span>'}</td>
+                            <td><button class="btn-delete" onclick="deleteCoupon(${c.id})">حذف</button></td>
+                        </tr>
+                    `;
+                });
+            } else { list.innerHTML = '<tr><td colspan="4" style="text-align:center;">لا توجد كوبونات</td></tr>'; }
+        }
+
+        document.getElementById('addCouponForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const code = document.getElementById('cCode').value.toUpperCase();
+            const discount = document.getElementById('cDiscount').value;
+            
+            const { error } = await supabaseClient.from('coupons').insert([{ code: code, discount_percentage: discount }]);
+            
+            if(error) { alert('حدث خطأ، ربما الكود موجود بالفعل.'); }
+            else {
+                alert('تم إضافة الكوبون بنجاح!');
+                e.target.reset(); closeModal('addCouponModal'); loadCoupons();
+            }
+        });
+
+        async function deleteCoupon(id) {
+            if(!confirm('حذف هذا الكوبون؟')) return;
+            await supabaseClient.from('coupons').delete().eq('id', id);
+            loadCoupons();
+        }
+
+        // --- الطلبات ---
         async function updateOrderStatus(orderId, newStatus) {
             await supabaseClient.from('orders').update({ status: newStatus }).eq('id', orderId);
             loadOrders();
@@ -423,7 +466,7 @@
                         itemsHtml += `<div class="order-item-row"><span>${item.products?.name || 'منتج'} ${variant} x${item.quantity}</span><span>${item.price * item.quantity} ج</span></div>`;
                     });
 
-                    const cardHtml = `
+                    list.innerHTML += `
                         <div class="order-card">
                             <div class="order-header">
                                 <div><strong>طلب #${order.id}</strong><span style="font-size:12px; color:#888; margin-right:10px;">${new Date(order.created_at).toLocaleDateString('ar-EG')}</span></div>
@@ -440,7 +483,6 @@
                             <div class="order-items-list">${itemsHtml}</div>
                             <p style="margin-top: 10px; font-weight: bold; color: #b58a61; text-align:left;">الإجمالي: ${order.total_price} جنيه</p>
                         </div>`;
-                    list.innerHTML += cardHtml;
 
                     let phone = order.customer_phone.replace(/^0/, '20'); 
                     let waMsg = `أهلاً ${order.customer_name}، بنتواصل معاك من ROVY STORE لتأكيد طلبك رقم #${order.id} بإجمالي ${order.total_price} جنيه.`;
