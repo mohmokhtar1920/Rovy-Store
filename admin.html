@@ -409,7 +409,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   }
   document.addEventListener('click',async e=>{
     const nav=e.target.closest('[data-page]');
-    if(nav){const page=nav.dataset.page;if(['products','categories','coupons','reports'].includes(page)&&!isManager())return;
+    if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       return;
