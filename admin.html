@@ -26,6 +26,19 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
 .toast{position:fixed;bottom:20px;left:20px;background:#172538;color:#fff;padding:12px 18px;border-radius:10px;z-index:20;box-shadow:0 8px 30px #0003;max-width:min(420px,calc(100vw - 40px))}
 @media(max-width:900px){.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;padding:8px;gap:5px}.navbtn{white-space:nowrap;width:auto;margin:0}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:16px}}
 @media(max-width:520px){.topbar{padding:0 14px}.userbox{gap:6px}.userbox .usertext{display:none}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}}
+.password-wrap{position:relative}
+.password-wrap input{padding-left:48px}
+.toggle-password{
+  position:absolute;
+  left:10px;
+  top:50%;
+  transform:translateY(-50%);
+  background:transparent;
+  color:#788292;
+  font-size:19px;
+  padding:5px;
+  cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -35,7 +48,13 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     <div class="sub">تسجيل دخول لوحة التحكم</div>
     <form id="loginForm">
       <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required></div>
-      <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required></div>
+     <div class="field">
+  <label for="password">كلمة المرور</label>
+  <div class="password-wrap">
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button type="button" class="toggle-password" id="togglePassword" aria-label="إظهار كلمة المرور" title="إظهار كلمة المرور">👁</button>
+  </div>
+</div>
       <button class="btn gold" style="width:100%;margin-top:8px" id="loginBtn">تسجيل الدخول</button>
       <div id="loginError" class="error" style="margin-top:10px"></div>
       <div class="hint">استخدم حساب الموظف المُضاف في Supabase Auth وملف staff_profiles النشط.</div>
@@ -141,6 +160,17 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
   let currentUser = null, staff = null, orders = [], products = [], coupons = [], toastTimer = null;
+  $('togglePassword').addEventListener('click',()=>{
+  const passwordInput=$('password');
+  const isHidden=passwordInput.type==='password';
+
+  passwordInput.type=isHidden?'text':'password';
+  $('togglePassword').setAttribute(
+    'aria-label',
+    isHidden?'إخفاء كلمة المرور':'إظهار كلمة المرور'
+  );
+  $('togglePassword').title=isHidden?'إخفاء كلمة المرور':'إظهار كلمة المرور';
+});
 
   const roleNames = {owner:'مالك المتجر', manager:'مدير', customer_service:'خدمة العملاء', shipping:'الشحن'};
   const statusNames = {pending:'قيد الانتظار', confirmed:'تم التأكيد', preparing:'قيد التجهيز', shipped:'تم الشحن', delivered:'تم التوصيل', cancelled:'ملغي'};
