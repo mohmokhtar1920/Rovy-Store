@@ -65,7 +65,8 @@ const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);
-let mode='login';\nlet pendingSignupEmail='';
+let mode='login';
+let pendingSignupEmail='';
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
@@ -111,7 +112,12 @@ $('authForm').addEventListener('submit',async e=>{
    const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:redirectTo}});
    if(error)throw error;
    if(data.session){setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
-   else setNotice('تم إنشاء الحساب. افتح رسالة التأكيد التي أرسلناها إلى بريدك الإلكتروني، وبعد التأكيد ارجع إلى الموقع لتكملة الطلب.','success');
+   else {
+     pendingSignupEmail=email;
+     $('authForm').style.display='none';
+     $('otpPanel').style.display='block';
+     setNotice('تم إنشاء الحساب. أدخل كود التأكيد المكوّن من 6 أرقام الذي أرسلناه إلى بريدك الإلكتروني.','success');
+   }
   }else{
    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
    if(error)throw error;
