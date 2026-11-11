@@ -1,146 +1,626 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#171717">
     <title>تتبع الطلب | ROVY STORE</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: #fafafa; color: #222; line-height: 1.8; }
-        header { background: #fff; text-align: center; padding: 20px; border-bottom: 1px solid #eee; }
-        .logo { font-size: 28px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
-        .logo span { color: #b58a61; }
-        
-        .container { max-width: 700px; margin: 50px auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: #b58a61; margin-bottom: 20px; font-size: 28px; text-align: center; }
-        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        
-        .btn-track { width: 100%; padding: 15px; background: #171717; color: white; border: none; border-radius: 5px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-track:hover { background: #b58a61; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
 
-        #resultBox { display: none; margin-top: 30px; border-radius: 8px; border: 1px solid #eee; background: #fdfdfd; overflow: hidden; }
-        .result-header { background: #f9f9f9; padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        
-        .order-status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-shipped { background: #cce5ff; color: #004085; }
-        .status-delivered { background: #d4edda; color: #155724; }
-        .status-cancelled { background: #f8d7da; color: #721c24; }
+        body {
+            background: #fafafa;
+            color: #222;
+            line-height: 1.8;
+        }
 
-        .order-info { padding: 20px; }
-        .order-info p { margin-bottom: 10px; color: #555; }
-        
-        .items-section { padding: 0 20px 20px; }
-        .items-title { font-weight: bold; margin-bottom: 15px; border-bottom: 2px dashed #eee; padding-bottom: 10px; display: block; }
-        
-        .track-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
-        .track-item img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; }
-        .track-item-info { flex: 1; }
-        .track-item-info h4 { font-size: 15px; margin-bottom: 5px; color: #333; }
-        .track-item-info p { font-size: 13px; color: #777; margin: 0; }
-        .track-item-price { font-weight: bold; color: #b58a61; }
-        
-        .error-msg { color: red; text-align: center; margin-top: 15px; font-weight: bold; display: none; }
+        header {
+            background: #fff;
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-decoration: none;
+            color: #222;
+        }
+
+        .logo span {
+            color: #b58a61;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #b58a61;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #b58a61;
+        }
+
+        .btn-track {
+            width: 100%;
+            padding: 15px;
+            background: #171717;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-track:hover:not(:disabled) {
+            background: #b58a61;
+        }
+
+        .btn-track:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        #resultBox {
+            display: none;
+            margin-top: 30px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            background: #fdfdfd;
+            overflow: hidden;
+        }
+
+        .result-header {
+            background: #f9f9f9;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .order-status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-shipped {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-info {
+            padding: 20px;
+        }
+
+        .order-info p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .items-section {
+            padding: 0 20px 20px;
+        }
+
+        .items-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 2px dashed #eee;
+            padding-bottom: 10px;
+            display: block;
+        }
+
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .track-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #eee;
+        }
+
+        .track-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .track-item-info h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .track-item-info p {
+            font-size: 13px;
+            color: #777;
+            margin: 0;
+        }
+
+        .track-item-price {
+            font-weight: bold;
+            color: #b58a61;
+            white-space: nowrap;
+        }
+
+        .error-msg {
+            color: #c62828;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+
+        footer {
+            background: #171717;
+            color: #fff;
+            padding: 40px 5% 20px;
+            margin-top: 50px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        footer h3 {
+            color: #b58a61;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        footer h4 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        footer p,
+        footer a {
+            color: #aaa;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        footer li {
+            margin-bottom: 10px;
+            list-style: none;
+        }
+
+        footer a:hover {
+            color: #b58a61;
+        }
+
+        .copyright {
+            text-align: center;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 25px 12px;
+                padding: 20px 15px;
+            }
+
+            .result-header {
+                align-items: flex-start;
+            }
+
+            .track-item {
+                gap: 10px;
+            }
+
+            .track-item img {
+                width: 50px;
+                height: 50px;
+            }
+
+            .track-item-price {
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <header><a href="index.html" class="logo">ROVY<span>.</span></a></header>
-    
-    <div class="container">
-        <h1>تتبع طلبك</h1>
-        <p class="subtitle">أدخل رقم الطلب ورقم الموبايل اللي طلبت بيه عشان تعرف حالة طلبك وتفاصيله.</p>
-        
-        <form id="trackForm">
-            <div class="form-group">
-                <label>رقم الطلب</label>
-                <input type="number" id="orderIdInput" placeholder="مثال: 15" required>
-            </div>
-            <div class="form-group">
-                <label>رقم الموبايل</label>
-                <input type="tel" id="phoneInput" placeholder="01xxxxxxxxx" required>
-            </div>
-            <button type="submit" class="btn-track" id="trackBtn">تتبع الطلب</button>
-        </form>
 
-        <p class="error-msg" id="errorMsg">لم يتم العثور على طلب بهذه البيانات. تأكد من رقم الطلب والموبايل.</p>
+<header>
+    <a href="index.html" class="logo">ROVY<span>.</span></a>
+</header>
 
-        <div id="resultBox">
-            <div class="result-header">
-                <h3>طلب رقم #<span id="resOrderId"></span></h3>
-                <div id="resStatus" class="order-status-badge"></div>
-            </div>
-            
-            <div class="order-info">
-                <p><strong>تاريخ الطلب:</strong> <span id="resDate"></span></p>
-                <p><strong>الإجمالي:</strong> <span id="resTotal" style="color:#b58a61; font-weight:bold; font-size:18px;"></span> جنيه</p>
-            </div>
+<main class="container">
 
-            <div class="items-section">
-                <span class="items-title">المنتجات المطلوبة:</span>
-                <div id="resItemsList"></div>
-            </div>
+    <h1>تتبع طلبك</h1>
+
+    <p class="subtitle">
+        أدخل رقم الطلب ورقم الموبايل اللي طلبت بيه عشان تعرف حالة طلبك وتفاصيله.
+    </p>
+
+    <form id="trackForm">
+
+        <div class="form-group">
+            <label for="orderIdInput">رقم الطلب</label>
+            <input
+                type="number"
+                id="orderIdInput"
+                placeholder="مثال: 15"
+                min="1"
+                step="1"
+                required
+            >
         </div>
+
+        <div class="form-group">
+            <label for="phoneInput">رقم الموبايل</label>
+            <input
+                type="tel"
+                id="phoneInput"
+                placeholder="01xxxxxxxxx"
+                maxlength="20"
+                autocomplete="tel"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn-track" id="trackBtn">
+            تتبع الطلب
+        </button>
+
+    </form>
+
+    <p class="error-msg" id="errorMsg" role="alert">
+        لم يتم العثور على طلب بهذه البيانات.
+    </p>
+
+    <div id="resultBox" aria-live="polite">
+
+        <div class="result-header">
+            <h3>طلب رقم #<span id="resOrderId"></span></h3>
+            <div id="resStatus" class="order-status-badge"></div>
+        </div>
+
+        <div class="order-info">
+            <p>
+                <strong>تاريخ الطلب:</strong>
+                <span id="resDate"></span>
+            </p>
+
+            <p>
+                <strong>الإجمالي:</strong>
+                <span id="resTotal" style="color:#b58a61;font-weight:bold;font-size:18px;"></span>
+                جنيه
+            </p>
+        </div>
+
+        <div class="items-section">
+            <span class="items-title">المنتجات المطلوبة:</span>
+            <div id="resItemsList"></div>
+        </div>
+
     </div>
 
-    <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
-            <div>
-                <h3 style="color: #b58a61; margin-bottom: 15px; font-size: 22px;">ROVY STORE</h3>
-                <p style="color: #aaa; font-size: 14px; line-height: 1.6;">وجهتك الأولى للموضة والأزياء العصرية. نقدم لك أفضل الخامات وأحدث الصيحات.</p>
-            </div>
-            <div>
-                <h4 style="margin-bottom: 15px; font-size: 18px;">روابط سريعة</h4>
-                <ul style="list-style: none; padding: 0;">
-                    <li style="margin-bottom: 10px;"><a href="about.html" style="color: #aaa; text-decoration: none; font-size: 14px;">من نحن</a></li>
-                    <li style="margin-bottom: 10px;"><a href="contact.html" style="color: #aaa; text-decoration: none; font-size: 14px;">اتصل بنا</a></li>
-                    <li style="margin-bottom: 10px;"><a href="track.html" style="color: #aaa; text-decoration: none; font-size: 14px;">تتبع طلبك</a></li>
-                    <li style="margin-bottom: 10px;"><a href="return-policy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الاستبدال والاسترجاع</a></li>
-                    <li style="margin-bottom: 10px;"><a href="privacy.html" style="color: #aaa; text-decoration: none; font-size: 14px;">سياسة الخصوصية</a></li>
-                    <li style="margin-bottom: 10px;"><a href="faq.html" style="color: #aaa; text-decoration: none; font-size: 14px;">الأسئلة الشائعة</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4 style="margin-bottom: 15px; font-size: 18px;">تواصل معنا</h4>
-                <p style="color: #aaa; font-size: 14px; margin-bottom: 10px;"><i class="fab fa-whatsapp" style="color: #25d366; margin-left: 5px;"></i> 01012853009</p>
-                <p style="color: #aaa; font-size: 14px;"><i class="fas fa-envelope" style="color: #b58a61; margin-left: 5px;"></i> info@rovystore.com</p>
-            </div>
-        </div>
-        <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">&copy; 2026 ROVY STORE. جميع الحقوق محفوظة.</div>
-    </footer>
+</main>
 
-    
+<footer>
+
+    <div class="footer-grid">
+
+        <div>
+            <h3>ROVY STORE</h3>
+            <p style="line-height:1.6;">
+                وجهتك الأولى للموضة والأزياء العصرية.
+                نقدم لك أفضل الخامات وأحدث الصيحات.
+            </p>
+        </div>
+
+        <div>
+            <h4>روابط سريعة</h4>
+
+            <ul>
+                <li><a href="about.html">من نحن</a></li>
+                <li><a href="contact.html">اتصل بنا</a></li>
+                <li><a href="track.html">تتبع طلبك</a></li>
+                <li><a href="return-policy.html">سياسة الاستبدال والاسترجاع</a></li>
+                <li><a href="privacy.html">سياسة الخصوصية</a></li>
+                <li><a href="faq.html">الأسئلة الشائعة</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <h4>تواصل معنا</h4>
+
+            <p style="margin-bottom:10px;">
+                <i class="fab fa-whatsapp" style="color:#25d366;margin-left:5px;"></i>
+                01012853009
+            </p>
+
+            <p>
+                <i class="fas fa-envelope" style="color:#b58a61;margin-left:5px;"></i>
+                info@rovystore.com
+            </p>
+        </div>
+
+    </div>
+
+    <div class="copyright">
+        &copy; 2026 ROVY STORE. جميع الحقوق محفوظة.
+    </div>
+
+</footer>
+
 <script>
+'use strict';
+
 const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const SUPABASE_ANON_KEY =
+    'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+);
 
 const form = document.getElementById('trackForm');
 const btn = document.getElementById('trackBtn');
 const resultBox = document.getElementById('resultBox');
 const errorMsg = document.getElementById('errorMsg');
+const itemsList = document.getElementById('resItemsList');
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+const statusMap = {
+    pending: ['قيد الانتظار', 'status-pending'],
+    shipped: ['تم الشحن', 'status-shipped'],
+    delivered: ['تم التوصيل', 'status-delivered'],
+    cancelled: ['ملغي', 'status-cancelled']
+};
 
-    btn.innerText = 'جاري البحث...';
-    btn.disabled = true;
+function showError(message) {
+    resultBox.style.display = 'none';
+    errorMsg.textContent = message;
+    errorMsg.style.display = 'block';
+}
+
+function formatMoney(value) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+        return '0';
+    }
+
+    return number.toLocaleString('ar-EG', {
+        maximumFractionDigits: 2
+    });
+}
+
+function isValidImageUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+        return false;
+    }
+
+    try {
+        const url = new URL(value);
+
+        return url.protocol === 'https:' ||
+               url.protocol === 'http:';
+
+    } catch {
+        return false;
+    }
+}
+
+function renderItems(items) {
+    itemsList.replaceChildren();
+
+    if (!items.length) {
+        const empty = document.createElement('p');
+        empty.style.color = '#888';
+        empty.textContent = 'لا توجد تفاصيل للمنتجات.';
+        itemsList.appendChild(empty);
+        return;
+    }
+
+    items.forEach(item => {
+
+        const row = document.createElement('div');
+        row.className = 'track-item';
+
+        const img = document.createElement('img');
+
+        const imageUrl = isValidImageUrl(item.image_url)
+            ? item.image_url
+            : 'https://via.placeholder.com/60';
+
+        img.src = imageUrl;
+        img.alt = 'صورة المنتج';
+        img.loading = 'lazy';
+
+        img.onerror = () => {
+            img.onerror = null;
+            img.src = 'https://via.placeholder.com/60';
+        };
+
+        const info = document.createElement('div');
+        info.className = 'track-item-info';
+
+        const name = document.createElement('h4');
+        name.textContent = item.product_name || 'منتج غير معروف';
+
+        const details = document.createElement('p');
+
+        const variants = [];
+
+        if (item.size) {
+            variants.push('مقاس: ' + item.size);
+        }
+
+        if (item.color) {
+            variants.push('لون: ' + item.color);
+        }
+
+        details.textContent =
+            'الكمية: ' + (Number(item.quantity) || 0) +
+            (variants.length ? ' | ' + variants.join(' | ') : '');
+
+        info.append(name, details);
+
+        const price = document.createElement('div');
+        price.className = 'track-item-price';
+
+        const total = Number(item.price) * Number(item.quantity);
+
+        price.textContent =
+            formatMoney(total) + ' ج';
+
+        row.append(img, info, price);
+
+        itemsList.appendChild(row);
+    });
+}
+
+function renderOrder(order, items) {
+
+    document.getElementById('resOrderId').textContent =
+        String(order.id);
+
+    const orderDate = new Date(order.created_at);
+
+    document.getElementById('resDate').textContent =
+        Number.isNaN(orderDate.getTime())
+            ? 'غير متاح'
+            : orderDate.toLocaleDateString('ar-EG');
+
+    document.getElementById('resTotal').textContent =
+        formatMoney(order.total_price);
+
+    const badge = document.getElementById('resStatus');
+
+    const status = statusMap[order.status] || [
+        'حالة الطلب',
+        'status-pending'
+    ];
+
+    badge.textContent = status[0];
+    badge.className = 'order-status-badge ' + status[1];
+
+    renderItems(items);
+
+    errorMsg.style.display = 'none';
+    resultBox.style.display = 'block';
+}
+
+form.addEventListener('submit', async (event) => {
+
+    event.preventDefault();
+
+    if (btn.disabled) {
+        return;
+    }
+
+    const orderId = Number(
+        document.getElementById('orderIdInput').value
+    );
+
+    const phone = document.getElementById('phoneInput')
+        .value.trim();
+
     resultBox.style.display = 'none';
     errorMsg.style.display = 'none';
 
-    const orderId = Number(document.getElementById('orderIdInput').value);
-    const phone = document.getElementById('phoneInput').value.trim();
+    if (!Number.isSafeInteger(orderId) || orderId < 1) {
+        showError('من فضلك أدخل رقم طلب صحيح.');
+        return;
+    }
+
+    if (!phone || phone.length < 8 || phone.length > 20) {
+        showError('من فضلك أدخل رقم موبايل صحيح.');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'جاري البحث...';
 
     try {
-        if (!Number.isSafeInteger(orderId) || orderId < 1) {
-            throw new Error('رقم الطلب غير صحيح');
-        }
 
         const { data, error } = await supabaseClient.rpc(
             'track_order_secure',
@@ -150,184 +630,44 @@ form.addEventListener('submit', async (e) => {
             }
         );
 
-        if (error) throw error;
+        if (error) {
+            throw error;
+        }
 
-        if (!data || data.success !== true || !data.order) {
-            errorMsg.textContent = 'لم يتم العثور على طلب بهذه البيانات.';
-            errorMsg.style.display = 'block';
+        if (
+            !data ||
+            data.success !== true ||
+            !data.order
+        ) {
+            showError(
+                'لم يتم العثور على طلب بهذه البيانات. تأكد من رقم الطلب والموبايل.'
+            );
             return;
         }
 
-        const order = data.order;
-        const items = Array.isArray(data.items) ? data.items : [];
+        const items = Array.isArray(data.items)
+            ? data.items
+            : [];
 
-        document.getElementById('resOrderId').textContent = order.id;
+        renderOrder(data.order, items);
 
-        document.getElementById('resDate').textContent =
-            new Date(order.created_at).toLocaleDateString('ar-EG');
+    } catch (error) {
 
-        document.getElementById('resTotal').textContent =
-            Number(order.total_price).toLocaleString('ar-EG');
+        console.error('Track order error:', error);
 
-        const statusMap = {
-            pending: ['قيد الانتظار', 'status-pending'],
-            shipped: ['تم الشحن', 'status-shipped'],
-            delivered: ['تم التوصيل', 'status-delivered'],
-            cancelled: ['ملغي', 'status-cancelled']
-        };
-
-        const status = statusMap[order.status] || statusMap.pending;
-        const badge = document.getElementById('resStatus');
-
-        badge.textContent = status[0];
-        badge.className = 'order-status-badge ' + status[1];
-
-        const itemsList = document.getElementById('resItemsList');
-        itemsList.replaceChildren();
-
-        if (items.length > 0) {
-            items.forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'track-item';
-
-                const img = document.createElement('img');
-                const imageUrl = item.image_url || '';
-
-                img.src = imageUrl.startsWith('https://') ||
-                          imageUrl.startsWith('http://')
-                    ? imageUrl
-                    : 'https://via.placeholder.com/60';
-
-                img.alt = 'صورة المنتج';
-
-                img.onerror = () => {
-                    img.onerror = null;
-                    img.src = 'https://via.placeholder.com/60';
-                };
-
-                const info = document.createElement('div');
-                info.className = 'track-item-info';
-
-                const name = document.createElement('h4');
-                name.textContent = item.product_name || 'منتج غير معروف';
-
-                const details = document.createElement('p');
-                const variants = [];
-
-                if (item.size) variants.push('مقاس: ' + item.size);
-                if (item.color) variants.push('لون: ' + item.color);
-
-                details.textContent = 'الكمية: ' + item.quantity +
-                    (variants.length ? ' | ' + variants.join(' | ') : '');
-
-                info.append(name, details);
-
-                const price = document.createElement('div');
-                price.className = 'track-item-price';
-                price.textContent =
-                    (Number(item.price) * Number(item.quantity))
-                    .toLocaleString('ar-EG') + ' ج';
-
-                row.append(img, info, price);
-                itemsList.appendChild(row);
-            });
-        } else {
-            const empty = document.createElement('p');
-            empty.style.color = '#888';
-            empty.textContent = 'لا توجد تفاصيل للمنتجات.';
-            itemsList.appendChild(empty);
-        }
-
-        resultBox.style.display = 'block';
-
-    } catch (err) {
-        console.error('Track order error:', err);
-        errorMsg.textContent = 'حصلت مشكلة أثناء البحث. حاول مرة تانية.';
-        errorMsg.style.display = 'block';
+        showError(
+            'حصلت مشكلة أثناء البحث. حاول مرة تانية بعد قليل.'
+        );
 
     } finally {
-        btn.innerText = 'تتبع الطلب';
+
         btn.disabled = false;
+        btn.textContent = 'تتبع الطلب';
+
     }
+
 });
 </script>
 
-
-        document.getElementById('trackForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('trackBtn');
-            btn.innerText = 'جاري البحث...';
-            btn.disabled = true;
-            
-            const orderId = document.getElementById('orderIdInput').value;
-            const phone = document.getElementById('phoneInput').value;
-
-            const { data, error } = await supabaseClient
-                .from('orders')
-                .select(`
-                    *,
-                    order_items (
-                        quantity,
-                        price,
-                        size,
-                        color,
-                        products (name, image_url)
-                    )
-                `)
-                .eq('id', orderId)
-                .eq('customer_phone', phone)
-                .single();
-
-            const resultBox = document.getElementById('resultBox');
-            const errorMsg = document.getElementById('errorMsg');
-
-            if (error || !data) {
-                resultBox.style.display = 'none';
-                errorMsg.style.display = 'block';
-            } else {
-                errorMsg.style.display = 'none';
-                resultBox.style.display = 'block';
-                
-                document.getElementById('resOrderId').innerText = data.id;
-                document.getElementById('resDate').innerText = new Date(data.created_at).toLocaleDateString('ar-EG');
-                document.getElementById('resTotal').innerText = data.total_price;
-                
-                const statusBadge = document.getElementById('resStatus');
-                let statusText = '', statusClass = '';
-                if(data.status === 'pending') { statusText = 'قيد الانتظار'; statusClass = 'status-pending'; }
-                else if(data.status === 'shipped') { statusText = 'تم الشحن'; statusClass = 'status-shipped'; }
-                else if(data.status === 'delivered') { statusText = 'تم التوصيل'; statusClass = 'status-delivered'; }
-                else { statusText = 'ملغي'; statusClass = 'status-cancelled'; }
-                statusBadge.innerText = statusText;
-                statusBadge.className = 'order-status-badge ' + statusClass;
-
-                const itemsList = document.getElementById('resItemsList');
-                itemsList.innerHTML = '';
-                if(data.order_items && data.order_items.length > 0) {
-                    data.order_items.forEach(item => {
-                        let variant = '';
-                        if(item.size) variant += ` | مقاس: ${item.size}`;
-                        if(item.color) variant += ` | لون: ${item.color}`;
-                        
-                        itemsList.innerHTML += `
-                            <div class="track-item">
-                                <img src="${item.products?.image_url || 'https://via.placeholder.com/60'}" alt="صورة المنتج">
-                                <div class="track-item-info">
-                                    <h4>${item.products?.name || 'منتج غير معروف'}</h4>
-                                    <p>الكمية: ${item.quantity} ${variant}</p>
-                                </div>
-                                <div class="track-item-price">${item.price * item.quantity} ج</div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    itemsList.innerHTML = '<p style="color:#888;">لا توجد تفاصيل للمنتجات.</p>';
-                }
-            }
-
-            btn.innerText = 'تتبع الطلب';
-            btn.disabled = false;
-        });
-    </script>
 </body>
 </html>
