@@ -132,7 +132,7 @@ $('authForm').addEventListener('submit',async e=>{
 });
 $('verifyOtpBtn').addEventListener('click',async()=>{
   const token=$('emailOtp').value.trim();
-  if(!/^\\d{6}$/.test(token)){setNotice('اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
+  if(!/^\d{6}$/.test(token)){setNotice('اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
   const btn=$('verifyOtpBtn');btn.disabled=true;
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
