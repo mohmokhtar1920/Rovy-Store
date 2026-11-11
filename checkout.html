@@ -65,6 +65,8 @@
 </head>
 <body>
 
+<div id="siteToast" class="site-toast info" role="status" aria-live="polite"><div class="site-toast-icon"><i class="fas fa-info"></i></div><div class="site-toast-content"><div class="site-toast-title" id="siteToastTitle">ROVY STORE</div><p class="site-toast-message" id="siteToastMessage"></p></div><button class="site-toast-close" type="button" aria-label="إغلاق" onclick="hideToast()"><i class="fas fa-times"></i></button></div>
+
     <header>
         <a href="index.html" class="logo">ROVY<span>.</span></a>
     </header>
@@ -162,6 +164,23 @@
 
    
 <script>
+
+        let siteToastTimer;
+        function showToast(message,type='info',title='ROVY STORE'){
+            const box=document.getElementById('siteToast');
+            if(!box)return;
+            const config={success:['fa-check','تم بنجاح'],error:['fa-exclamation','نحتاج انتباهك'],info:['fa-info','تنبيه']};
+            const selected=config[type]||config.info;
+            box.className='site-toast '+type;
+            box.querySelector('.site-toast-icon').innerHTML='<i class="fas '+selected[0]+'"></i>';
+            document.getElementById('siteToastTitle').textContent=title||selected[1];
+            document.getElementById('siteToastMessage').textContent=message;
+            box.classList.add('show');
+            clearTimeout(siteToastTimer);
+            siteToastTimer=setTimeout(hideToast,4200);
+        }
+        function hideToast(){const box=document.getElementById('siteToast');if(box)box.classList.remove('show');}
+
     const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -315,12 +334,12 @@
         const address = document.getElementById('cAddress').value.trim();
 
         if (!name || !phone || !address) {
-            alert('من فضلك أكمل جميع بيانات التوصيل.');
+            showToast("راجع الاسم ورقم الموبايل والعنوان، وتأكد من استكمال البيانات المطلوبة.", "info", "بيانات التوصيل");
             return;
         }
 
         if (!Array.isArray(cart) || cart.length === 0) {
-            alert('سلة المشتريات فارغة.');
+            showToast("سلة المشتريات فارغة. أضف المنتجات أولاً ثم أكمل طلبك.", "info", "سلتك فارغة");
             return;
         }
 
@@ -332,7 +351,7 @@
 
             if (!Number.isSafeInteger(productId) || productId <= 0 ||
                 !Number.isSafeInteger(quantity) || quantity <= 0) {
-                alert('يوجد منتج أو كمية غير صالحة في سلة المشتريات.');
+                showToast("يوجد منتج ببيانات غير مكتملة داخل السلة. ارجع للسلة وحدّث المنتجات.", "error", "راجع سلة المشتريات");
                 return;
             }
 
@@ -342,7 +361,7 @@
                 variantId = Number(item.variantId);
 
                 if (!Number.isSafeInteger(variantId) || variantId <= 0) {
-                    alert('بيانات مقاس أو لون أحد المنتجات غير صالحة.');
+                    showToast("بيانات المقاس أو اللون لأحد المنتجات غير مكتملة. أعد اختيار المنتج من صفحة المتجر.", "error", "راجع خيارات المنتج");
                     return;
                 }
             }
@@ -401,7 +420,7 @@
             } else if (serverMessage.includes('الكوبون غير صحيح أو غير نشط')) {
                 friendlyMessage = 'كود الخصم غير صالح أو انتهت صلاحيته. يُرجى التأكد من الكود أو إزالة الكوبون.';
             }
-            alert(friendlyMessage);
+            showToast(friendlyMessage, "error", "تعذر تأكيد الطلب");
 
             btn.disabled = false;
             btn.textContent = 'تأكيد الطلب';
