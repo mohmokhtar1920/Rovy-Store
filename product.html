@@ -240,6 +240,12 @@
             return chunks;
         }
 
+        function decodeTranslatedText(value) {
+            const box = document.createElement('textarea');
+            box.innerHTML = String(value || '');
+            return box.value;
+        }
+
         async function translateProductText(value) {
             const original = String(value || '').trim();
             if (!english || !original || !/[\u0600-\u06FF]/.test(original)) return original;
@@ -255,7 +261,7 @@
                     if (Number(result.responseStatus) !== 200 || !result.responseData?.translatedText) throw new Error('Translation unavailable');
                     translatedParts.push(result.responseData.translatedText);
                 }
-                const translated = translatedParts.join('').trim();
+                const translated = decodeTranslatedText(translatedParts.join('')).trim();
                 if (!translated) return original;
                 translationCache[key] = translated;
                 try { localStorage.setItem('rovyAutoTranslations', JSON.stringify(translationCache)); } catch {}
