@@ -226,6 +226,12 @@
             document.getElementById('checkoutBtn').textContent = english ? 'Checkout' : 'إتمام الطلب';
             document.getElementById('accountLink').title = english ? 'My Account' : 'تسجيل الدخول';
             document.getElementById('accountLink').setAttribute('aria-label', document.getElementById('accountLink').title);
+            const footerMap = {'من نحن':'About Us','اتصل بنا':'Contact Us','تتبع طلبك':'Track Order','سياسة الاستبدال والاسترجاع':'Returns Policy','سياسة الخصوصية':'Privacy Policy','الأسئلة الشائعة':'FAQ'};
+            document.querySelectorAll('footer a').forEach(a => {
+                const reverse = Object.fromEntries(Object.entries(footerMap).map(([ar,en])=>[en,ar]));
+                if (english && footerMap[a.textContent.trim()]) a.textContent = footerMap[a.textContent.trim()];
+                else if (!english && reverse[a.textContent.trim()]) a.textContent = reverse[a.textContent.trim()];
+            });
             renderCategoryCards();
             renderHomeSections();
             updateCart();
@@ -417,7 +423,7 @@
                 if(filtered.length > 0) {
                     filtered.forEach(p => { newGrid.innerHTML += createProductCard(p); });
                 } else {
-                    newGrid.innerHTML = '<p style="text-align:center; width:100%;">لا توجد منتجات في هذا القسم.</p>';
+                    newGrid.innerHTML = `<p style="text-align:center; width:100%;">${english ? 'No products in this category.' : 'لا توجد منتجات في هذا القسم.'}</p>`;
                 }
                 document.getElementById('newArrivals').scrollIntoView({behavior: 'smooth'});
             }
@@ -497,7 +503,7 @@
 
         function removeFromCart(id) { cart = cart.filter(item => item.id !== id); updateCart(); }
         function toggleCart() { document.getElementById('cartSidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
-        function checkout() { if (cart.length === 0) { showToast("أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.", "info", "سلتك فارغة"); return; } window.location.href = 'checkout.html'; }
+        function checkout() { if (cart.length === 0) { showToast(english ? 'Add at least one product before checkout.' : 'أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.', 'info', english ? 'Your cart is empty' : 'سلتك فارغة'); return; } window.location.href = 'checkout.html'; }
         function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
 
         if (english) {
