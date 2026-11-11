@@ -52,6 +52,8 @@
         .product-price { color: #b58a61; font-weight: 900; font-size: 20px; margin-bottom: 15px; }
         .add-to-cart-btn { background: #171717; color: white; border: none; padding: 12px 20px; width: 90%; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
         .add-to-cart-btn:hover { background: #b58a61; }
+        .add-to-cart-btn:disabled { background:#b8b8b8; color:#fff; cursor:not-allowed; opacity:.9; }
+        .product-stock-badge { display:inline-flex; align-items:center; gap:6px; margin:8px 0; padding:6px 11px; border-radius:20px; background:#fff0f0; color:#a32929; font-size:12px; font-weight:700; }
 
         .cart-sidebar { position: fixed; top: 0; right: -400px; width: 350px; height: 100vh; background: #fff; z-index: 1000; box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: 0.3s; display: flex; flex-direction: column; }
         .cart-sidebar.open { right: 0; }
@@ -258,7 +260,8 @@
                     <div class="product-info">
                         <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title">${p.name}</div></a>
                         <div class="product-price">${p.price} جنيه</div>
-                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})">${english ? 'Add to Cart' : 'أضف للسلة'}</button>
+                        ${Number(p.stock) <= 0 ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> المنتج نفد</span>' : ''}
+                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})" ${Number(p.stock) <= 0 ? 'disabled' : ''}>${Number(p.stock) <= 0 ? (english ? 'Sold Out' : 'المنتج نفد') : (english ? 'Add to Cart' : 'أضف للسلة')}</button>
                     </div>
                 </div>
             `;
@@ -271,6 +274,7 @@
 
         function handleAddToCart(id) {
             const product = allProducts.find(p => p.id === id);
+            if (!product || Number(product.stock) <= 0) return;
             if (product.sizes || product.colors || (product.gallery_images && product.gallery_images.length > 0)) {
                 window.location.href = `product.html?id=${id}`;
             } else {
