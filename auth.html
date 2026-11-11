@@ -63,7 +63,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <script>
 const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'rovy-store-auth'}});
 const $=id=>document.getElementById(id);
 let mode='login';
 let pendingSignupEmail='';
