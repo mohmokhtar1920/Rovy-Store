@@ -85,10 +85,8 @@
                     <label>رقم الموبايل</label>
                     <input type="tel" id="cPhone" required placeholder="01xxxxxxxxx">
                 </div>
-                <div class="form-group">
-                    <label>العنوان بالتفصيل</label>
-                    <textarea id="cAddress" required placeholder="المحافظة، المدينة، الشارع، رقم العمارة..."></textarea>
-                </div>
+                <div class="form-group"><label>المحافظة</label><select id="cGovernorate" required style="width:100%;padding:12px;border:1px solid #ddd;border-radius:5px;font-family:inherit;font-size:15px;background:#fff"><option value="">اختر المحافظة</option></select><small id="shippingHint" style="display:block;color:#777;margin-top:7px"></small></div>
+                <div class="form-group"><label>العنوان بالتفصيل</label><textarea id="cAddress" required placeholder="المدينة، المنطقة، الشارع، رقم العمارة، الدور والشقة..."></textarea></div>
                 <button type="submit" class="btn-submit" id="submitBtn">تأكيد الطلب</button>
             </form>
         </div>
@@ -105,10 +103,7 @@
                 <div class="coupon-msg" id="couponMsg"></div>
             </div>
 
-            <div class="total-row">
-                <span>الإجمالي:</span>
-                <span id="checkoutTotalContainer">0 جنيه</span>
-            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:18px;color:#666;font-size:15px"><span id="subtotalLabel">قيمة المنتجات:</span><strong id="checkoutSubtotal">0 جنيه</strong></div><div style="display:flex;justify-content:space-between;margin-top:10px;color:#666;font-size:15px"><span id="shippingLabel">الشحن:</span><strong id="checkoutShipping">اختر المحافظة</strong></div><div class="total-row"><span>الإجمالي:</span><span id="checkoutTotalContainer">0 جنيه</span></div>
         </div>
     </div>
 
@@ -200,10 +195,15 @@
         const labels=document.querySelectorAll('#checkoutForm label');
         if(labels[0])labels[0].textContent=english?'Full Name':'الاسم بالكامل';
         if(labels[1])labels[1].textContent=english?'Mobile Number':'رقم الموبايل';
-        if(labels[2])labels[2].textContent=english?'Full Address':'العنوان بالتفصيل';
+        if(labels[2])labels[2].textContent=english?'Governorate':'المحافظة';
+        if(labels[3])labels[3].textContent=english?'Detailed Address':'العنوان بالتفصيل';
         document.getElementById('cName').placeholder=english?'e.g. Mohamed Ahmed':'مثال: محمد أحمد';
         document.getElementById('cPhone').placeholder='01xxxxxxxxx';
-        document.getElementById('cAddress').placeholder=english?'Governorate, city, street, building number...':'المحافظة، المدينة، الشارع، رقم العمارة...';
+        document.getElementById('cAddress').placeholder=english?'City, area, street, building, floor and apartment...':'المدينة، المنطقة، الشارع، رقم العمارة، الدور والشقة...';
+        document.getElementById('subtotalLabel').textContent=english?'Products:':'قيمة المنتجات:';
+        document.getElementById('shippingLabel').textContent=english?'Shipping:':'الشحن:';
+        updateCheckoutTotals();
+        renderGovernorateOptions();
         document.getElementById('submitBtn').textContent=english?'Confirm Order':'تأكيد الطلب';
         document.getElementById('couponCode').placeholder=english?'Enter coupon code':'أدخل كود الخصم هنا';
         document.querySelector('.coupon-input-group button').textContent=english?'Apply':'تطبيق';
@@ -233,6 +233,8 @@
     let originalTotal = 0;
     let finalTotal = 0;
     let appliedCouponCode = null;
+    let shippingGovernorates = [];
+    let shippingFee = null;
 
 
     async function initCheckout(){
@@ -246,6 +248,7 @@
         const nameInput=document.getElementById('cName');
         if(fullName && nameInput && !nameInput.value) nameInput.value=fullName;
         document.getElementById('checkoutSection').style.display='grid';
+        await loadShippingGovernorates();
         renderCheckout();
     }
 
@@ -253,6 +256,10 @@
         return Number(value || 0).toLocaleString('en-US');
     }
 
+    const governorateEnglishNames={'القاهرة':'Cairo','الجيزة':'Giza','الإسكندرية':'Alexandria','القليوبية':'Qalyubia','الدقهلية':'Dakahlia','الشرقية':'Sharqia','الغربية':'Gharbia','المنوفية':'Menoufia','البحيرة':'Beheira','كفر الشيخ':'Kafr El Sheikh','دمياط':'Damietta','بورسعيد':'Port Said','الإسماعيلية':'Ismailia','السويس':'Suez','شمال سيناء':'North Sinai','جنوب سيناء':'South Sinai','الفيوم':'Fayoum','بني سويف':'Beni Suef','المنيا':'Minya','أسيوط':'Assiut','سوهاج':'Sohag','قنا':'Qena','الأقصر':'Luxor','أسوان':'Aswan','البحر الأحمر':'Red Sea','الوادي الجديد':'New Valley','مطروح':'Matrouh'};
+    function renderGovernorateOptions(){const sel=document.getElementById('cGovernorate');if(!sel)return;const old=sel.value;sel.innerHTML='';const first=document.createElement('option');first.value='';first.textContent=english?'Choose governorate':'اختر المحافظة';sel.appendChild(first);shippingGovernorates.forEach(g=>{const o=document.createElement('option');o.value=String(g.id);o.textContent=english?(governorateEnglishNames[g.name]||g.name):g.name;sel.appendChild(o);});if(shippingGovernorates.some(g=>String(g.id)===old))sel.value=old;if(!shippingGovernorates.length){const o=document.createElement('option');o.value='';o.textContent=english?'Shipping is not configured yet':'لم يتم إعداد أسعار الشحن بعد';sel.appendChild(o);}const hint=document.getElementById('shippingHint');if(hint)hint.textContent=english?'Shipping fee is calculated automatically by governorate.':'سعر الشحن بيتحسب تلقائيًا حسب المحافظة.';}
+    async function loadShippingGovernorates(){const {data,error}=await supabaseClient.rpc('get_active_shipping_governorates');if(error)throw error;shippingGovernorates=Array.isArray(data)?data:[];renderGovernorateOptions();const sel=document.getElementById('cGovernorate');if(sel)sel.addEventListener('change',()=>{const g=shippingGovernorates.find(x=>String(x.id)===sel.value);shippingFee=g?Number(g.shipping_fee):null;updateCheckoutTotals();});}
+    function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');ship.textContent=shippingFee===null?(english?'Choose governorate':'اختر المحافظة'):formatPrice(shippingFee)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingFee===null?0:shippingFee))+(english?' EGP':' جنيه');}
     function renderCheckout() {
         if (!Array.isArray(cart) || cart.length === 0) {
             window.location.href = 'index.html';
@@ -320,7 +327,7 @@
         });
 
         finalTotal = originalTotal;
-        totalContainer.textContent = formatPrice(finalTotal) + (english?' EGP':' جنيه');
+        updateCheckoutTotals();
     }
 
     async function applyCoupon() {
@@ -334,7 +341,7 @@
         if (!code) {
             msg.style.color = 'red';
             msg.textContent = english ? 'Please enter a discount code first.' : 'اكتب كود الخصم أولاً.';
-            totalContainer.textContent = formatPrice(originalTotal) + (english?' EGP':' جنيه');
+            updateCheckoutTotals();
             return;
         }
 
@@ -369,8 +376,7 @@
             msg.style.color = 'green';
             msg.textContent = english ? 'Code verified. The final discount will be applied when your order is confirmed.' : 'تم التحقق من الكود. سيتم اعتماد الخصم النهائي عند تأكيد الطلب.';
 
-            totalContainer.textContent =
-                formatPrice(finalTotal) + ' جنيه (تقديري)';
+            updateCheckoutTotals();
 
         } catch (error) {
             appliedCouponCode = null;
@@ -379,7 +385,7 @@
             msg.style.color = 'red';
             msg.textContent = english ? 'Could not verify the discount code. Please try again.' : (error.message || 'تعذر التحقق من كود الخصم.');
 
-            totalContainer.textContent = formatPrice(originalTotal) + ' جنيه';
+            updateCheckoutTotals();
         }
     }
 
@@ -398,9 +404,10 @@
         const name = document.getElementById('cName').value.trim();
         const phone = document.getElementById('cPhone').value.trim();
         const address = document.getElementById('cAddress').value.trim();
+        const governorateId = Number(document.getElementById('cGovernorate').value);
 
-        if (!name || !phone || !address) {
-            showToast("راجع الاسم ورقم الموبايل والعنوان، وتأكد من استكمال البيانات المطلوبة.", "info", "بيانات التوصيل");
+        if (!name || !phone || !address || !Number.isSafeInteger(governorateId) || governorateId<=0) {
+            showToast("راجع الاسم ورقم الموبايل والمحافظة والعنوان، وتأكد من استكمال البيانات المطلوبة.", "info", "بيانات التوصيل");
             return;
         }
 
@@ -446,13 +453,14 @@
 
         try {
             const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
-                'create_order_secure',
+                'create_order_secure_with_shipping',
                 {
                     p_customer_name: name,
                     p_customer_phone: phone,
                     p_customer_address: address,
                     p_items: itemsPayload,
-                    p_coupon_code: appliedCouponCode
+                    p_coupon_code: appliedCouponCode,
+                    p_governorate_id: governorateId
                 }
             );
 
@@ -485,6 +493,8 @@
                 friendlyMessage = 'عذراً، هذا المنتج لم يعد متاحاً للبيع حالياً. يُرجى حذفه من السلة لمتابعة الطلب.';
             } else if (serverMessage.includes('الكوبون غير صحيح أو غير نشط')) {
                 friendlyMessage = 'كود الخصم غير صالح أو انتهت صلاحيته. يُرجى التأكد من الكود أو إزالة الكوبون.';
+            } else if (serverMessage.includes('المحافظة غير متاحة للشحن حالياً')) {
+                friendlyMessage = 'المحافظة المختارة غير متاحة للشحن حاليًا. اختر محافظة أخرى أو تواصل معنا.';
             }
             showToast(friendlyMessage, "error", "تعذر تأكيد الطلب");
 
