@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حسابي | ROVY STORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;font-family:'Cairo',sans-serif}body{margin:0;background:#f8f7f5;color:#222;min-height:100vh;display:flex;flex-direction:column}
+header{height:76px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;padding:0 6%}
+.logo{font-size:27px;font-weight:900;letter-spacing:2px;color:#222;text-decoration:none}.logo span{color:#b58a61}
+.back{color:#777;text-decoration:none;font-size:14px}.page{flex:1;display:flex;justify-content:center;align-items:center;padding:35px 16px}
+.auth-card{width:100%;max-width:460px;background:#fff;border:1px solid #eee;border-radius:20px;padding:32px;box-shadow:0 15px 45px rgba(0,0,0,.07)}
+.brand-icon{width:58px;height:58px;border-radius:18px;background:#f5eee7;color:#a77b53;display:grid;place-items:center;font-size:24px;margin:0 auto 15px}
+h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{text-align:center;color:#888;font-size:13px;margin:0 0 25px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:#f5f5f5;padding:5px;border-radius:11px;margin-bottom:22px}
+.tabs button{border:0;background:transparent;padding:10px;border-radius:8px;color:#777;font-weight:700;cursor:pointer}
+.tabs button.active{background:#fff;color:#a77b53;box-shadow:0 2px 8px #0000000d}
+.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+.field input{width:100%;padding:13px 14px;border:1px solid #e2e2e2;border-radius:10px;font-size:14px;outline:none;direction:rtl}
+.field input:focus{border-color:#b58a61;box-shadow:0 0 0 3px #b58a611c}
+.submit{width:100%;border:0;border-radius:10px;background:#171717;color:#fff;padding:14px;font-size:15px;font-weight:900;cursor:pointer;margin-top:5px;transition:.2s}
+.submit:hover{background:#b58a61}.submit:disabled{opacity:.6;cursor:wait}
+.notice{display:none;margin-top:15px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.7}
+.notice.error{display:block;background:#fff0f0;color:#a32929;border:1px solid #f0d0d0}
+.notice.success{display:block;background:#eef8f1;color:#267044;border:1px solid #d4eadb}
+.account-panel{display:none;text-align:center}.account-email{color:#777;font-size:14px;direction:ltr;margin:10px 0 20px}
+.account-actions{display:grid;gap:10px}.secondary{display:block;text-align:center;padding:12px;border:1px solid #e5ddd5;border-radius:10px;color:#8b6849;text-decoration:none;font-weight:700}
+@media(max-width:480px){.auth-card{padding:25px 20px}.page{align-items:flex-start;padding-top:28px}}
+</style>
+</head>
+<body>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><a class="back" href="index.html"><i class="fas fa-arrow-right"></i> العودة للمتجر</a></header>
+<main class="page">
+<section class="auth-card" id="authCard">
+<div class="brand-icon"><i class="fas fa-user-lock"></i></div>
+<h1>أهلاً بك في ROVY</h1>
+<p class="subtitle">سجّل دخولك أو أنشئ حساباً لمتابعة طلباتك وإتمام الشراء.</p>
+<div class="tabs" id="authTabs"><button type="button" class="active" id="loginTab">تسجيل الدخول</button><button type="button" id="signupTab">إنشاء حساب</button></div>
+<form id="authForm">
+<div class="field" id="nameField" style="display:none"><label for="fullName">الاسم بالكامل</label><input id="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك"></div>
+<div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" required autocomplete="email" placeholder="name@example.com" dir="ltr"></div>
+<div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" required minlength="8" autocomplete="current-password" placeholder="8 أحرف على الأقل" dir="ltr"></div>
+<button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
+</form>
+<div class="notice" id="notice" role="status"></div>
+</section>
+<section class="auth-card account-panel" id="accountPanel">
+<div class="brand-icon"><i class="fas fa-user-check"></i></div>
+<h1>حسابك جاهز</h1>
+<p class="subtitle">أنت مسجل الدخول حالياً في ROVY STORE.</p>
+<div id="accountName"></div><div class="account-email" id="accountEmail"></div>
+<div class="account-actions"><a class="submit" id="continueLink" href="index.html">متابعة التسوق</a><button class="secondary" id="signOutBtn" type="button">تسجيل الخروج</button></div>
+</section>
+</main>
+<script>
+const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);
+let mode='login';
+const params=new URLSearchParams(location.search);
+const requestedNext=params.get('next')||localStorage.getItem('rovyAuthNext')||'index.html';
+const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
+localStorage.setItem('rovyAuthNext',nextPage);
+function setNotice(message,type='error'){const n=$('notice');n.className='notice '+type;n.textContent=message;}
+function setMode(next){
+ mode=next;
+ $('loginTab').classList.toggle('active',mode==='login');
+ $('signupTab').classList.toggle('active',mode==='signup');
+ $('nameField').style.display=mode==='signup'?'block':'none';
+ $('password').autocomplete=mode==='signup'?'new-password':'current-password';
+ $('submitBtn').textContent=mode==='signup'?'إنشاء حساب جديد':'تسجيل الدخول';
+ $('notice').className='notice';$('notice').textContent='';
+}
+function showAccount(user){
+ $('authCard').style.display='none';$('accountPanel').style.display='block';
+ $('accountName').textContent=user.user_metadata?.full_name||'مرحباً بك';
+ $('accountEmail').textContent=user.email||'';
+ $('continueLink').href=nextPage;
+}
+function redirectAfterAuth(){localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
+async function checkSession(){
+ const {data,error}=await supabaseClient.auth.getSession();
+ if(error){setNotice('تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
+ if(data.session){
+   if(nextPage==='checkout.html') redirectAfterAuth();
+   else showAccount(data.session.user);
+ }
+}
+$('loginTab').addEventListener('click',()=>setMode('login'));
+$('signupTab').addEventListener('click',()=>setMode('signup'));
+$('authForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const btn=$('submitBtn');btn.disabled=true;
+ const email=$('email').value.trim().toLowerCase();
+ const password=$('password').value;
+ try{
+  if(mode==='signup'){
+   const fullName=$('fullName').value.trim();
+   if(fullName.length<2)throw new Error('اكتب اسمك بالكامل قبل إنشاء الحساب.');
+   if(password.length<8)throw new Error('كلمة المرور لازم تكون 8 أحرف على الأقل.');
+   const redirectTo=location.origin+location.pathname+'?next='+encodeURIComponent(nextPage);
+   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:redirectTo}});
+   if(error)throw error;
+   if(data.session){setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
+   else setNotice('تم إنشاء الحساب. افتح رسالة التأكيد التي أرسلناها إلى بريدك الإلكتروني، وبعد التأكيد ارجع إلى الموقع لتكملة الطلب.','success');
+  }else{
+   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+   if(error)throw error;
+   if(data.session)redirectAfterAuth();
+  }
+ }catch(err){
+  let message=err.message||'تعذر إتمام العملية. حاول مرة أخرى.';
+  if(/invalid login credentials/i.test(message))message='البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+  if(/email not confirmed/i.test(message))message='أكد بريدك الإلكتروني من الرسالة التي أرسلناها لك أولاً.';
+  setNotice(message,'error');
+ }finally{btn.disabled=false;}
+});
+$('signOutBtn').addEventListener('click',async()=>{
+ const {error}=await supabaseClient.auth.signOut();
+ if(error){setNotice('تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
+ location.replace('index.html');
+});
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+ if(session && event==='SIGNED_IN' && nextPage==='checkout.html') redirectAfterAuth();
+});
+checkSession();
+</script>
+</body>
+</html>
