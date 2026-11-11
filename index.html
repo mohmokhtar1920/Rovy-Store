@@ -226,6 +226,7 @@
             document.getElementById('checkoutBtn').textContent = english ? 'Checkout' : 'إتمام الطلب';
             document.getElementById('accountLink').title = english ? 'My Account' : 'تسجيل الدخول';
             document.getElementById('accountLink').setAttribute('aria-label', document.getElementById('accountLink').title);
+            renderCategoryCards();
             renderHomeSections();
             updateCart();
         }
