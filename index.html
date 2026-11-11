@@ -96,6 +96,7 @@
         <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()"></div>
         
         <div class="header-icons">
+            <a href="auth.html" class="icon-btn" id="accountLink" title="تسجيل الدخول" aria-label="تسجيل الدخول"><i class="fas fa-user-circle"></i></a>
             <a href="track.html" class="icon-btn" title="تتبع طلبك" style="margin-right: 10px;">
                 <i class="fas fa-map-location-dot"></i>
             </a>
@@ -170,6 +171,20 @@
         const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function refreshAccountLink(session){
+            const link=document.getElementById('accountLink');
+            if(!link)return;
+            if(session===undefined){
+                const {data}=await supabaseClient.auth.getSession();
+                session=data.session;
+            }
+            link.title=session?'حسابي':'تسجيل الدخول';
+            link.setAttribute('aria-label',link.title);
+            link.innerHTML=session?'<i class="fas fa-user-check"></i>':'<i class="fas fa-user-circle"></i>';
+        }
+        refreshAccountLink();
+        supabaseClient.auth.onAuthStateChange((_event,session)=>refreshAccountLink(session));
 
 
         let siteToastTimer;
