@@ -170,6 +170,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let allProducts = [];
+        let productVariantStock = {};
         let activeCategories = [];
         let currentCategory = 'All';
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
@@ -179,6 +180,14 @@
             const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
             if (error) return;
             allProducts = data;
+            const { data: variantRows } = await supabaseClient.from('product_variants').select('product_id, stock');
+            productVariantStock = {};
+            (variantRows || []).forEach(v => {
+                const key = String(v.product_id);
+                if (!productVariantStock[key]) productVariantStock[key] = { count: 0, available: false };
+                productVariantStock[key].count++;
+                if (Number(v.stock) > 0) productVariantStock[key].available = true;
+            });
             await fetchActiveCategories();
             renderHomeSections();
         }
@@ -253,15 +262,21 @@
             }
         }
 
+        function isProductAvailable(p) {
+            const variantInfo = productVariantStock[String(p.id)];
+            return variantInfo ? variantInfo.available : Number(p.stock) > 0;
+        }
+
         function createProductCard(p) {
+            const available = isProductAvailable(p);
             return `
                 <div class="product-card">
                     <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}"></a>
                     <div class="product-info">
                         <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title">${p.name}</div></a>
                         <div class="product-price">${p.price} جنيه</div>
-                        ${Number(p.stock) <= 0 ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> المنتج نفد</span>' : ''}
-                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})" ${Number(p.stock) <= 0 ? 'disabled' : ''}>${Number(p.stock) <= 0 ? (english ? 'Sold Out' : 'المنتج نفد') : (english ? 'Add to Cart' : 'أضف للسلة')}</button>
+                        ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> المنتج نفد</span>' : ''}
+                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})" ${!available ? 'disabled' : ''}>${!available ? (english ? 'Sold Out' : 'المنتج نفد') : (english ? 'Add to Cart' : 'أضف للسلة')}</button>
                     </div>
                 </div>
             `;
@@ -274,7 +289,7 @@
 
         function handleAddToCart(id) {
             const product = allProducts.find(p => p.id === id);
-            if (!product || Number(product.stock) <= 0) return;
+            if (!product || !isProductAvailable(product)) return;
             if (product.sizes || product.colors || (product.gallery_images && product.gallery_images.length > 0)) {
                 window.location.href = `product.html?id=${id}`;
             } else {
