@@ -376,7 +376,7 @@
             } else if (Number(currentProduct.stock) > 0) {
                 document.getElementById('addToCartBtn').disabled = false;
             } else {
-                document.getElementById('stockNotice').innerHTML = '<div class="stock-note"><i class="fas fa-box-open"></i><span>عذراً، المنتج نفد من المخزون حالياً.</span></div>';
+                document.getElementById('stockNotice').innerHTML = `<div class="stock-note"><i class="fas fa-box-open"></i><span>${english ? 'Sorry, this product is currently out of stock.' : 'عذراً، المنتج نفد من المخزون حالياً.'}</span></div>`;
                 const soldBtn = document.getElementById('addToCartBtn');
                 soldBtn.innerHTML = '<i class="fas fa-ban"></i> المنتج نفد';
                 soldBtn.classList.add('is-sold-out');
@@ -408,7 +408,7 @@
                 btn.disabled = true;
                 btn.innerHTML = variant ? `<i class="fas fa-ban"></i> ${english ? 'Sold Out' : 'المنتج نفد'}` : `<i class="fas fa-info-circle"></i> ${english ? 'This option is unavailable' : 'هذا الاختيار غير متاح'}`;
                 btn.classList.toggle('is-sold-out', !!variant);
-                document.getElementById('stockNotice').innerHTML = variant ? '<div class="stock-note"><i class="fas fa-box-open"></i><span>نفدت الكمية من هذا المقاس/اللون.</span></div>' : '';
+                document.getElementById('stockNotice').innerHTML = variant ? `<div class="stock-note"><i class="fas fa-box-open"></i><span>${english ? 'This size/color is out of stock.' : 'نفدت الكمية من هذا المقاس/اللون.'}</span></div>` : '';
             }
         }
         
@@ -468,7 +468,7 @@
                 avgRatingText.innerText = "0";
                 avgStars.innerHTML = `<i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>`;
                 reviewCount.innerText = `(0 مراجعة)`;
-                reviewsList.innerHTML = '<p style="color:#888;">لا توجد مراجعات لهذا المنتج حتى الآن. كن أول من يقيّمه!</p>';
+                reviewsList.innerHTML = `<p style="color:#888;">${english ? 'There are no reviews for this product yet. Be the first to review it!' : 'لا توجد مراجعات لهذا المنتج حتى الآن. كن أول من يقيّمه!'}</p>`;
             }
         }
 
