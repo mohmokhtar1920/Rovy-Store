@@ -390,7 +390,18 @@
         } catch (error) {
             console.error('Checkout error:', error);
 
-            alert('تعذر إنشاء الطلب: ' + (error.message || 'يرجى المحاولة مرة أخرى.'));
+            const serverMessage = String(error.message || '');
+            let friendlyMessage = 'نعتذر، لم نتمكن من إتمام طلبك الآن. يُرجى المحاولة مرة أخرى بعد قليل.';
+            if (serverMessage.includes('الكمية المطلوبة غير متوفرة') ||
+                serverMessage.includes('الكمية غير متوفرة') ||
+                serverMessage.includes('المقاس أو اللون غير صحيح أو الكمية غير متوفرة')) {
+                friendlyMessage = 'نعتذر، الكمية المطلوبة من أحد المنتجات غير متاحة حالياً. يُرجى مراجعة الكمية أو اختيار مقاس ولون آخر، ثم المحاولة مرة أخرى.';
+            } else if (serverMessage.includes('هذا المنتج غير متاح للبيع')) {
+                friendlyMessage = 'عذراً، هذا المنتج لم يعد متاحاً للبيع حالياً. يُرجى حذفه من السلة لمتابعة الطلب.';
+            } else if (serverMessage.includes('الكوبون غير صحيح أو غير نشط')) {
+                friendlyMessage = 'كود الخصم غير صالح أو انتهت صلاحيته. يُرجى التأكد من الكود أو إزالة الكوبون.';
+            }
+            alert(friendlyMessage);
 
             btn.disabled = false;
             btn.textContent = 'تأكيد الطلب';
