@@ -347,7 +347,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const summary=items.map(i=>`${esc(i.product_name || i.name || 'منتج')} × ${Number(i.quantity||0)}`).join('، ') || '—';
     return `<tr>
       <td><strong>#${esc(o.id)}</strong><div class="muted">${esc(o.created_at ? new Date(o.created_at).toLocaleString('ar-EG') : '')}</div></td>
-      <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div></td>
+      <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div>${compact?'':`<div class="muted">${esc(o.governorate_name||'المحافظة غير محددة')} · الشحن: ${money(o.shipping_fee||0)}</div><div class="muted">${esc(o.customer_address||'')}</div>`}</td>
       ${compact?'':`<td>${summary}</td>`}
       <td>${money(o.total_price)}</td>
       <td><span class="${statusClass[o.status]||'pill'}">${esc(statusNames[o.status]||o.status)}</span></td>
