@@ -205,6 +205,7 @@
 
         function changeLanguage() {
             english = !english;
+            localStorage.setItem('rovyLanguage', english ? 'en' : 'ar');
             document.documentElement.lang = english ? 'en' : 'ar';
             document.documentElement.dir = english ? 'ltr' : 'rtl';
             document.getElementById('langBtn').textContent = english ? 'العربية' : 'English';
@@ -234,7 +235,7 @@
         let activeCategories = [];
         let currentCategory = 'All';
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
-        let english = false;
+        let english = localStorage.getItem('rovyLanguage') === 'en';
 
         async function fetchProducts() {
             const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
@@ -397,6 +398,9 @@
         function checkout() { if (cart.length === 0) { showToast("أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.", "info", "سلتك فارغة"); return; } window.location.href = 'checkout.html'; }
         function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
 
+        document.documentElement.lang = english ? 'en' : 'ar';
+        document.documentElement.dir = english ? 'ltr' : 'rtl';
+        document.getElementById('langBtn').textContent = english ? 'العربية' : 'English';
         fetchProducts();
         updateCart();
     </script>
