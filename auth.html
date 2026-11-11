@@ -62,9 +62,9 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);
 let mode='login';
 const params=new URLSearchParams(location.search);
-const requestedNext=params.get('next')||localStorage.getItem('rovyAuthNext')||'index.html';
+const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
-localStorage.setItem('rovyAuthNext',nextPage);
+
 function setNotice(message,type='error'){const n=$('notice');n.className='notice '+type;n.textContent=message;}
 function setMode(next){
  mode=next;
