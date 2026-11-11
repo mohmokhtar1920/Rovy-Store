@@ -46,6 +46,11 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
 </form>
 <div class="notice" id="notice" role="status"></div>
+<div id="otpPanel" style="display:none;margin-top:18px">
+ <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 6 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div>
+ <button class="submit" id="verifyOtpBtn" type="button">تأكيد البريد الإلكتروني</button>
+ <button class="secondary" id="resendOtpBtn" type="button" style="width:100%;margin-top:10px;background:#fff">إعادة إرسال الكود</button>
+</div>
 </section>
 <section class="auth-card account-panel" id="accountPanel">
 <div class="brand-icon"><i class="fas fa-user-check"></i></div>
@@ -60,7 +65,7 @@ const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const $=id=>document.getElementById(id);
-let mode='login';
+let mode='login';\nlet pendingSignupEmail='';
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
@@ -118,6 +123,27 @@ $('authForm').addEventListener('submit',async e=>{
   if(/email not confirmed/i.test(message))message='أكد بريدك الإلكتروني من الرسالة التي أرسلناها لك أولاً.';
   setNotice(message,'error');
  }finally{btn.disabled=false;}
+});
+$('verifyOtpBtn').addEventListener('click',async()=>{
+  const token=$('emailOtp').value.trim();
+  if(!/^\\d{6}$/.test(token)){setNotice('اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
+  const btn=$('verifyOtpBtn');btn.disabled=true;
+  try{
+    const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
+    if(error)throw error;
+    if(data.session)redirectAfterAuth();
+    else setNotice('تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');
+  }catch(err){setNotice(err.message||'الكود غير صحيح أو انتهت صلاحيته.');}
+  finally{btn.disabled=false;}
+});
+$('resendOtpBtn').addEventListener('click',async()=>{
+  const btn=$('resendOtpBtn');btn.disabled=true;
+  try{
+    const {error}=await supabaseClient.auth.resend({type:'signup',email:pendingSignupEmail});
+    if(error)throw error;
+    setNotice('طلبنا إعادة إرسال كود التأكيد. راجع بريدك الوارد والرسائل غير المرغوب فيها.','success');
+  }catch(err){setNotice(err.message||'تعذرت إعادة إرسال الكود. حاول لاحقاً.');}
+  finally{btn.disabled=false;}
 });
 $('signOutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
