@@ -11,7 +11,7 @@
 *{box-sizing:border-box;font-family:'Cairo',sans-serif}body{margin:0;background:#f8f7f5;color:#222;min-height:100vh;display:flex;flex-direction:column}
 header{height:76px;background:#fff;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;padding:0 6%}
 .logo{font-size:27px;font-weight:900;letter-spacing:2px;color:#222;text-decoration:none}.logo span{color:#b58a61}
-.back{color:#777;text-decoration:none;font-size:14px}.page{flex:1;display:flex;justify-content:center;align-items:center;padding:35px 16px}
+.back{color:#777;text-decoration:none;font-size:14px}.lang-btn{padding:8px 15px;background:transparent;border:1px solid #ddd;border-radius:20px;cursor:pointer;font-weight:bold;font-family:inherit}.page{flex:1;display:flex;justify-content:center;align-items:center;padding:35px 16px}
 .auth-card{width:100%;max-width:460px;background:#fff;border:1px solid #eee;border-radius:20px;padding:32px;box-shadow:0 15px 45px rgba(0,0,0,.07)}
 .brand-icon{width:58px;height:58px;border-radius:18px;background:#f5eee7;color:#a77b53;display:grid;place-items:center;font-size:24px;margin:0 auto 15px}
 h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{text-align:center;color:#888;font-size:13px;margin:0 0 25px}
@@ -32,7 +32,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 </style>
 </head>
 <body>
-<header><a class="logo" href="index.html">ROVY<span>.</span></a><a class="back" href="index.html"><i class="fas fa-arrow-right"></i> العودة للمتجر</a></header>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><div style="display:flex;align-items:center;gap:14px"><button class="lang-btn" id="authLangBtn" type="button" onclick="toggleAuthLanguage()">English</button><a class="back" id="authBack" href="index.html"><i class="fas fa-arrow-right"></i> العودة للمتجر</a></div></header>
 <main class="page">
 <section class="auth-card" id="authCard">
 <div class="brand-icon"><i class="fas fa-user-lock"></i></div>
@@ -65,6 +65,7 @@ const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sb-bkjwfmjxmxgxgaxwrnsh-auth-token'}});
 const $=id=>document.getElementById(id);
+let english=localStorage.getItem('rovyLanguage')==='en';
 let mode='login';
 let pendingSignupEmail='';
 const params=new URLSearchParams(location.search);
@@ -72,13 +73,44 @@ const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
 
 function setNotice(message,type='error'){const n=$('notice');n.className='notice '+type;n.textContent=message;}
+
+function toggleAuthLanguage(){
+ english=!english;
+ localStorage.setItem('rovyLanguage',english?'en':'ar');
+ applyAuthLanguage();
+}
+function applyAuthLanguage(){
+ document.documentElement.lang=english?'en':'ar';
+ document.documentElement.dir=english?'ltr':'rtl';
+ $('authLangBtn').textContent=english?'العربية':'English';
+ document.title=english?'My Account | ROVY STORE':'حسابي | ROVY STORE';
+ $('authBack').innerHTML=english?'<i class="fas fa-arrow-left"></i> Back to Store':'<i class="fas fa-arrow-right"></i> العودة للمتجر';
+ $('authBack').style.direction=english?'ltr':'rtl';
+ $('authCard').querySelector('h1').textContent=english?'Welcome to ROVY':'أهلاً بك في ROVY';
+ $('authCard').querySelector('.subtitle').textContent=english?'Sign in or create an account to track your orders and shop.':'سجّل دخولك أو أنشئ حساباً لمتابعة طلباتك وإتمام الشراء.';
+ $('loginTab').textContent=english?'Sign In':'تسجيل الدخول';
+ $('signupTab').textContent=english?'Create Account':'إنشاء حساب';
+ $('fullName').previousElementSibling.textContent=english?'Full Name':'الاسم بالكامل';
+ $('fullName').placeholder=english?'Enter your name':'اكتب اسمك';
+ $('email').previousElementSibling.textContent=english?'Email Address':'البريد الإلكتروني';
+ $('password').previousElementSibling.textContent=english?'Password':'كلمة المرور';
+ $('password').placeholder=english?'At least 8 characters':'8 أحرف على الأقل';
+ $('emailOtp').previousElementSibling.textContent=english?'6-digit verification code':'كود التأكيد المكوّن من 6 أرقام';
+ $('verifyOtpBtn').textContent=english?'Verify Email':'تأكيد البريد الإلكتروني';
+ $('resendOtpBtn').textContent=english?'Resend Code':'إعادة إرسال الكود';
+ $('accountPanel').querySelector('h1').textContent=english?'Your Account is Ready':'حسابك جاهز';
+ $('accountPanel').querySelector('.subtitle').textContent=english?'You are currently signed in to ROVY STORE.':'أنت مسجل الدخول حالياً في ROVY STORE.';
+ $('continueLink').textContent=english?'Continue Shopping':'متابعة التسوق';
+ $('signOutBtn').textContent=english?'Sign Out':'تسجيل الخروج';
+ setMode(mode);
+}
 function setMode(next){
  mode=next;
  $('loginTab').classList.toggle('active',mode==='login');
  $('signupTab').classList.toggle('active',mode==='signup');
  $('nameField').style.display=mode==='signup'?'block':'none';
  $('password').autocomplete=mode==='signup'?'new-password':'current-password';
- $('submitBtn').textContent=mode==='signup'?'إنشاء حساب جديد':'تسجيل الدخول';
+ $('submitBtn').textContent=mode==='signup'?(english?'Create Account':'إنشاء حساب جديد'):(english?'Sign In':'تسجيل الدخول');
  $('notice').className='notice';$('notice').textContent='';
 }
 function showAccount(user){
@@ -159,6 +191,7 @@ $('signOutBtn').addEventListener('click',async()=>{
 supabaseClient.auth.onAuthStateChange((event,session)=>{
  if(session && event==='SIGNED_IN' && nextPage==='checkout.html') redirectAfterAuth();
 });
+applyAuthLanguage();
 checkSession();
 </script>
 </body>
