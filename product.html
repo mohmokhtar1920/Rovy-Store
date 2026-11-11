@@ -174,7 +174,7 @@
             english=!english;
             localStorage.setItem('rovyLanguage',english?'en':'ar');
             applyProductLanguage();
-            if(currentProduct) renderProduct();
+            if(currentProduct) { renderProduct(); loadRelatedProducts(); }
             loadReviews();
         }
         function applyProductLanguage(){
