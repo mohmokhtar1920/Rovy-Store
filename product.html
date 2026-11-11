@@ -13,6 +13,7 @@
         header { background: #fff; display: flex; justify-content: space-between; align-items: center; padding: 15px 5%; border-bottom: 1px solid #eee; }
         .logo { font-size: 26px; font-weight: 900; letter-spacing: 2px; text-decoration: none; color: #222; }
         .logo span { color: #b58a61; }
+        .lang-btn{padding:8px 15px;background:transparent;border:1px solid #ddd;border-radius:20px;cursor:pointer;font-weight:bold;font-family:inherit}
         .product-container { max-width: 1100px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         @media(max-width: 768px) { .product-container { grid-template-columns: 1fr; } .main-image { height: min(115vw, 480px); } }
         
@@ -80,7 +81,7 @@
 
     <header>
         <a href="index.html" class="logo">ROVY<span>.</span></a>
-        <a href="index.html" style="text-decoration: none; color: #555; font-weight: bold;"><i class="fas fa-arrow-right"></i> العودة</a>
+        <div style="display:flex;align-items:center;gap:14px"><button class="lang-btn" id="productLangBtn" type="button" onclick="toggleProductLanguage()">English</button><a href="index.html" id="backLink" style="text-decoration: none; color: #555; font-weight: bold;"><i class="fas fa-arrow-right"></i> العودة</a></div>
     </header>
 
     <div class="product-container" id="productContainer"><p>جاري التحميل...</p></div>
@@ -169,10 +170,42 @@
         }
         function hideToast(){const box=document.getElementById('siteToast');if(box)box.classList.remove('show');}
 
+        function toggleProductLanguage(){
+            english=!english;
+            localStorage.setItem('rovyLanguage',english?'en':'ar');
+            applyProductLanguage();
+            if(currentProduct) renderProduct();
+            loadReviews();
+        }
+        function applyProductLanguage(){
+            document.documentElement.lang=english?'en':'ar';
+            document.documentElement.dir=english?'ltr':'rtl';
+            document.getElementById('productLangBtn').textContent=english?'العربية':'English';
+            document.getElementById('backLink').innerHTML=english?'<i class="fas fa-arrow-left"></i> Back':'<i class="fas fa-arrow-right"></i> العودة';
+            document.title=english?'Product Details | ROVY STORE':'تفاصيل المنتج | ROVY STORE';
+            document.querySelector('.reviews-title').textContent=english?'Reviews & Ratings':'التقييمات والمراجعات';
+            document.querySelector('.add-review-form h3').textContent=english?'Write a Review':'أضف تقييمك';
+            const labels=document.querySelectorAll('#addReviewForm label');
+            if(labels[0])labels[0].textContent=english?'Your Rating':'تقييمك بالنجوم';
+            if(labels[1])labels[1].textContent=english?'Your Name':'اسمك';
+            if(labels[2])labels[2].textContent=english?'Your Review':'رأيك في المنتج';
+            document.getElementById('reviewerName').placeholder=english?'Enter your name':'اكتب اسمك هنا';
+            document.getElementById('reviewComment').placeholder=english?'What do you think about the quality and fit?':'إيه رأيك في الخامة والمقاس؟';
+            document.querySelector('.btn-review').textContent=english?'Submit Review':'إرسال التقييم';
+            const related=document.querySelector('#relatedSection .reviews-title');
+            if(related)related.textContent=english?'You May Also Like':'قد يعجبك أيضاً';
+            document.querySelectorAll('footer a').forEach(a=>{
+                const map={'من نحن':'About Us','اتصل بنا':'Contact Us','تتبع طلبك':'Track Order','سياسة الاستبدال والاسترجاع':'Returns Policy','سياسة الخصوصية':'Privacy Policy','الأسئلة الشائعة':'FAQ'};
+                if(english&&map[a.textContent.trim()])a.textContent=map[a.textContent.trim()];
+                else if(!english){const rev=Object.fromEntries(Object.entries(map).map(([k,v])=>[v,k]));if(rev[a.textContent.trim()])a.textContent=rev[a.textContent.trim()];}
+            });
+        }
+
         const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'sb-bkjwfmjxmxgxgaxwrnsh-auth-token' } });
         
+        let english = localStorage.getItem('rovyLanguage') === 'en';
         let currentProduct = null;
         let variants = [];
         let selectedSize = null, selectedColor = null, selectedVariantId = null;
@@ -231,19 +264,19 @@
                 variants.forEach(v => { if(v.size && !allSizes.includes(v.size)) allSizes.push(v.size); });
                 variants.forEach(v => { if(v.color && !allColors.includes(v.color)) allColors.push(v.color); });
             }
-            if(allSizes.length > 0) sizesHtml = `<div class="options-group"><span class="options-label">المقاس:</span><div class="options-list" id="sizesList"></div></div>`;
-            if(allColors.length > 0) colorsHtml = `<div class="options-group"><span class="options-label">اللون:</span><div class="options-list" id="colorsList"></div></div>`;
+            if(allSizes.length > 0) sizesHtml = `<div class="options-group"><span class="options-label">${english ? 'Size:' : 'المقاس:'}</span><div class="options-list" id="sizesList"></div></div>`;
+            if(allColors.length > 0) colorsHtml = `<div class="options-group"><span class="options-label">${english ? 'Color:' : 'اللون:'}</span><div class="options-list" id="colorsList"></div></div>`;
 
             container.innerHTML = `
                 ${galleryHtml}
                 <div class="product-details">
                     <div class="product-category">${currentProduct.category}</div>
                     <h1 class="product-title">${currentProduct.name}</h1>
-                    <div class="product-price">${currentProduct.price} جنيه</div>
-                    <div class="product-desc">${currentProduct.description || 'لا يوجد وصف تفصيلي.'}</div>
+                    <div class="product-price">${currentProduct.price} ${english ? 'EGP' : 'جنيه'}</div>
+                    <div class="product-desc">${currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.')}</div>
                     ${sizesHtml}${colorsHtml}
                     <div id="stockNotice"></div>
-                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? 'اختر المقاس واللون' : (Number(currentProduct.stock) > 0 ? 'أضف إلى السلة' : 'المنتج نفد')}</button>
+                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? (english ? 'Choose size and color' : 'اختر المقاس واللون') : (Number(currentProduct.stock) > 0 ? (english ? 'Add to Cart' : (english ? 'Add to Cart' : 'أضف إلى السلة')) : (english ? 'Sold Out' : (english ? 'Sold Out' : 'المنتج نفد')))}</button>
                 </div>`;
 
             if (variants.length > 0) {
@@ -268,7 +301,7 @@
         
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
-            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? ' — نفد' : ''}</button>`; });
+            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
             if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? ' — نفد' : ''}</button>`; });
         }
         function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
@@ -392,6 +425,7 @@
             }
         });
 
+        applyProductLanguage();
         loadProduct();
     </script>
 </body>
