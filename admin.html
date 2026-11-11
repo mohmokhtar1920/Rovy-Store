@@ -82,6 +82,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
       <button class="navbtn manager-only" data-page="products">◇ المنتجات</button>
       <button class="navbtn manager-only" data-page="categories">▣ الأقسام</button>
+      <button class="navbtn manager-only" data-page="shipping">🚚 الشحن والمحافظات</button>
       <button class="navbtn manager-only" data-page="coupons">٪ الكوبونات</button>
       <button class="navbtn manager-only" data-page="reports">▥ التقارير</button>
     </aside>
@@ -113,6 +114,11 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       <section id="page-categories" class="page hidden">
         <div class="pagehead"><div><h1>إدارة الأقسام</h1><div class="muted">إضافة أقسام جديدة أو إيقاف وتفعيل الأقسام الحالية</div></div><button class="btn gold" id="addCategoryBtn">＋ إضافة قسم</button></div>
         <div class="panel"><div id="categoriesList"><div class="empty">جاري تحميل الأقسام…</div></div></div>
+      </section>
+      <section id="page-shipping" class="page hidden">
+        <div class="pagehead"><div><h1>الشحن والمحافظات</h1><div class="muted">إضافة المحافظات وتحديد سعر الشحن لكل محافظة أو إيقافها مؤقتًا</div></div><button class="btn gold" id="addShippingGovernorateBtn">＋ إضافة محافظة</button></div>
+        <div class="notice">المحافظات التي لم يتم تحديد سعر شحن لها لن تظهر للعميل في إتمام الطلب. زر الحذف يوقف المحافظة عن استقبال الطلبات دون حذف بيانات الطلبات القديمة.</div>
+        <div class="panel"><div id="shippingGovernoratesList"><div class="empty">جاري تحميل المحافظات…</div></div></div>
       </section>
       <section id="page-coupons" class="page hidden">
         <div class="pagehead"><div><h1>الكوبونات</h1><div class="muted">إنشاء أكواد الخصم وتفعيلها أو إيقافها</div></div><button class="btn gold" id="addCouponBtn">＋ إضافة كوبون</button></div>
@@ -167,6 +173,18 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     </form>
   </div>
 </div>
+<div id="shippingGovernorateModal" class="modal-back hidden">
+  <div class="modal" style="width:min(430px,100%)">
+    <div class="modal-head"><h2 id="shippingGovernorateModalTitle">إضافة محافظة</h2><button class="close" data-close="shippingGovernorateModal">✕</button></div>
+    <form id="shippingGovernorateForm">
+      <input type="hidden" id="shippingGovernorateId">
+      <div class="field"><label for="shippingGovernorateName">اسم المحافظة *</label><input id="shippingGovernorateName" maxlength="80" required></div>
+      <div class="field"><label for="shippingGovernorateFee">سعر الشحن بالجنيه *</label><input id="shippingGovernorateFee" type="number" min="0" max="100000" step="0.01" required placeholder="مثال: 65"></div>
+      <div class="modal-actions"><button class="btn gold" type="submit" id="saveShippingGovernorateBtn">حفظ المحافظة</button><button class="btn light" type="button" data-close="shippingGovernorateModal">إلغاء</button></div>
+      <div id="shippingGovernorateError" class="error"></div>
+    </form>
+  </div>
+</div>
 <div id="couponModal" class="modal-back hidden">
   <div class="modal">
     <div class="modal-head"><h2 id="couponModalTitle">إضافة كوبون</h2><button class="close" data-close="couponModal">✕</button></div>
@@ -188,7 +206,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
-  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], productImages = [], toastTimer = null;
+  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], shippingGovernorates = [], productImages = [], toastTimer = null;
   $('togglePassword').addEventListener('click',()=>{
   const passwordInput=$('password');
   const isHidden=passwordInput.type==='password';
@@ -243,7 +261,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       await loadStaff();
       showApp();
       await loadOrders();
-      if(isManager()) { await loadProducts(); await loadCategories(); await loadCoupons(); }
+      if(isManager()) { await loadProducts(); await loadCategories(); await loadShippingGovernorates(); await loadCoupons(); }
       renderDashboard();
     } catch(e) {
       await client.auth.signOut();
@@ -294,6 +312,26 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     $('categoriesList').innerHTML=categories.length?categories.map(c=>`
       <div class="category-row"><div><strong>${esc(c.name)}</strong><span class="muted">${c.is_active?'قسم نشط':'قسم موقوف'}</span></div>
       <div class="actions"><button class="mini gold" data-edit-category="${esc(c.id)}">تعديل</button><button class="mini ${c.is_active?'red':'gold'}" data-toggle-category="${esc(c.id)}" data-active="${c.is_active?'0':'1'}">${c.is_active?'إيقاف مؤقت':'تفعيل'}</button></div></div>`).join(''):'<div class="empty">لا توجد أقسام حتى الآن.</div>';
+  }
+  async function loadShippingGovernorates(){
+    const data=await rpc('admin_list_shipping_governorates');
+    shippingGovernorates=Array.isArray(data)?data:[];
+    renderShippingGovernorates();
+  }
+  function renderShippingGovernorates(){
+    $('shippingGovernoratesList').innerHTML=shippingGovernorates.length?`
+      <div class="table-wrap"><table><thead><tr><th>المحافظة</th><th>سعر الشحن</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>
+      ${shippingGovernorates.map(g=>`<tr><td><strong>${esc(g.name)}</strong></td><td>${g.shipping_fee===null?'غير محدد':money(g.shipping_fee)}</td><td><span class="pill ${g.is_active?'green':'red'}">${g.is_active?'مفعلة':'متوقفة'}</span></td><td><div class="actions"><button class="mini gold" data-edit-shipping-governorate="${esc(g.id)}">تعديل السعر</button><button class="mini ${g.is_active?'red':'gold'}" data-toggle-shipping-governorate="${esc(g.id)}" data-active="${g.is_active?'0':'1'}">${g.is_active?'إيقاف / حذف':'إعادة تفعيل'}</button></div></td></tr>`).join('')}
+      </tbody></table></div>`:'<div class="empty">لا توجد محافظات مسجلة.</div>';
+  }
+  function openShippingGovernorate(g=null){
+    $('shippingGovernorateForm').reset();$('shippingGovernorateError').textContent='';
+    $('shippingGovernorateId').value=g?.id||'';
+    $('shippingGovernorateModalTitle').textContent=g?'تعديل المحافظة وسعر الشحن':'إضافة محافظة';
+    $('saveShippingGovernorateBtn').textContent=g?'حفظ التعديلات':'حفظ المحافظة';
+    $('shippingGovernorateName').value=g?.name||'';
+    $('shippingGovernorateFee').value=g?.shipping_fee??'';
+    $('shippingGovernorateModal').classList.remove('hidden');
   }
   async function loadCoupons() {
     const data=await rpc('admin_list_coupons');
@@ -382,6 +420,8 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const toggleP=e.target.closest('[data-toggle-product]'); if(toggleP){try{await rpc('admin_set_product_active',{p_product_id:Number(toggleP.dataset.toggleProduct),p_is_active:toggleP.dataset.active==='1'});notify('تم تحديث حالة المنتج.');await loadProducts();}catch(err){notify(err.message,true);}return;}
     const editC=e.target.closest('[data-edit-coupon]'); if(editC){const c=coupons.find(x=>String(x.id)===editC.dataset.editCoupon);if(c)openCoupon(c);return;}
     const editCat=e.target.closest('[data-edit-category]'); if(editCat){const c=categories.find(x=>String(x.id)===editCat.dataset.editCategory);if(c)openCategory(c);return;}
+    const editShipping=e.target.closest('[data-edit-shipping-governorate]'); if(editShipping){const g=shippingGovernorates.find(x=>String(x.id)===editShipping.dataset.editShippingGovernorate);if(g)openShippingGovernorate(g);return;}
+    const toggleShipping=e.target.closest('[data-toggle-shipping-governorate]'); if(toggleShipping){try{await rpc('admin_set_shipping_governorate_active',{p_governorate_id:Number(toggleShipping.dataset.toggleShippingGovernorate),p_is_active:toggleShipping.dataset.active==='1'});notify('تم تحديث حالة المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
     const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
     const toggleC=e.target.closest('[data-toggle-coupon]'); if(toggleC){try{await rpc('admin_set_coupon_active',{p_coupon_id:Number(toggleC.dataset.toggleCoupon),p_is_active:toggleC.dataset.active==='1'});notify('تم تحديث حالة الكوبون.');await loadCoupons();}catch(err){notify(err.message,true);}return;}
   });
@@ -393,6 +433,22 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   $('addProductBtn').addEventListener('click',()=>openProduct());
   $('addCouponBtn').addEventListener('click',()=>openCoupon());
   $('addCategoryBtn').addEventListener('click',openCategory);
+  $('addShippingGovernorateBtn').addEventListener('click',()=>openShippingGovernorate());
+  $('shippingGovernorateForm').addEventListener('submit',async e=>{
+    e.preventDefault();$('saveShippingGovernorateBtn').disabled=true;$('shippingGovernorateError').textContent='';
+    try{
+      const id=$('shippingGovernorateId').value;
+      await rpc('admin_save_shipping_governorate',{
+        p_governorate_id:id?Number(id):null,
+        p_name:$('shippingGovernorateName').value.trim(),
+        p_shipping_fee:Number($('shippingGovernorateFee').value)
+      });
+      $('shippingGovernorateModal').classList.add('hidden');
+      notify(id?'تم تعديل المحافظة وسعر الشحن.':'تمت إضافة المحافظة وسعر الشحن.');
+      await loadShippingGovernorates();
+    }catch(err){$('shippingGovernorateError').textContent=err.message||'تعذر حفظ المحافظة.';}
+    finally{$('saveShippingGovernorateBtn').disabled=false;}
+  });
   $('quickAddCategory').addEventListener('click',openCategory);
   function openCategory(category=null){ $('categoryForm').reset(); $('categoryError').textContent=''; $('categoryId').value=category?category.id:''; $('categoryModalTitle').textContent=category?'تعديل القسم':'إضافة قسم جديد'; $('saveCategoryBtn').textContent=category?'حفظ التعديلات':'حفظ القسم'; if(category)$('categoryName').value=category.name; $('categoryModal').classList.remove('hidden'); }
   $('categoryForm').addEventListener('submit',async e=>{
