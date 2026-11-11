@@ -203,6 +203,32 @@
         }
         function hideToast(){const box=document.getElementById('siteToast');if(box)box.classList.remove('show');}
 
+        function changeLanguage() {
+            english = !english;
+            document.documentElement.lang = english ? 'en' : 'ar';
+            document.documentElement.dir = english ? 'ltr' : 'rtl';
+            document.getElementById('langBtn').textContent = english ? 'العربية' : 'English';
+            document.getElementById('topBar').textContent = english
+                ? '🚚 Free delivery on orders over 1500 EGP | Delivery to all governorates'
+                : '🚚 توصيل مجاني للطلبات فوق 1500 جنيه | توصيل لجميع المحافظات';
+            document.getElementById('heroTitle').textContent = english ? 'Discover Your Style' : 'اكتشف ستايلك';
+            document.getElementById('heroText').textContent = english ? 'The latest fashion trends for the whole family' : 'أحدث صيحات الموضة لجميع أفراد العائلة';
+            document.getElementById('shopBtn').textContent = english ? 'Shop Now' : 'تسوق الآن';
+            document.getElementById('catTitle').textContent = english ? 'Shop by Category' : 'تسوق حسب القسم';
+            document.getElementById('newTitle').textContent = currentCategory === 'All'
+                ? (english ? 'New Arrivals' : 'وصل حديثاً')
+                : (english ? `Category: ${currentCategory}` : `قسم: ${currentCategory}`);
+            document.getElementById('bestTitle').textContent = english ? 'Best Sellers' : 'الأكثر مبيعاً';
+            document.getElementById('searchInput').placeholder = english ? 'Search for a product...' : 'ابحث عن منتج...';
+            document.getElementById('cartTitle').textContent = english ? 'Shopping Cart' : 'سلة المشتريات';
+            document.getElementById('totalText').textContent = english ? 'Total:' : 'الإجمالي:';
+            document.getElementById('checkoutBtn').textContent = english ? 'Checkout' : 'إتمام الطلب';
+            document.getElementById('accountLink').title = english ? 'My Account' : 'تسجيل الدخول';
+            document.getElementById('accountLink').setAttribute('aria-label', document.getElementById('accountLink').title);
+            renderHomeSections();
+            updateCart();
+        }
+
         let allProducts = [];
         let productVariantStock = {};
         let activeCategories = [];
