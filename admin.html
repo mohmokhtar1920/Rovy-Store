@@ -28,6 +28,16 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
 @media(max-width:520px){.topbar{padding:0 14px}.userbox{gap:6px}.userbox .usertext{display:none}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}}
 .password-wrap{position:relative}
 .password-wrap input{padding-left:48px}
+.image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin-top:12px}
+.image-card{border:2px solid var(--line);border-radius:12px;padding:7px;background:#fff}
+.image-card.primary{border-color:var(--gold);background:#fffcf3}
+.image-card img{width:100%;height:105px;object-fit:cover;border-radius:8px;display:block}
+.image-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.image-actions button{font-size:11px;padding:5px 7px;border-radius:7px;background:#eef1f5}
+.image-actions button.primary-btn{background:#fff1c9;color:#76570f}
+.upload-box{border:1px dashed #b8c1ce;border-radius:12px;padding:14px;background:#fafbfc}
+.category-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.category-row:last-child{border-bottom:0}
 .toggle-password{
   position:absolute;
   left:10px;
@@ -71,6 +81,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       <button class="navbtn active" data-page="dashboard">▦ الرئيسية</button>
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
       <button class="navbtn manager-only" data-page="products">◇ المنتجات</button>
+      <button class="navbtn manager-only" data-page="categories">▣ الأقسام</button>
       <button class="navbtn manager-only" data-page="coupons">٪ الكوبونات</button>
       <button class="navbtn manager-only" data-page="reports">▥ التقارير</button>
     </aside>
@@ -94,11 +105,15 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
 
       <section id="page-products" class="page hidden">
         <div class="pagehead"><div><h1>المنتجات</h1><div class="muted">إضافة وتعديل المنتجات والتحكم في ظهورها</div></div><button class="btn gold" id="addProductBtn">＋ إضافة منتج</button></div>
-        <div class="notice">إضافة الصور هنا عن طريق رابط صورة مباشر. رفع الصور من الجهاز غير مفعّل في هذه النسخة لحين تأمين صلاحيات التخزين.</div>
+        <div class="notice">ارفع حتى 20 صورة لكل منتج من جهازك، وحدد الصورة الرئيسية التي ستظهر في واجهة المتجر.</div>
         <div class="toolbar"><input id="productSearch" placeholder="ابحث عن منتج بالاسم أو القسم"></div>
         <div class="panel"><div id="productsTable" class="table-wrap"><div class="empty">جاري تحميل المنتجات…</div></div></div>
       </section>
 
+      <section id="page-categories" class="page hidden">
+        <div class="pagehead"><div><h1>إدارة الأقسام</h1><div class="muted">إضافة أقسام جديدة أو إيقاف وتفعيل الأقسام الحالية</div></div><button class="btn gold" id="addCategoryBtn">＋ إضافة قسم</button></div>
+        <div class="panel"><div id="categoriesList"><div class="empty">جاري تحميل الأقسام…</div></div></div>
+      </section>
       <section id="page-coupons" class="page hidden">
         <div class="pagehead"><div><h1>الكوبونات</h1><div class="muted">إنشاء أكواد الخصم وتفعيلها أو إيقافها</div></div><button class="btn gold" id="addCouponBtn">＋ إضافة كوبون</button></div>
         <div class="panel"><div id="couponsTable" class="table-wrap"><div class="empty">جاري تحميل الكوبونات…</div></div></div>
@@ -127,8 +142,12 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
         <div class="field full"><label for="pName">اسم المنتج *</label><input id="pName" maxlength="160" required></div>
         <div class="field"><label for="pPrice">السعر *</label><input id="pPrice" type="number" min="0.01" step="0.01" required></div>
         <div class="field"><label for="pStock">المخزون *</label><input id="pStock" type="number" min="0" step="1" value="0" required></div>
-        <div class="field"><label for="pCategory">القسم</label><input id="pCategory" maxlength="80" placeholder="حريمي / رجالي / أطفال"></div>
-        <div class="field"><label for="pImage">رابط الصورة</label><input id="pImage" type="url" placeholder="https://..."></div>
+        <div class="field full"><label for="pCategory">القسم *</label><div style="display:flex;gap:8px"><select id="pCategory" required style="flex:1;min-width:0"><option value="">اختر القسم</option></select><button class="btn light" type="button" id="quickAddCategory">＋ قسم</button></div></div>
+        <div class="field full"><label for="pImages">صور المنتج *</label><div class="upload-box">
+          <input id="pImages" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+          <div class="hint">اختر عدة صور من جهازك. الحد الأقصى 20 صورة، وحجم الصورة الواحدة 5 ميجابايت. يمكنك اختيار صورة رئيسية وحذف الصور قبل الحفظ.</div>
+          <div id="imagePreview" class="image-grid"></div>
+        </div></div>
         <div class="field full"><label for="pDescription">الوصف</label><textarea id="pDescription" rows="3" maxlength="2000"></textarea></div>
       </div>
       <div class="modal-actions"><button class="btn gold" type="submit" id="saveProductBtn">حفظ المنتج</button><button class="btn light" type="button" data-close="productModal">إلغاء</button></div>
@@ -137,6 +156,16 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   </div>
 </div>
 
+<div id="categoryModal" class="modal-back hidden">
+  <div class="modal" style="width:min(430px,100%)">
+    <div class="modal-head"><h2>إضافة قسم جديد</h2><button class="close" data-close="categoryModal">✕</button></div>
+    <form id="categoryForm">
+      <div class="field"><label for="categoryName">اسم القسم *</label><input id="categoryName" maxlength="80" required placeholder="مثال: ملابس حريمي"></div>
+      <div class="modal-actions"><button class="btn gold" type="submit" id="saveCategoryBtn">حفظ القسم</button><button class="btn light" type="button" data-close="categoryModal">إلغاء</button></div>
+      <div id="categoryError" class="error"></div>
+    </form>
+  </div>
+</div>
 <div id="couponModal" class="modal-back hidden">
   <div class="modal">
     <div class="modal-head"><h2 id="couponModalTitle">إضافة كوبون</h2><button class="close" data-close="couponModal">✕</button></div>
@@ -158,7 +187,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
-  let currentUser = null, staff = null, orders = [], products = [], coupons = [], toastTimer = null;
+  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], productImages = [], toastTimer = null;
   $('togglePassword').addEventListener('click',()=>{
   const passwordInput=$('password');
   const isHidden=passwordInput.type==='password';
@@ -213,7 +242,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       await loadStaff();
       showApp();
       await loadOrders();
-      if(isManager()) { await loadProducts(); await loadCoupons(); }
+      if(isManager()) { await loadProducts(); await loadCategories(); await loadCoupons(); }
       renderDashboard();
     } catch(e) {
       await client.auth.signOut();
@@ -248,6 +277,22 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const data=await rpc('admin_list_products');
     products=Array.isArray(data)?data:[];
     renderProducts(); $('statProducts').textContent=products.length;
+  }
+  async function loadCategories() {
+    const data=await rpc('admin_list_categories');
+    categories=Array.isArray(data)?data:(Array.isArray(data?.categories)?data.categories:[]);
+    renderCategories(); fillCategorySelect();
+  }
+  function fillCategorySelect(selected='') {
+    const active=categories.filter(c=>c.is_active!==false);
+    $('pCategory').innerHTML='<option value="">اختر القسم</option>'+active.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
+    if(selected&&!active.some(c=>c.name===selected)) $('pCategory').insertAdjacentHTML('beforeend',`<option value="${esc(selected)}">${esc(selected)} (قديم)</option>`);
+    $('pCategory').value=selected||'';
+  }
+  function renderCategories() {
+    $('categoriesList').innerHTML=categories.length?categories.map(c=>`
+      <div class="category-row"><div><strong>${esc(c.name)}</strong><span class="muted">${c.is_active?'قسم نشط':'قسم موقوف'}</span></div>
+      <div class="actions"><button class="mini ${c.is_active?'red':'gold'}" data-toggle-category="${esc(c.id)}" data-active="${c.is_active?'0':'1'}">${c.is_active?'إيقاف':'تفعيل'}</button></div></div>`).join(''):'<div class="empty">لا توجد أقسام حتى الآن.</div>';
   }
   async function loadCoupons() {
     const data=await rpc('admin_list_coupons');
@@ -325,7 +370,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   }
   document.addEventListener('click',async e=>{
     const nav=e.target.closest('[data-page]');
-    if(nav){const page=nav.dataset.page;if(['products','coupons','reports'].includes(page)&&!isManager())return;
+    if(nav){const page=nav.dataset.page;if(['products','categories','coupons','reports'].includes(page)&&!isManager())return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       return;
@@ -335,6 +380,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const editP=e.target.closest('[data-edit-product]'); if(editP){const p=products.find(x=>String(x.id)===editP.dataset.editProduct);if(p)openProduct(p);return;}
     const toggleP=e.target.closest('[data-toggle-product]'); if(toggleP){try{await rpc('admin_set_product_active',{p_product_id:Number(toggleP.dataset.toggleProduct),p_is_active:toggleP.dataset.active==='1'});notify('تم تحديث حالة المنتج.');await loadProducts();}catch(err){notify(err.message,true);}return;}
     const editC=e.target.closest('[data-edit-coupon]'); if(editC){const c=coupons.find(x=>String(x.id)===editC.dataset.editCoupon);if(c)openCoupon(c);return;}
+    const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
     const toggleC=e.target.closest('[data-toggle-coupon]'); if(toggleC){try{await rpc('admin_set_coupon_active',{p_coupon_id:Number(toggleC.dataset.toggleCoupon),p_is_active:toggleC.dataset.active==='1'});notify('تم تحديث حالة الكوبون.');await loadCoupons();}catch(err){notify(err.message,true);}return;}
   });
   $('orderSearch').addEventListener('input',renderOrders);
@@ -344,25 +390,91 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   $('refreshDashboard').addEventListener('click',async()=>{try{await loadOrders();if(isManager())await loadProducts();notify('تم تحديث البيانات.');}catch(e){notify(e.message,true);}});
   $('addProductBtn').addEventListener('click',()=>openProduct());
   $('addCouponBtn').addEventListener('click',()=>openCoupon());
-  function openProduct(p=null){
+  $('addCategoryBtn').addEventListener('click',openCategory);
+  $('quickAddCategory').addEventListener('click',openCategory);
+  function openCategory(){ $('categoryForm').reset(); $('categoryError').textContent=''; $('categoryModal').classList.remove('hidden'); }
+  $('categoryForm').addEventListener('submit',async e=>{
+    e.preventDefault();$('saveCategoryBtn').disabled=true;$('categoryError').textContent='';
+    try{
+      const name=$('categoryName').value.trim();
+      await rpc('admin_save_category',{p_category_id:null,p_name:name});
+      $('categoryModal').classList.add('hidden');notify('تم إضافة القسم.');await loadCategories();fillCategorySelect(name);
+    }catch(err){$('categoryError').textContent=err.message||'تعذر حفظ القسم.';}
+    finally{$('saveCategoryBtn').disabled=false;}
+  });
+  $('pImages').addEventListener('change',e=>addSelectedImages(e.target.files));
+  $('imagePreview').addEventListener('click',e=>{
+    const make=e.target.closest('[data-image-primary]');
+    if(make){productImages.forEach((im,i)=>im.is_primary=i===Number(make.dataset.imagePrimary));renderImagePreview();return;}
+    const remove=e.target.closest('[data-image-remove]');
+    if(remove){const im=productImages.splice(Number(remove.dataset.imageRemove),1)[0];if(im?.preview_url)URL.revokeObjectURL(im.preview_url);if(productImages.length&&!productImages.some(x=>x.is_primary))productImages[0].is_primary=true;renderImagePreview();}
+  });
+  function addSelectedImages(files){
+    for(const file of Array.from(files||[])){
+      if(productImages.length>=20){notify('الحد الأقصى 20 صورة للمنتج.',true);break;}
+      if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)){notify('نوع الصورة غير مدعوم.',true);continue;}
+      if(file.size>5*1024*1024){notify('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.',true);continue;}
+      productImages.push({file,preview_url:URL.createObjectURL(file),image_url:null,is_primary:productImages.length===0,sort_order:productImages.length});
+    }
+    $('pImages').value='';renderImagePreview();
+  }
+  function renderImagePreview(){
+    $('imagePreview').innerHTML=productImages.map((im,i)=>`
+      <div class="image-card ${im.is_primary?'primary':''}"><img src="${esc(im.preview_url||im.image_url)}" alt="صورة المنتج ${i+1}">
+      ${im.is_primary?'<span class="pill green">الصورة الرئيسية</span>':''}
+      <div class="image-actions">${im.is_primary?'':`<button type="button" class="primary-btn" data-image-primary="${i}">اجعلها رئيسية</button>`}
+      <button type="button" data-image-remove="${i}">حذف</button></div></div>`).join('');
+  }
+  async function loadProductImages(product){
+    productImages.forEach(im=>{if(im.preview_url)URL.revokeObjectURL(im.preview_url);});
+    productImages=[];
+    const {data,error}=await client.from('product_images').select('image_url,is_primary,sort_order').eq('product_id',product.id).order('sort_order',{ascending:true});
+    if(error)throw error;
+    productImages=(data||[]).map(im=>({...im,file:null,preview_url:null}));
+    if(!productImages.length&&product.image_url)productImages=[{image_url:product.image_url,is_primary:true,sort_order:0,file:null,preview_url:null}];
+    if(productImages.length&&!productImages.some(im=>im.is_primary))productImages[0].is_primary=true;
+    renderImagePreview();
+  }
+  async function uploadAndSaveProductImages(productId){
+    const ready=[];
+    for(let i=0;i<productImages.length;i++){
+      const im=productImages[i];let url=im.image_url;
+      if(im.file){
+        const ext=(im.file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+        const path=`${productId}/${Date.now()}-${i}-${crypto.randomUUID()}.${ext}`;
+        const {error}=await client.storage.from('product-images').upload(path,im.file,{contentType:im.file.type,upsert:false});
+        if(error)throw error;
+        url=client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+      }
+      if(url)ready.push({image_url:url,is_primary:!!im.is_primary,sort_order:i});
+    }
+    if(!ready.length)throw new Error('أضف صورة واحدة على الأقل للمنتج.');
+    if(!ready.some(im=>im.is_primary))ready[0].is_primary=true;
+    await rpc('admin_save_product_images',{p_product_id:Number(productId),p_images:ready});
+  }
+  async function openProduct(p=null){
     $('productForm').reset();$('productId').value=p?.id||'';$('pStock').value=p?.stock??0;
     $('productModalTitle').textContent=p?'تعديل منتج':'إضافة منتج';
-    $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';$('pCategory').value=p?.category||'';
-    $('pImage').value=p?.image_url||'';$('pDescription').value=p?.description||'';
-    $('productError').textContent='';$('productModal').classList.remove('hidden');
+    $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';fillCategorySelect(p?.category||'');
+    $('pDescription').value=p?.description||'';$('productError').textContent='';
+    productImages=[];renderImagePreview();$('productModal').classList.remove('hidden');
+    if(p){try{await loadProductImages(p);}catch(err){$('productError').textContent='تعذر تحميل صور المنتج: '+err.message;}}
   }
   $('productForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveProductBtn').disabled=true;$('productError').textContent='';
     try{
-      const image=$('pImage').value.trim();
-      if(image && !safeUrl(image)) throw new Error('رابط الصورة غير صالح.');
-      await rpc('admin_save_product',{
+      if(!productImages.length)throw new Error('أضف صورة واحدة على الأقل للمنتج.');
+      const mainImage=productImages.find(im=>im.is_primary);
+      const saved=await rpc('admin_save_product',{
         p_product_id:$('productId').value?Number($('productId').value):null,
         p_name:$('pName').value.trim(),p_price:Number($('pPrice').value),
         p_description:$('pDescription').value.trim()||null,p_category:$('pCategory').value.trim()||null,
-        p_image_url:image||null,p_stock:Number($('pStock').value)
+        p_image_url:mainImage?.image_url||null,p_stock:Number($('pStock').value)
       });
-      $('productModal').classList.add('hidden');notify('تم حفظ المنتج.');await loadProducts();
+      const productId=saved?.product_id??saved?.[0]?.product_id??$('productId').value;
+      if(!productId)throw new Error('تم حفظ المنتج لكن تعذر تحديد رقمه لربط الصور.');
+      await uploadAndSaveProductImages(productId);
+      $('productModal').classList.add('hidden');notify('تم حفظ المنتج وصوره بنجاح.');await loadProducts();
     }catch(err){$('productError').textContent=err.message||'تعذر حفظ المنتج.';}
     finally{$('saveProductBtn').disabled=false;}
   });
