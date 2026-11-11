@@ -276,15 +276,15 @@
                     <div class="product-desc">${currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.')}</div>
                     ${sizesHtml}${colorsHtml}
                     <div id="stockNotice"></div>
-                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? (english ? 'Choose size and color' : 'اختر المقاس واللون') : (Number(currentProduct.stock) > 0 ? (english ? 'Add to Cart' : (english ? 'Add to Cart' : 'أضف إلى السلة')) : (english ? 'Sold Out' : (english ? 'Sold Out' : 'المنتج نفد')))}</button>
+                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? (english ? 'Choose size and color' : 'اختر المقاس واللون') : (Number(currentProduct.stock) > 0 ? (english ? 'Add to Cart' : 'أضف إلى السلة') : (english ? 'Sold Out' : 'المنتج نفد'))}</button>
                 </div>`;
 
             if (variants.length > 0) {
                 renderOptions(allSizes, allColors);
                 if (variants.every(v => Number(v.stock) <= 0)) {
-                    document.getElementById('stockNotice').innerHTML = '<div class="stock-note"><i class="fas fa-box-open"></i><span>عذراً، المنتج نفد من المخزون حالياً.</span></div>';
+                    document.getElementById('stockNotice').innerHTML = `<div class="stock-note"><i class="fas fa-box-open"></i><span>${english ? 'Sorry, this product is currently out of stock.' : 'عذراً، المنتج نفد من المخزون حالياً.'}</span></div>`;
                     const soldBtn = document.getElementById('addToCartBtn');
-                    soldBtn.innerHTML = '<i class="fas fa-ban"></i> المنتج نفد';
+                    soldBtn.innerHTML = `<i class="fas fa-ban"></i> ${english ? 'Sold Out' : 'المنتج نفد'}`;
                     soldBtn.classList.add('is-sold-out');
                 }
             } else if (Number(currentProduct.stock) > 0) {
@@ -302,7 +302,7 @@
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
             if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
-            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? ' — نفد' : ''}</button>`; });
+            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
         }
         function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
         function selectColor(color, event) { selectedColor = color; document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
@@ -314,12 +314,12 @@
                 selectedVariantId = variant.id;
                 btn.disabled = false;
                 btn.classList.remove('is-sold-out');
-                btn.innerHTML = '<i class="fas fa-shopping-bag"></i> أضف إلى السلة';
+                btn.innerHTML = `<i class="fas fa-shopping-bag"></i> ${english ? 'Add to Cart' : 'أضف إلى السلة'}`;
                 document.getElementById('stockNotice').innerHTML = '';
             } else {
                 selectedVariantId = null;
                 btn.disabled = true;
-                btn.innerHTML = variant ? '<i class="fas fa-ban"></i> المنتج نفد' : '<i class="fas fa-info-circle"></i> هذا الاختيار غير متاح';
+                btn.innerHTML = variant ? `<i class="fas fa-ban"></i> ${english ? 'Sold Out' : 'المنتج نفد'}` : `<i class="fas fa-info-circle"></i> ${english ? 'This option is unavailable' : 'هذا الاختيار غير متاح'}`;
                 btn.classList.toggle('is-sold-out', !!variant);
                 document.getElementById('stockNotice').innerHTML = variant ? '<div class="stock-note"><i class="fas fa-box-open"></i><span>نفدت الكمية من هذا المقاس/اللون.</span></div>' : '';
             }
@@ -331,7 +331,7 @@
             if (existingItem) existingItem.quantity += 1;
             else cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
             localStorage.setItem('rovyCart', JSON.stringify(cart));
-            showToast("تمت إضافة المنتج إلى سلة مشترياتك بنجاح.", "success", "أُضيف إلى السلة");
+            showToast(english ? 'Product added to your cart successfully.' : 'تمت إضافة المنتج إلى سلة مشترياتك بنجاح.', 'success', english ? 'Added to cart' : 'أُضيف إلى السلة');
         }
 
         async function loadReviews() {
