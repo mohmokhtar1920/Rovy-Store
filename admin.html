@@ -158,8 +158,9 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
 
 <div id="categoryModal" class="modal-back hidden">
   <div class="modal" style="width:min(430px,100%)">
-    <div class="modal-head"><h2>إضافة قسم جديد</h2><button class="close" data-close="categoryModal">✕</button></div>
+    <div class="modal-head"><h2 id="categoryModalTitle">إضافة قسم جديد</h2><button class="close" data-close="categoryModal">✕</button></div>
     <form id="categoryForm">
+      <input type="hidden" id="categoryId">
       <div class="field"><label for="categoryName">اسم القسم *</label><input id="categoryName" maxlength="80" required placeholder="مثال: ملابس حريمي"></div>
       <div class="modal-actions"><button class="btn gold" type="submit" id="saveCategoryBtn">حفظ القسم</button><button class="btn light" type="button" data-close="categoryModal">إلغاء</button></div>
       <div id="categoryError" class="error"></div>
@@ -292,7 +293,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   function renderCategories() {
     $('categoriesList').innerHTML=categories.length?categories.map(c=>`
       <div class="category-row"><div><strong>${esc(c.name)}</strong><span class="muted">${c.is_active?'قسم نشط':'قسم موقوف'}</span></div>
-      <div class="actions"><button class="mini ${c.is_active?'red':'gold'}" data-toggle-category="${esc(c.id)}" data-active="${c.is_active?'0':'1'}">${c.is_active?'إيقاف':'تفعيل'}</button></div></div>`).join(''):'<div class="empty">لا توجد أقسام حتى الآن.</div>';
+      <div class="actions"><button class="mini gold" data-edit-category="${esc(c.id)}">تعديل</button><button class="mini ${c.is_active?'red':'gold'}" data-toggle-category="${esc(c.id)}" data-active="${c.is_active?'0':'1'}">${c.is_active?'إيقاف مؤقت':'تفعيل'}</button></div></div>`).join(''):'<div class="empty">لا توجد أقسام حتى الآن.</div>';
   }
   async function loadCoupons() {
     const data=await rpc('admin_list_coupons');
@@ -380,6 +381,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const editP=e.target.closest('[data-edit-product]'); if(editP){const p=products.find(x=>String(x.id)===editP.dataset.editProduct);if(p)openProduct(p);return;}
     const toggleP=e.target.closest('[data-toggle-product]'); if(toggleP){try{await rpc('admin_set_product_active',{p_product_id:Number(toggleP.dataset.toggleProduct),p_is_active:toggleP.dataset.active==='1'});notify('تم تحديث حالة المنتج.');await loadProducts();}catch(err){notify(err.message,true);}return;}
     const editC=e.target.closest('[data-edit-coupon]'); if(editC){const c=coupons.find(x=>String(x.id)===editC.dataset.editCoupon);if(c)openCoupon(c);return;}
+    const editCat=e.target.closest('[data-edit-category]'); if(editCat){const c=categories.find(x=>String(x.id)===editCat.dataset.editCategory);if(c)openCategory(c);return;}
     const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
     const toggleC=e.target.closest('[data-toggle-coupon]'); if(toggleC){try{await rpc('admin_set_coupon_active',{p_coupon_id:Number(toggleC.dataset.toggleCoupon),p_is_active:toggleC.dataset.active==='1'});notify('تم تحديث حالة الكوبون.');await loadCoupons();}catch(err){notify(err.message,true);}return;}
   });
@@ -392,13 +394,14 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   $('addCouponBtn').addEventListener('click',()=>openCoupon());
   $('addCategoryBtn').addEventListener('click',openCategory);
   $('quickAddCategory').addEventListener('click',openCategory);
-  function openCategory(){ $('categoryForm').reset(); $('categoryError').textContent=''; $('categoryModal').classList.remove('hidden'); }
+  function openCategory(category=null){ $('categoryForm').reset(); $('categoryError').textContent=''; $('categoryId').value=category?category.id:''; $('categoryModalTitle').textContent=category?'تعديل القسم':'إضافة قسم جديد'; $('saveCategoryBtn').textContent=category?'حفظ التعديلات':'حفظ القسم'; if(category)$('categoryName').value=category.name; $('categoryModal').classList.remove('hidden'); }
   $('categoryForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveCategoryBtn').disabled=true;$('categoryError').textContent='';
     try{
       const name=$('categoryName').value.trim();
-      await rpc('admin_save_category',{p_category_id:null,p_name:name});
-      $('categoryModal').classList.add('hidden');notify('تم إضافة القسم.');await loadCategories();fillCategorySelect(name);
+      const categoryId=$('categoryId').value;
+      await rpc('admin_save_category',{p_category_id:categoryId?Number(categoryId):null,p_name:name});
+      $('categoryModal').classList.add('hidden');notify(categoryId?'تم تعديل القسم.':'تم إضافة القسم.');await loadCategories();fillCategorySelect(name);
     }catch(err){$('categoryError').textContent=err.message||'تعذر حفظ القسم.';}
     finally{$('saveCategoryBtn').disabled=false;}
   });
