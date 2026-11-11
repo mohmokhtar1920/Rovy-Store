@@ -174,7 +174,7 @@
         let english = false;
 
         async function fetchProducts() {
-            const { data, error } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
+            const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
             if (error) return;
             allProducts = data;
             await fetchActiveCategories();
