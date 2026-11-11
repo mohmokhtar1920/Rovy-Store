@@ -310,7 +310,7 @@
                         <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title">${p.name}</div></a>
                         <div class="product-price">${p.price} جنيه</div>
                         ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> المنتج نفد</span>' : ''}
-                        <button class="add-to-cart-btn" onclick="handleAddToCart(${p.id})" ${!available ? 'disabled' : ''}>${!available ? (english ? 'Sold Out' : 'المنتج نفد') : (english ? 'Add to Cart' : 'أضف للسلة')}</button>
+                        <button class="add-to-cart-btn" onclick="openProductDetails(${p.id})">${english ? 'View Details' : 'التفاصيل'}</button>
                     </div>
                 </div>
             `;
@@ -321,14 +321,8 @@
             renderHomeSections();
         }
 
-        function handleAddToCart(id) {
-            const product = allProducts.find(p => p.id === id);
-            if (!product || !isProductAvailable(product)) return;
-            if (product.sizes || product.colors || (product.gallery_images && product.gallery_images.length > 0)) {
-                window.location.href = `product.html?id=${id}`;
-            } else {
-                addToCart(id);
-            }
+        function openProductDetails(id) {
+            window.location.href = `product.html?id=${id}`;
         }
 
         function addToCart(id) {
