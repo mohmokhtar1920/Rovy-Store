@@ -216,7 +216,7 @@
         }
         function renderHomeSections() {
             if (currentCategory === 'All') {
-                document.getElementById('categories').style.display = 'block';
+                document.getElementById('categories').style.display = activeCategories.length > 0 ? 'block' : 'none';
                 
                 const newGrid = document.getElementById('newProductsGrid');
                 newGrid.innerHTML = '';
