@@ -261,11 +261,6 @@
     async function loadShippingGovernorates(){const {data,error}=await supabaseClient.rpc('get_active_shipping_governorates');if(error)throw error;shippingGovernorates=Array.isArray(data)?data:[];renderGovernorateOptions();const sel=document.getElementById('cGovernorate');if(sel)sel.addEventListener('change',()=>{const g=shippingGovernorates.find(x=>String(x.id)===sel.value);shippingFee=(g&&g.shipping_fee!==null)?Number(g.shipping_fee):null;updateCheckoutTotals();});}
     function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');const selected=document.getElementById('cGovernorate')?.value;ship.textContent=shippingFee===null?(selected?(english?'Shipping price not set':'سعر الشحن غير محدد'):(english?'Choose governorate':'اختر المحافظة')):formatPrice(shippingFee)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingFee===null?0:shippingFee))+(english?' EGP':' جنيه');}
     function renderCheckout() {
-        if (shippingFee===null || !Number.isFinite(shippingFee)) {
-            showToast("سعر الشحن للمحافظة المختارة لم يتم تحديده بعد. اختر محافظة أخرى أو تواصل معنا.", "info", "سعر الشحن غير محدد");
-            return;
-        }
-
         if (!Array.isArray(cart) || cart.length === 0) {
             window.location.href = 'index.html';
             return;
@@ -413,6 +408,11 @@
 
         if (!name || !phone || !address || !Number.isSafeInteger(governorateId) || governorateId<=0) {
             showToast("راجع الاسم ورقم الموبايل والمحافظة والعنوان، وتأكد من استكمال البيانات المطلوبة.", "info", "بيانات التوصيل");
+            return;
+        }
+
+        if (shippingFee===null || !Number.isFinite(shippingFee)) {
+            showToast("سعر الشحن للمحافظة المختارة لم يتم تحديده بعد. اختر محافظة أخرى أو تواصل معنا.", "info", "سعر الشحن غير محدد");
             return;
         }
 
