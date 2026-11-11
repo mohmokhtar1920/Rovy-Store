@@ -244,7 +244,7 @@
             const variant = variants.find(v => (v.size === selectedSize || (!v.size && !selectedSize)) && (v.color === selectedColor || (!v.color && !selectedColor)));
             const btn = document.getElementById('addToCartBtn');
             if (variant && variant.stock > 0) { selectedVariantId = variant.id; btn.disabled = false; btn.innerHTML = `<i class="fas fa-shopping-bag"></i> أضف إلى السلة`; } 
-            else { selectedVariantId = null; btn.disabled = true; btn.innerHTML = `<i class="fas fa-times"></i> غير متوفر`; }
+            else { selectedVariantId = null; btn.disabled = true; btn.innerHTML = `<i class="fas fa-info-circle"></i> هذا الاختيار غير متاح حالياً`; }
         }
         
         function addToCart() {
