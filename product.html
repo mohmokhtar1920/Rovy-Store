@@ -128,7 +128,7 @@
         <div class="products-grid" id="relatedGrid"></div>
     </div>
 
-    <div class="success-toast" id="toast">تمت الإضافة للسلة!</div>
+    <div id="siteToast" class="site-toast info" role="status" aria-live="polite"><div class="site-toast-icon"><i class="fas fa-info"></i></div><div class="site-toast-content"><div class="site-toast-title" id="siteToastTitle">ROVY STORE</div><p class="site-toast-message" id="siteToastMessage"></p></div><button class="site-toast-close" type="button" aria-label="إغلاق" onclick="hideToast()"><i class="fas fa-times"></i></button></div>
     
     <footer style="background: #171717; color: #fff; padding: 40px 5% 20px; margin-top: 50px;">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; margin-bottom: 30px;">
@@ -152,6 +152,23 @@
     <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
     <script>
+
+        let siteToastTimer;
+        function showToast(message,type='info',title='ROVY STORE'){
+            const box=document.getElementById('siteToast');
+            if(!box)return;
+            const config={success:['fa-check','تم بنجاح'],error:['fa-exclamation','نحتاج انتباهك'],info:['fa-info','تنبيه']};
+            const selected=config[type]||config.info;
+            box.className='site-toast '+type;
+            box.querySelector('.site-toast-icon').innerHTML='<i class="fas '+selected[0]+'"></i>';
+            document.getElementById('siteToastTitle').textContent=title||selected[1];
+            document.getElementById('siteToastMessage').textContent=message;
+            box.classList.add('show');
+            clearTimeout(siteToastTimer);
+            siteToastTimer=setTimeout(hideToast,4200);
+        }
+        function hideToast(){const box=document.getElementById('siteToast');if(box)box.classList.remove('show');}
+
         const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -281,7 +298,7 @@
             if (existingItem) existingItem.quantity += 1;
             else cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
             localStorage.setItem('rovyCart', JSON.stringify(cart));
-            const toast = document.getElementById('toast'); toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
+            showToast("تمت إضافة المنتج إلى سلة مشترياتك بنجاح.", "success", "أُضيف إلى السلة");
         }
 
         async function loadReviews() {
@@ -350,7 +367,7 @@
 
         document.getElementById('addReviewForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (selectedRating === 0) { alert("يرجى اختيار عدد النجوم أولاً"); return; }
+            if (selectedRating === 0) { showToast("اختار عدد النجوم قبل إرسال تقييمك.", "info", "التقييم"); return; }
 
             const name = document.getElementById('reviewerName').value;
             const comment = document.getElementById('reviewComment').value;
@@ -363,9 +380,9 @@
             }]);
 
             if(error) {
-                alert('حدث خطأ أثناء إرسال التقييم.');
+                showToast("تعذر إرسال تقييمك الآن. حاول مرة أخرى بعد قليل.", "error", "لم يتم إرسال التقييم");
             } else {
-                alert('شكراً لك! تم إضافة تقييمك بنجاح.');
+                showToast("شكراً لمشاركة رأيك معنا.", "success", "تم إرسال تقييمك");
                 e.target.reset();
                 selectedRating = 0;
                 document.querySelectorAll('#starRatingInput i').forEach(s => {
