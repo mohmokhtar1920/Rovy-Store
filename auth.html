@@ -115,14 +115,14 @@ function setMode(next){
 }
 function showAccount(user){
  $('authCard').style.display='none';$('accountPanel').style.display='block';
- $('accountName').textContent=user.user_metadata?.full_name||'مرحباً بك';
+ $('accountName').textContent=user.user_metadata?.full_name||(english?'Welcome':'مرحباً بك');
  $('accountEmail').textContent=user.email||'';
  $('continueLink').href=nextPage;
 }
 function redirectAfterAuth(){localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
 async function checkSession(){
  const {data,error}=await supabaseClient.auth.getSession();
- if(error){setNotice('تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
+ if(error){setNotice(english?'Could not verify your session. Refresh the page and try again.':'تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
  if(data.session){
    if(nextPage==='checkout.html') redirectAfterAuth();
    else showAccount(data.session.user);
@@ -158,13 +158,13 @@ $('authForm').addEventListener('submit',async e=>{
  }catch(err){
   let message=err.message||'تعذر إتمام العملية. حاول مرة أخرى.';
   if(/invalid login credentials/i.test(message))message='البريد الإلكتروني أو كلمة المرور غير صحيحة.';
-  if(/email not confirmed/i.test(message))message='أكد بريدك الإلكتروني من الرسالة التي أرسلناها لك أولاً.';
+  if(/email not confirmed/i.test(message))message=english?'Please confirm your email using the message we sent you.':'أكد بريدك الإلكتروني من الرسالة التي أرسلناها لك أولاً.';
   setNotice(message,'error');
  }finally{btn.disabled=false;}
 });
 $('verifyOtpBtn').addEventListener('click',async()=>{
   const token=$('emailOtp').value.trim();
-  if(!/^\d{6}$/.test(token)){setNotice('اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
+  if(!/^\d{6}$/.test(token)){setNotice(english?'Enter the 6-digit verification code.':'اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
   const btn=$('verifyOtpBtn');btn.disabled=true;
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
@@ -185,7 +185,7 @@ $('resendOtpBtn').addEventListener('click',async()=>{
 });
 $('signOutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
- if(error){setNotice('تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
+ if(error){setNotice(english?'Could not sign out. Please try again.':'تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
  location.replace('index.html');
 });
 supabaseClient.auth.onAuthStateChange((event,session)=>{
