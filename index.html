@@ -112,13 +112,7 @@
 
     <section id="categories">
         <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
-        <div class="categories">
-            <div class="category" onclick="filterCategory('Women')"><img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500"><h3 id="cat1">نساء</h3></div>
-            <div class="category" onclick="filterCategory('Men')"><img src="https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500"><h3 id="cat2">رجال</h3></div>
-            <div class="category" onclick="filterCategory('Kids')"><img src="https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500"><h3 id="cat3">أطفال</h3></div>
-            <div class="category" onclick="filterCategory('Sports')"><img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500"><h3 id="cat4">ملابس رياضية</h3></div>
-            <div class="category" onclick="filterCategory('Accessories')"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500"><h3 id="cat5">إكسسوارات</h3></div>
-        </div>
+        <div class="categories" id="homeCategories"></div>
     </section>
 
     <section id="newArrivals">
@@ -174,6 +168,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let allProducts = [];
+        let activeCategories = [];
         let currentCategory = 'All';
         let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
         let english = false;
@@ -182,9 +177,43 @@
             const { data, error } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
             if (error) return;
             allProducts = data;
+            await fetchActiveCategories();
             renderHomeSections();
         }
 
+        async function fetchActiveCategories() {
+            const { data, error } = await supabaseClient.rpc('public_list_active_categories');
+            if (error) { activeCategories = []; return; }
+            activeCategories = Array.isArray(data) ? data : (Array.isArray(data?.categories) ? data.categories : []);
+            renderCategoryCards();
+        }
+
+        function renderCategoryCards() {
+            const container = document.getElementById('homeCategories');
+            if (!container) return;
+            container.innerHTML = '';
+            const fallbackImages = [
+                'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500',
+                'https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500',
+                'https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500',
+                'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500',
+                'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500'
+            ];
+            activeCategories.forEach((category, index) => {
+                const product = allProducts.find(p => p.category === category.name && p.image_url);
+                const card = document.createElement('div');
+                card.className = 'category';
+                card.addEventListener('click', () => filterCategory(category.name));
+                const img = document.createElement('img');
+                img.src = product ? product.image_url : fallbackImages[index % fallbackImages.length];
+                img.alt = category.name;
+                const title = document.createElement('h3');
+                title.textContent = category.name;
+                card.append(img, title);
+                container.appendChild(card);
+            });
+            document.getElementById('categories').style.display = activeCategories.length ? 'block' : 'none';
+        }
         function renderHomeSections() {
             if (currentCategory === 'All') {
                 document.getElementById('categories').style.display = 'block';
