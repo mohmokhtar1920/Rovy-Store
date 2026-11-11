@@ -297,7 +297,7 @@
 
             const title = document.createElement('div');
             title.className = 'cart-item-title';
-            title.textContent = String(item.name || 'منتج');
+            title.textContent = String(english ? (item.name_en || item.name || 'Product') : (item.name || 'منتج'));
 
             const variantText = [];
             if (item.size) variantText.push((english?'Size: ':'مقاس: ') + String(item.size));
@@ -305,7 +305,7 @@
 
             const qty = document.createElement('div');
             qty.className = 'cart-item-qty';
-            qty.textContent = 'الكمية: ' + quantity +
+            qty.textContent = (english ? 'Quantity: ' : 'الكمية: ') + quantity +
                 (variantText.length ? ' | ' + variantText.join(' | ') : '');
 
             details.append(title, qty);
@@ -333,13 +333,13 @@
 
         if (!code) {
             msg.style.color = 'red';
-            msg.textContent = 'اكتب كود الخصم أولاً.';
+            msg.textContent = english ? 'Please enter a discount code first.' : 'اكتب كود الخصم أولاً.';
             totalContainer.textContent = formatPrice(originalTotal) + (english?' EGP':' جنيه');
             return;
         }
 
         msg.style.color = '#666';
-        msg.textContent = 'جاري التحقق من الكود...';
+        msg.textContent = english ? 'Verifying code...' : 'جاري التحقق من الكود...';
 
         try {
             const { data, error } = await supabaseClient
@@ -367,7 +367,7 @@
             finalTotal = originalTotal - discountAmount;
 
             msg.style.color = 'green';
-            msg.textContent = 'تم التحقق من الكود. سيتم اعتماد الخصم النهائي عند تأكيد الطلب.';
+            msg.textContent = english ? 'Code verified. The final discount will be applied when your order is confirmed.' : 'تم التحقق من الكود. سيتم اعتماد الخصم النهائي عند تأكيد الطلب.';
 
             totalContainer.textContent =
                 formatPrice(finalTotal) + ' جنيه (تقديري)';
@@ -377,7 +377,7 @@
             finalTotal = originalTotal;
 
             msg.style.color = 'red';
-            msg.textContent = error.message || 'تعذر التحقق من كود الخصم.';
+            msg.textContent = english ? 'Could not verify the discount code. Please try again.' : (error.message || 'تعذر التحقق من كود الخصم.');
 
             totalContainer.textContent = formatPrice(originalTotal) + ' جنيه';
         }
@@ -442,7 +442,7 @@
         }
 
         btn.disabled = true;
-        btn.textContent = 'جاري تأكيد الطلب...';
+        btn.textContent = english ? 'Confirming order...' : 'جاري تأكيد الطلب...';
 
         try {
             const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
@@ -489,7 +489,7 @@
             showToast(friendlyMessage, "error", "تعذر تأكيد الطلب");
 
             btn.disabled = false;
-            btn.textContent = 'تأكيد الطلب';
+            btn.textContent = english ? 'Confirm Order' : 'تأكيد الطلب';
         }
     });
 
