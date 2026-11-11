@@ -115,10 +115,143 @@
         <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px; color: #888; font-size: 13px;">&copy; 2026 ROVY STORE. جميع الحقوق محفوظة.</div>
     </footer>
 
-    <script>
-        const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+<script>
+const SUPABASE_URL = 'https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const form = document.getElementById('trackForm');
+const btn = document.getElementById('trackBtn');
+const resultBox = document.getElementById('resultBox');
+const errorMsg = document.getElementById('errorMsg');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    btn.innerText = 'جاري البحث...';
+    btn.disabled = true;
+    resultBox.style.display = 'none';
+    errorMsg.style.display = 'none';
+
+    const orderId = Number(document.getElementById('orderIdInput').value);
+    const phone = document.getElementById('phoneInput').value.trim();
+
+    try {
+        if (!Number.isSafeInteger(orderId) || orderId < 1) {
+            throw new Error('رقم الطلب غير صحيح');
+        }
+
+        const { data, error } = await supabaseClient.rpc(
+            'track_order_secure',
+            {
+                p_order_id: orderId,
+                p_customer_phone: phone
+            }
+        );
+
+        if (error) throw error;
+
+        if (!data || data.success !== true || !data.order) {
+            errorMsg.textContent = 'لم يتم العثور على طلب بهذه البيانات.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        const order = data.order;
+        const items = Array.isArray(data.items) ? data.items : [];
+
+        document.getElementById('resOrderId').textContent = order.id;
+
+        document.getElementById('resDate').textContent =
+            new Date(order.created_at).toLocaleDateString('ar-EG');
+
+        document.getElementById('resTotal').textContent =
+            Number(order.total_price).toLocaleString('ar-EG');
+
+        const statusMap = {
+            pending: ['قيد الانتظار', 'status-pending'],
+            shipped: ['تم الشحن', 'status-shipped'],
+            delivered: ['تم التوصيل', 'status-delivered'],
+            cancelled: ['ملغي', 'status-cancelled']
+        };
+
+        const status = statusMap[order.status] || statusMap.pending;
+        const badge = document.getElementById('resStatus');
+
+        badge.textContent = status[0];
+        badge.className = 'order-status-badge ' + status[1];
+
+        const itemsList = document.getElementById('resItemsList');
+        itemsList.replaceChildren();
+
+        if (items.length > 0) {
+            items.forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'track-item';
+
+                const img = document.createElement('img');
+                const imageUrl = item.image_url || '';
+
+                img.src = imageUrl.startsWith('https://') ||
+                          imageUrl.startsWith('http://')
+                    ? imageUrl
+                    : 'https://via.placeholder.com/60';
+
+                img.alt = 'صورة المنتج';
+
+                img.onerror = () => {
+                    img.onerror = null;
+                    img.src = 'https://via.placeholder.com/60';
+                };
+
+                const info = document.createElement('div');
+                info.className = 'track-item-info';
+
+                const name = document.createElement('h4');
+                name.textContent = item.product_name || 'منتج غير معروف';
+
+                const details = document.createElement('p');
+                const variants = [];
+
+                if (item.size) variants.push('مقاس: ' + item.size);
+                if (item.color) variants.push('لون: ' + item.color);
+
+                details.textContent = 'الكمية: ' + item.quantity +
+                    (variants.length ? ' | ' + variants.join(' | ') : '');
+
+                info.append(name, details);
+
+                const price = document.createElement('div');
+                price.className = 'track-item-price';
+                price.textContent =
+                    (Number(item.price) * Number(item.quantity))
+                    .toLocaleString('ar-EG') + ' ج';
+
+                row.append(img, info, price);
+                itemsList.appendChild(row);
+            });
+        } else {
+            const empty = document.createElement('p');
+            empty.style.color = '#888';
+            empty.textContent = 'لا توجد تفاصيل للمنتجات.';
+            itemsList.appendChild(empty);
+        }
+
+        resultBox.style.display = 'block';
+
+    } catch (err) {
+        console.error('Track order error:', err);
+        errorMsg.textContent = 'حصلت مشكلة أثناء البحث. حاول مرة تانية.';
+        errorMsg.style.display = 'block';
+
+    } finally {
+        btn.innerText = 'تتبع الطلب';
+        btn.disabled = false;
+    }
+});
+</script>
+
 
         document.getElementById('trackForm').addEventListener('submit', async (e) => {
             e.preventDefault();
