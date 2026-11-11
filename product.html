@@ -37,7 +37,9 @@
 
         .add-btn { background: #171717; color: white; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
         .add-btn:hover { background: #b58a61; }
-        .add-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .add-btn:disabled { background:#e8e8e8; color:#777; cursor:not-allowed; border:1px solid #dedede; }
+        .add-btn.is-sold-out { background:#fff0f0; color:#a32929; border:1px solid #f0caca; }
+        .stock-note { display:flex; align-items:center; gap:9px; margin:14px 0 4px; padding:12px 14px; border:1px solid #f0caca; border-radius:10px; background:#fff7f7; color:#9b2929; font-size:14px; font-weight:600; }
         
         .success-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: #25d366; color: white; padding: 15px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; z-index: 1000; }
         .success-toast.show { bottom: 30px; }
@@ -223,19 +225,34 @@
                     <div class="product-price">${currentProduct.price} جنيه</div>
                     <div class="product-desc">${currentProduct.description || 'لا يوجد وصف تفصيلي.'}</div>
                     ${sizesHtml}${colorsHtml}
-                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" ${variants.length === 0 ? '' : 'disabled'}><i class="fas fa-shopping-bag"></i> أضف إلى السلة</button>
+                    <div id="stockNotice"></div>
+                    <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? 'اختر المقاس واللون' : (Number(currentProduct.stock) > 0 ? 'أضف إلى السلة' : 'المنتج نفد')}</button>
                 </div>`;
 
-            if (variants.length > 0) renderOptions(allSizes, allColors);
-            else document.getElementById('addToCartBtn').disabled = false;
+            if (variants.length > 0) {
+                renderOptions(allSizes, allColors);
+                if (variants.every(v => Number(v.stock) <= 0)) {
+                    document.getElementById('stockNotice').innerHTML = '<div class="stock-note"><i class="fas fa-box-open"></i><span>عذراً، المنتج نفد من المخزون حالياً.</span></div>';
+                    const soldBtn = document.getElementById('addToCartBtn');
+                    soldBtn.innerHTML = '<i class="fas fa-ban"></i> المنتج نفد';
+                    soldBtn.classList.add('is-sold-out');
+                }
+            } else if (Number(currentProduct.stock) > 0) {
+                document.getElementById('addToCartBtn').disabled = false;
+            } else {
+                document.getElementById('stockNotice').innerHTML = '<div class="stock-note"><i class="fas fa-box-open"></i><span>عذراً، المنتج نفد من المخزون حالياً.</span></div>';
+                const soldBtn = document.getElementById('addToCartBtn');
+                soldBtn.innerHTML = '<i class="fas fa-ban"></i> المنتج نفد';
+                soldBtn.classList.add('is-sold-out');
+            }
         }
 
         function changeImage(thumb, imgUrl) { document.getElementById('mainImage').src = imgUrl; document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active')); thumb.classList.add('active'); }
         
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
-            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && v.stock > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}</button>`; });
-            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && v.stock > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}</button>`; });
+            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? ' — نفد' : ''}</button>`; });
+            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? ' — نفد' : ''}</button>`; });
         }
         function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
         function selectColor(color, event) { selectedColor = color; document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
@@ -243,8 +260,19 @@
         function checkSelection() {
             const variant = variants.find(v => (v.size === selectedSize || (!v.size && !selectedSize)) && (v.color === selectedColor || (!v.color && !selectedColor)));
             const btn = document.getElementById('addToCartBtn');
-            if (variant && variant.stock > 0) { selectedVariantId = variant.id; btn.disabled = false; btn.innerHTML = `<i class="fas fa-shopping-bag"></i> أضف إلى السلة`; } 
-            else { selectedVariantId = null; btn.disabled = true; btn.innerHTML = `<i class="fas fa-info-circle"></i> هذا الاختيار غير متاح حالياً`; }
+            if (variant && Number(variant.stock) > 0) {
+                selectedVariantId = variant.id;
+                btn.disabled = false;
+                btn.classList.remove('is-sold-out');
+                btn.innerHTML = '<i class="fas fa-shopping-bag"></i> أضف إلى السلة';
+                document.getElementById('stockNotice').innerHTML = '';
+            } else {
+                selectedVariantId = null;
+                btn.disabled = true;
+                btn.innerHTML = variant ? '<i class="fas fa-ban"></i> المنتج نفد' : '<i class="fas fa-info-circle"></i> هذا الاختيار غير متاح';
+                btn.classList.toggle('is-sold-out', !!variant);
+                document.getElementById('stockNotice').innerHTML = variant ? '<div class="stock-note"><i class="fas fa-box-open"></i><span>نفدت الكمية من هذا المقاس/اللون.</span></div>' : '';
+            }
         }
         
         function addToCart() {
