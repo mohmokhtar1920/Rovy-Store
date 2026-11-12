@@ -75,7 +75,15 @@
         .product-info { padding: 15px; }
         .product-title-small { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
         .product-price-small { color: #b58a61; font-weight: 900; font-size: 18px; }
-        .site-toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-18px);width:min(92%,430px);display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #e8e8e8;border-radius:14px;box-shadow:0 12px 35px rgba(0,0,0,.16);z-index:10000;opacity:0;visibility:hidden;pointer-events:none;transition:.25s;direction:rtl}.site-toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}.site-toast-icon{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:#eef8f1;color:#20a45a}.site-toast.success .site-toast-icon{background:#e9f8ef;color:#159447}.site-toast.error .site-toast-icon{background:#fff0f0;color:#b52d2d}.site-toast.info .site-toast-icon{background:#f2f4f7;color:#555}.site-toast-content{flex:1;min-width:0}.site-toast-title{font-weight:900;font-size:14px;margin-bottom:2px}.site-toast-message{font-size:13px;color:#666;line-height:1.6}.site-toast-close{border:0;background:transparent;color:#888;font-size:16px;cursor:pointer;padding:5px}\n    </style>
+        .site-toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-18px);width:min(92%,430px);display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #e8e8e8;border-radius:14px;box-shadow:0 12px 35px rgba(0,0,0,.16);z-index:10000;opacity:0;visibility:hidden;pointer-events:none;transition:.25s;direction:rtl}.site-toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}.site-toast-icon{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:#eef8f1;color:#20a45a}.site-toast.success .site-toast-icon{background:#e9f8ef;color:#159447}.site-toast.error .site-toast-icon{background:#fff0f0;color:#b52d2d}.site-toast.info .site-toast-icon{background:#f2f4f7;color:#555}.site-toast-content{flex:1;min-width:0}.site-toast-title{font-weight:900;font-size:14px;margin-bottom:2px}.site-toast-message{font-size:13px;color:#666;line-height:1.6}.site-toast-close{border:0;background:transparent;color:#888;font-size:16px;cursor:pointer;padding:5px}\n        .tryon-btn{width:100%;margin:0 0 12px;padding:14px;border:1px solid #b58a61;border-radius:10px;background:#fff8ef;color:#76502d;font:700 15px 'Cairo',sans-serif;cursor:pointer}
+        .tryon-modal{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:14px}
+        .tryon-modal.open{display:flex}.tryon-box{width:min(100%,760px);max-height:94vh;overflow:auto;background:#fff;border-radius:18px;padding:14px;direction:rtl}
+        .tryon-stage{position:relative;background:#111;border-radius:12px;overflow:hidden;min-height:220px;aspect-ratio:9/16;max-height:65vh;margin:12px auto}
+        .tryon-stage video{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.tryon-local{opacity:0}
+        .tryon-controls{display:flex;gap:8px;flex-wrap:wrap}.tryon-controls button{flex:1;min-width:120px;padding:11px;border:0;border-radius:9px;background:#17202c;color:#fff;font:700 14px 'Cairo',sans-serif}
+        .tryon-controls button:disabled{opacity:.45}.tryon-status{font-size:13px;color:#666;line-height:1.7;min-height:24px}
+        @media(min-width:600px){.tryon-stage{aspect-ratio:16/9;max-height:60vh}}
+    </style>
 </head>
 <body>
 
@@ -85,6 +93,15 @@
     </header>
 
     <div class="product-container" id="productContainer"><p>جاري التحميل...</p></div>
+    <div class="tryon-modal" id="tryonModal" role="dialog" aria-modal="true" aria-label="غرفة القياس الافتراضية">
+      <div class="tryon-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>غرفة القياس الافتراضية</strong><button type="button" onclick="stopVirtualTryOn()" aria-label="إغلاق" style="border:0;background:none;font-size:24px;cursor:pointer">×</button></div>
+        <div class="tryon-stage"><video id="tryonOutput" autoplay playsinline></video><video id="tryonLocal" class="tryon-local" autoplay muted playsinline></video></div>
+        <div class="tryon-status" id="tryonStatus">جهّز الكاميرا واضغط بدء التجربة.</div>
+        <div class="tryon-controls"><button type="button" id="tryonStart" onclick="startVirtualTryOn()">بدء التجربة</button><button type="button" id="tryonStop" onclick="stopVirtualTryOn()" disabled>إيقاف الكاميرا</button></div>
+        <small style="display:block;color:#888;margin-top:10px">التجربة محاكاة مرئية وليست تحديدًا للمقاس أو ضمانًا للملاءمة. ستعمل الكاميرا بعد موافقتك فقط.</small>
+      </div>
+    </div>
 
     <div class="reviews-section" id="reviewsSection" style="display:none;">
         <div class="reviews-header">
@@ -152,6 +169,7 @@
 
     <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank"><i class="fab fa-whatsapp"></i></a>
 
+    <script type="module">import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk@0.2.7'; window.DecartSDK={createDecartClient,models};</script>
     <script>
 
         let siteToastTimer;
@@ -362,6 +380,7 @@
                     <div class="product-desc" data-product-description>${currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.')}</div>
                     ${sizesHtml}${colorsHtml}
                     <div id="stockNotice"></div>
+                    <button type="button" class="tryon-btn" onclick="openVirtualTryOn()">✨ جرّب المنتج بالكاميرا مباشرة</button>
                     <button class="add-btn" id="addToCartBtn" onclick="addToCart()" disabled><i class="fas fa-shopping-bag"></i> ${variants.length > 0 ? (english ? 'Choose size and color' : 'اختر المقاس واللون') : (Number(currentProduct.stock) > 0 ? (english ? 'Add to Cart' : 'أضف إلى السلة') : (english ? 'Sold Out' : 'المنتج نفد'))}</button>
                 </div>`;
 
@@ -511,6 +530,54 @@
                 loadReviews();
             }
         });
+
+
+        let tryonClient = null, tryonCameraStream = null, tryonActive = false;
+        function openVirtualTryOn(){
+            document.getElementById('tryonModal').classList.add('open');
+            document.getElementById('tryonStatus').textContent = english ? 'Press start and allow camera access.' : 'اضغط بدء التجربة واسمح باستخدام الكاميرا.';
+        }
+        async function startVirtualTryOn(){
+            const status=document.getElementById('tryonStatus'), start=document.getElementById('tryonStart'), stop=document.getElementById('tryonStop');
+            if(tryonActive)return;
+            if(!window.DecartSDK){status.textContent='تعذر تحميل مكتبة التجربة. حدّث الصفحة وحاول مرة أخرى.';return;}
+            if(!navigator.mediaDevices?.getUserMedia){status.textContent='المتصفح لا يدعم الكاميرا. افتح الموقع من متصفح حديث وباتصال آمن.';return;}
+            start.disabled=true;
+            try{
+                status.textContent='جارٍ فتح الكاميرا…';
+                const model=window.DecartSDK.models.realtime('lucy-vton-3.6');
+                tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30,max:30}}});
+                document.getElementById('tryonLocal').srcObject=tryonCameraStream;
+                status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
+                const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
+                const tokenData=await tokenResponse.json().catch(()=>({}));
+                if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':'TOKEN_FAILED');
+                const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
+                tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
+                const imageResponse=await fetch(currentProduct.image_url,{mode:'cors'});
+                if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
+                const garmentBlob=await imageResponse.blob();
+                const garmentName=currentProduct.name_en||currentProduct.name||'garment';
+                await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                tryonActive=true;stop.disabled=false;
+                status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
+            }catch(error){
+                console.error('Virtual try-on error:',error);
+                const messages={DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secret.',TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.'};
+                status.textContent=messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':'تعذر بدء التجربة. تأكد من إعداد حساب Decart وحاول مرة أخرى.');
+                if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
+                tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
+                document.getElementById('tryonLocal').srcObject=null;start.disabled=false;stop.disabled=true;
+            }
+        }
+        function stopVirtualTryOn(){
+            if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
+            tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
+            document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;tryonActive=false;
+            const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=false;if(stop)stop.disabled=true;
+            const status=document.getElementById('tryonStatus');if(status)status.textContent='تم إيقاف الكاميرا.';
+        }
+        window.addEventListener('beforeunload',stopVirtualTryOn);
 
         applyProductLanguage();
         loadProduct();
