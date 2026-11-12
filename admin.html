@@ -49,6 +49,12 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   padding:5px;
   cursor:pointer;
 }
+.order-product{display:flex;align-items:center;gap:9px;margin:7px 0;min-width:170px}
+.order-product-thumb{width:58px;height:58px;object-fit:contain;background:#f5f6f8;border:1px solid var(--line);border-radius:9px;cursor:zoom-in;padding:3px}
+.order-product-noimage{width:58px;height:58px;display:grid;place-items:center;background:#f2f3f5;border-radius:9px;color:var(--muted);font-size:10px;text-align:center}
+.image-viewer{position:fixed;inset:0;background:#050910ed;z-index:50;display:grid;place-items:center;padding:20px}
+.image-viewer img{max-width:min(92vw,1000px);max-height:82vh;object-fit:contain;border-radius:12px}
+.image-viewer button{position:absolute;top:18px;left:18px;background:#fff;color:#17202c;border-radius:10px;padding:10px 15px;font-weight:800}
 </style>
 </head>
 <body>
@@ -197,6 +203,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     </form>
   </div>
 </div>
+<div id="orderImageViewer" class="image-viewer hidden" role="dialog" aria-modal="true" aria-label="تكبير صورة المنتج"><button type="button" id="closeOrderImage">إغلاق ✕</button><img id="orderImageLarge" src="" alt="صورة المنتج مكبرة"></div>
 <div id="toast" class="toast hidden" role="status"></div>
 
 <script>
@@ -344,7 +351,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   }
   function orderRow(o,compact=false) {
     const items=itemsFor(o);
-    const summary=items.map(i=>{const productName=i.product_name||i.name||i.products?.name||'منتج';const options=[i.size?('المقاس: '+i.size):'',i.color?('اللون: '+i.color):''].filter(Boolean).join(' - ');return `${esc(productName)} × ${Number(i.quantity||0)}${options?' <span class="muted">('+esc(options)+')</span>':''}`;}).join('<br>') || '—';
+    const summary=items.map(i=>{const productName=i.product_name||i.name||i.products?.name||'منتج';const imageUrl=safeUrl(i.image_url||i.products?.image_url);const options=[i.size?('المقاس: '+i.size):'',i.color?('اللون: '+i.color):''].filter(Boolean).join(' - ');const image=imageUrl?`<img class="order-product-thumb" src="${esc(imageUrl)}" alt="${esc(productName)}" data-order-image="${esc(imageUrl)}" title="اضغط لتكبير الصورة" loading="lazy">`:'<span class="order-product-noimage">لا توجد صورة</span>';return `<div class="order-product">${image}<div><strong>${esc(productName)}</strong><div class="muted">الكمية: ${Number(i.quantity||0)}${options?' · '+esc(options):''}</div></div></div>`;}).join('') || '—';
     return `<tr>
       <td><strong>#${esc(o.id)}</strong><div class="muted">${esc(o.created_at ? new Date(o.created_at).toLocaleString('ar-EG') : '')}</div></td>
       <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div>${compact?'':`<div class="muted">${esc(o.governorate_name||'المحافظة غير محددة')} · الشحن: ${money(o.shipping_fee||0)}</div><div class="muted">${esc(o.customer_address||'')}</div>`}</td>
@@ -415,6 +422,8 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       return;
     }
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
+    const orderImage=e.target.closest('[data-order-image]');if(orderImage){$('orderImageLarge').src=orderImage.dataset.orderImage;$('orderImageViewer').classList.remove('hidden');return;}
+    if(e.target.id==='orderImageViewer'||e.target.id==='closeOrderImage'){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';return;}
     const act=e.target.closest('[data-order-action]'); if(act){await changeOrder(act.dataset.id,act.dataset.orderAction);return;}
     const editP=e.target.closest('[data-edit-product]'); if(editP){const p=products.find(x=>String(x.id)===editP.dataset.editProduct);if(p)openProduct(p);return;}
     const toggleP=e.target.closest('[data-toggle-product]'); if(toggleP){try{await rpc('admin_set_product_active',{p_product_id:Number(toggleP.dataset.toggleProduct),p_is_active:toggleP.dataset.active==='1'});notify('تم تحديث حالة المنتج.');await loadProducts();}catch(err){notify(err.message,true);}return;}
@@ -426,6 +435,8 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
     const toggleC=e.target.closest('[data-toggle-coupon]'); if(toggleC){try{await rpc('admin_set_coupon_active',{p_coupon_id:Number(toggleC.dataset.toggleCoupon),p_is_active:toggleC.dataset.active==='1'});notify('تم تحديث حالة الكوبون.');await loadCoupons();}catch(err){notify(err.message,true);}return;}
   });
+  $('closeOrderImage').addEventListener('click',()=>{$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('orderImageViewer').classList.contains('hidden')){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';}});
   $('orderSearch').addEventListener('input',renderOrders);
   $('productSearch').addEventListener('input',renderProducts);
   $('orderFilter').addEventListener('change',()=>loadOrders().catch(e=>notify(e.message,true)));
