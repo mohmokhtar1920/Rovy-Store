@@ -711,6 +711,7 @@
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
                 setTryOnGarmentPreview(initialGarment);
                 tryonActive=true;stop.disabled=false;
+                if(tryonSelectedVariant&&tryonSelectedVariant.image_url)await applyTryOnVariant();
                 status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
             }catch(error){
                 console.error('Virtual try-on error:',error);
