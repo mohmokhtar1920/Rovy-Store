@@ -344,7 +344,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   }
   function orderRow(o,compact=false) {
     const items=itemsFor(o);
-    const summary=items.map(i=>`${esc(i.product_name || i.name || 'منتج')} × ${Number(i.quantity||0)}`).join('، ') || '—';
+    const summary=items.map(i=>{const productName=i.product_name||i.name||i.products?.name||'منتج';const options=[i.size?('المقاس: '+i.size):'',i.color?('اللون: '+i.color):''].filter(Boolean).join(' - ');return `${esc(productName)} × ${Number(i.quantity||0)}${options?' <span class="muted">('+esc(options)+')</span>':''}`;}).join('<br>') || '—';
     return `<tr>
       <td><strong>#${esc(o.id)}</strong><div class="muted">${esc(o.created_at ? new Date(o.created_at).toLocaleString('ar-EG') : '')}</div></td>
       <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div>${compact?'':`<div class="muted">${esc(o.governorate_name||'المحافظة غير محددة')} · الشحن: ${money(o.shipping_fee||0)}</div><div class="muted">${esc(o.customer_address||'')}</div>`}</td>
