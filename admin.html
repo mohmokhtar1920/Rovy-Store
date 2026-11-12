@@ -195,6 +195,13 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
           <div class="hint">اختر عدة صور من جهازك. الحد الأقصى 20 صورة، وحجم الصورة الواحدة 5 ميجابايت. يمكنك اختيار صورة رئيسية وحذف الصور قبل الحفظ.</div>
           <div id="imagePreview" class="image-grid"></div>
         </div></div>
+        <div class="field full"><label>ألوان ومقاسات المنتج</label>
+          <div class="upload-box">
+            <div class="hint">أضف كل تركيبة لون ومقاس ومخزونها، وارفع صورة واضحة للقطعة بهذا اللون حتى تظهر في غرفة القياس.</div>
+            <div id="variantAdminRows"></div>
+            <button class="btn light" type="button" id="addVariantRow" style="margin-top:10px">＋ إضافة لون ومقاس</button>
+          </div>
+        </div>
         <div class="field full"><label for="pDescription">الوصف</label><textarea id="pDescription" rows="3" maxlength="2000"></textarea></div>
       </div>
       <div class="modal-actions"><button class="btn gold" type="submit" id="saveProductBtn">حفظ المنتج</button><button class="btn light" type="button" data-close="productModal">إلغاء</button></div>
@@ -558,13 +565,76 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     if(!ready.some(im=>im.is_primary))ready[0].is_primary=true;
     await rpc('admin_save_product_images',{p_product_id:Number(productId),p_images:ready});
   }
+  let productVariantDrafts=[];
+  function renderVariantAdminRows(){
+    $('variantAdminRows').innerHTML=productVariantDrafts.map((v,i)=>`
+      <div class="panel" style="padding:12px;margin-top:10px">
+        <div class="formgrid">
+          <div class="field"><label>اللون</label><input data-variant-color="${i}" value="${esc(v.color||'')}" placeholder="أسود"></div>
+          <div class="field"><label>المقاس</label><input data-variant-size="${i}" value="${esc(v.size||'')}" placeholder="L"></div>
+          <div class="field"><label>المخزون</label><input data-variant-stock="${i}" type="number" min="0" step="1" value="${Number(v.stock||0)}"></div>
+          <div class="field"><label>صورة اللون</label><input data-variant-file="${i}" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          ${(v.preview_url||v.image_url)?`<img src="${esc(v.preview_url||v.image_url)}" style="width:64px;height:64px;object-fit:contain;border:1px solid #eee;border-radius:8px">`: '<span class="hint">لم يتم رفع صورة لهذا الاختيار</span>'}
+          <button type="button" class="mini red" data-remove-variant="${i}">حذف التركيبة</button>
+        </div>
+      </div>`).join('')||'<div class="empty">لم تضف ألوانًا أو مقاسات بعد.</div>';
+  }
+  async function loadProductVariants(productId){
+    const {data,error}=await client.from('product_variants').select('id,size,color,stock,image_url').eq('product_id',productId).order('id');
+    if(error)throw error;
+    productVariantDrafts=(data||[]).map(v=>({...v,file:null,preview_url:null}));
+    renderVariantAdminRows();
+  }
+  $('addVariantRow').addEventListener('click',()=>{
+    productVariantDrafts.push({color:'',size:'',stock:0,image_url:null,file:null,preview_url:null});
+    renderVariantAdminRows();
+  });
+  $('variantAdminRows').addEventListener('input',e=>{
+    const fields=[['variant-color','color'],['variant-size','size'],['variant-stock','stock']];
+    for(const [attr,key] of fields){const el=e.target.closest('[data-'+attr+']');if(el){const i=Number(el.getAttribute('data-'+attr));if(productVariantDrafts[i])productVariantDrafts[i][key]=key==='stock'?Number(el.value):el.value;break;}}
+  });
+  $('variantAdminRows').addEventListener('change',e=>{
+    const el=e.target.closest('[data-variant-file]');
+    if(!el||!el.files?.[0])return;
+    const i=Number(el.getAttribute('data-variant-file')),file=el.files[0];
+    if(!['image/jpeg','image/png','image/webp','image/gif'].includes(file.type)||file.size>5*1024*1024){notify('اختار صورة JPG أو PNG أو WEBP أقل من 5 ميجابايت.',true);el.value='';return;}
+    const v=productVariantDrafts[i];if(!v)return;
+    if(v.preview_url)URL.revokeObjectURL(v.preview_url);
+    v.file=file;v.preview_url=URL.createObjectURL(file);renderVariantAdminRows();
+  });
+  $('variantAdminRows').addEventListener('click',e=>{
+    const btn=e.target.closest('[data-remove-variant]');if(!btn)return;
+    const i=Number(btn.getAttribute('data-remove-variant'));
+    if(productVariantDrafts[i]?.preview_url)URL.revokeObjectURL(productVariantDrafts[i].preview_url);
+    productVariantDrafts.splice(i,1);renderVariantAdminRows();
+  });
+  async function saveProductVariants(productId){
+    const ready=[];
+    for(let i=0;i<productVariantDrafts.length;i++){
+      const v=productVariantDrafts[i];
+      if(!String(v.color||'').trim()||!String(v.size||'').trim())throw new Error('اكتب اللون والمقاس لكل تركيبة أو احذف السطر الناقص.');
+      if(!Number.isInteger(Number(v.stock))||Number(v.stock)<0)throw new Error('المخزون لازم يكون رقم صحيح أكبر من أو يساوي صفر.');
+      let imageUrl=v.image_url||null;
+      if(v.file){
+        const ext=(v.file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+        const path=`${productId}/variants/${Date.now()}-${i}-${crypto.randomUUID()}.${ext}`;
+        const {error}=await client.storage.from('product-images').upload(path,v.file,{contentType:v.file.type,upsert:false});
+        if(error)throw error;
+        imageUrl=client.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+      }
+      ready.push({color:v.color.trim(),size:v.size.trim(),stock:Number(v.stock),image_url:imageUrl});
+    }
+    await rpc('admin_save_product_variants',{p_product_id:Number(productId),p_variants:ready});
+  }
   async function openProduct(p=null){
     $('productForm').reset();$('productId').value=p?.id||'';$('pStock').value=p?.stock??0;
     $('productModalTitle').textContent=p?'تعديل منتج':'إضافة منتج';
     $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';fillCategorySelect(p?.category||'');
     $('pDescription').value=p?.description||'';$('productError').textContent='';
-    productImages=[];renderImagePreview();$('productModal').classList.remove('hidden');
-    if(p){try{await loadProductImages(p);}catch(err){$('productError').textContent='تعذر تحميل صور المنتج: '+err.message;}}
+    productImages=[];productVariantDrafts=[];renderImagePreview();renderVariantAdminRows();$('productModal').classList.remove('hidden');
+    if(p){try{await loadProductImages(p);await loadProductVariants(p.id);}catch(err){$('productError').textContent='تعذر تحميل بيانات المنتج: '+err.message;}}
   }
   $('productForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveProductBtn').disabled=true;$('productError').textContent='';
@@ -580,7 +650,8 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       const productId=saved?.product_id??saved?.[0]?.product_id??$('productId').value;
       if(!productId)throw new Error('تم حفظ المنتج لكن تعذر تحديد رقمه لربط الصور.');
       await uploadAndSaveProductImages(productId);
-      $('productModal').classList.add('hidden');notify('تم حفظ المنتج وصوره بنجاح.');await loadProducts();
+      await saveProductVariants(productId);
+      $('productModal').classList.add('hidden');notify('تم حفظ المنتج وصوره والألوان والمقاسات بنجاح.');await loadProducts();
     }catch(err){$('productError').textContent=err.message||'تعذر حفظ المنتج.';}
     finally{$('saveProductBtn').disabled=false;}
   });
