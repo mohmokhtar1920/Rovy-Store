@@ -96,6 +96,12 @@
     <div class="tryon-modal" id="tryonModal" role="dialog" aria-modal="true" aria-label="غرفة القياس الافتراضية">
       <div class="tryon-box">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>غرفة القياس الافتراضية</strong><button type="button" onclick="stopVirtualTryOn()" aria-label="إغلاق" style="border:0;background:none;font-size:24px;cursor:pointer">×</button></div>
+        <div id="tryonGarmentPanel" style="display:flex;align-items:center;gap:10px;padding:9px;background:#f8f5f1;border-radius:10px;margin-top:12px">
+          <img id="tryonGarmentPreview" src="" alt="المنتج المختار" style="width:58px;height:68px;object-fit:contain;background:#fff;border-radius:7px">
+          <div style="flex:1;min-width:0"><strong id="tryonGarmentName" style="display:block;font-size:13px">المنتج المختار</strong><small id="tryonGarmentHint" style="color:#777">يمكنك تغيير المنتج أثناء تشغيل الكاميرا</small></div>
+          <button type="button" id="tryonChooseGarment" onclick="toggleTryOnProductPicker()" style="border:1px solid #b58a61;background:#fff;border-radius:8px;padding:8px;font:700 12px Cairo;cursor:pointer">تغيير المنتج</button>
+        </div>
+        <div id="tryonProductPicker" style="display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:190px;overflow:auto;padding:10px 0"></div>
         <div class="tryon-stage"><video id="tryonOutput" autoplay playsinline></video><video id="tryonLocal" class="tryon-local" autoplay muted playsinline></video></div>
         <div class="tryon-status" id="tryonStatus">جهّز الكاميرا واضغط بدء التجربة.</div>
         <div class="tryon-controls"><button type="button" id="tryonStart" onclick="startVirtualTryOn()">بدء التجربة</button><button type="button" id="tryonStop" onclick="stopVirtualTryOn()" disabled>إيقاف الكاميرا</button></div>
@@ -533,9 +539,81 @@
 
 
         let tryonClient = null, tryonCameraStream = null, tryonActive = false;
+        let tryonSelectedProduct = null, tryonProductsLoaded = false, tryonChangingGarment = false;
         function openVirtualTryOn(){
             document.getElementById('tryonModal').classList.add('open');
             document.getElementById('tryonStatus').textContent = english ? 'Press start and allow camera access.' : 'اضغط بدء التجربة واسمح باستخدام الكاميرا.';
+            setTryOnGarmentPreview(currentProduct);
+            loadTryOnProducts();
+        }
+        function setTryOnGarmentPreview(product){
+            if(!product)return;
+            tryonSelectedProduct=product;
+            const image=document.getElementById('tryonGarmentPreview');
+            image.src=product.image_url||'';
+            document.getElementById('tryonGarmentName').textContent=product.name_en||product.name||'';
+            document.getElementById('tryonGarmentHint').textContent=english?'Selected item for virtual try-on':'المنتج المختار للتجربة الافتراضية';
+        }
+        function toggleTryOnProductPicker(){
+            const picker=document.getElementById('tryonProductPicker');
+            const opening=picker.style.display==='none'||!picker.style.display;
+            picker.style.display=opening?'grid':'none';
+            document.getElementById('tryonChooseGarment').textContent=opening?(english?'Hide products':'إخفاء المنتجات'):(english?'Change item':'تغيير المنتج');
+        }
+        async function loadTryOnProducts(){
+            if(tryonProductsLoaded)return;
+            const picker=document.getElementById('tryonProductPicker');
+            picker.innerHTML='<small style="grid-column:1/-1;color:#777">'+(english?'Loading products…':'جاري تحميل المنتجات…')+'</small>';
+            try{
+                const {data,error}=await supabaseClient.from('products').select('id,name,name_en,image_url,category').neq('id',currentProduct.id).limit(24);
+                if(error)throw error;
+                picker.innerHTML='';
+                (data||[]).filter(p=>p.image_url).forEach(product=>{
+                    const button=document.createElement('button');
+                    button.type='button';
+                    button.style.cssText='border:1px solid #eee;border-radius:9px;background:#fff;padding:5px;cursor:pointer;min-width:0';
+                    const img=document.createElement('img');
+                    img.src=product.image_url;img.alt=product.name||'';
+                    img.style.cssText='width:100%;height:82px;object-fit:contain;display:block';
+                    const label=document.createElement('span');
+                    label.textContent=product.name_en||product.name||'';
+                    label.style.cssText='display:block;font:12px Cairo;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+                    button.append(img,label);
+                    button.addEventListener('click',()=>changeTryOnGarment(product));
+                    picker.append(button);
+                });
+                if(!picker.children.length)picker.innerHTML='<small style="grid-column:1/-1;color:#777">'+(english?'No other products available.':'لا توجد منتجات أخرى متاحة.')+'</small>';
+                tryonProductsLoaded=true;
+            }catch(error){
+                console.error('Try-on products load error:',error);
+                picker.innerHTML='<small style="grid-column:1/-1;color:#a33">'+(english?'Could not load products.':'تعذر تحميل المنتجات.')+'</small>';
+            }
+        }
+        async function changeTryOnGarment(product){
+            if(!tryonClient||!tryonActive){document.getElementById('tryonStatus').textContent=english?'Start the camera before changing the item.':'شغّل الكاميرا أولاً قبل تغيير المنتج.';return;}
+            if(tryonChangingGarment)return;
+            tryonChangingGarment=true;
+            const status=document.getElementById('tryonStatus');
+            const choose=document.getElementById('tryonChooseGarment');
+            choose.disabled=true;
+            status.textContent=english?'Applying the selected item…':'جاري تطبيق المنتج المختار على الصورة…';
+            try{
+                const response=await fetch(product.image_url,{mode:'cors'});
+                if(!response.ok)throw new Error('PRODUCT_IMAGE_FAILED');
+                const blob=await response.blob();
+                const name=product.name_en||product.name||'garment';
+                await tryonClient.setImage(blob,{prompt:'Substitute the current garment with '+name+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                setTryOnGarmentPreview(product);
+                status.textContent=english?'Item changed. Live try-on is still running.':'تم تغيير المنتج، والتجربة مستمرة دون إيقاف الكاميرا.';
+                document.getElementById('tryonProductPicker').style.display='none';
+                choose.textContent=english?'Change item':'تغيير المنتج';
+            }catch(error){
+                console.error('Try-on garment change error:',error);
+                status.textContent=english?'Could not apply this product image. Try another item.':'تعذر تطبيق صورة المنتج ده. جرّب منتج تاني.';
+            }finally{
+                tryonChangingGarment=false;
+                choose.disabled=false;
+            }
         }
         async function startVirtualTryOn(){
             const status=document.getElementById('tryonStatus'), start=document.getElementById('tryonStart'), stop=document.getElementById('tryonStop');
@@ -557,11 +635,13 @@
                 status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
                 const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
                 tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
-                const imageResponse=await fetch(currentProduct.image_url,{mode:'cors'});
+                const initialGarment=tryonSelectedProduct||currentProduct;
+                const imageResponse=await fetch(initialGarment.image_url,{mode:'cors'});
                 if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const garmentBlob=await imageResponse.blob();
-                const garmentName=currentProduct.name_en||currentProduct.name||'garment';
+                const garmentName=initialGarment.name_en||initialGarment.name||'garment';
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                setTryOnGarmentPreview(initialGarment);
                 tryonActive=true;stop.disabled=false;
                 status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
             }catch(error){
@@ -579,6 +659,8 @@
             document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;tryonActive=false;
             const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=false;if(stop)stop.disabled=true;
             const status=document.getElementById('tryonStatus');if(status)status.textContent='تم إيقاف الكاميرا.';
+            const picker=document.getElementById('tryonProductPicker');if(picker)picker.style.display='none';
+            const choose=document.getElementById('tryonChooseGarment');if(choose){choose.disabled=false;choose.textContent=english?'Change item':'تغيير المنتج';}
         }
         window.addEventListener('beforeunload',stopVirtualTryOn);
 
