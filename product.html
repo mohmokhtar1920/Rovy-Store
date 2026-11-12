@@ -549,6 +549,7 @@
             document.getElementById('tryonModal').classList.add('open');
             document.getElementById('tryonStatus').textContent = english ? 'Press start and allow camera access.' : 'اضغط بدء التجربة واسمح باستخدام الكاميرا.';
             tryonSelectedSize=null;tryonSelectedColor=null;tryonSelectedVariant=null;
+            tryonProductVariants=variants;
             setTryOnGarmentPreview(currentProduct);
             loadTryOnProducts();
         }
@@ -562,13 +563,14 @@
             renderTryOnVariantOptions();
         }
         let tryonSelectedVariant=null, tryonSelectedSize=null, tryonSelectedColor=null;
+        let tryonProductVariants=[];
         function renderTryOnVariantOptions(){
             const panel=document.getElementById('tryonVariantOptions');
             const colorBox=document.getElementById('tryonColorOptions');
             const sizeBox=document.getElementById('tryonSizeOptions');
             const hint=document.getElementById('tryonVariantHint');
             if(!panel||!tryonSelectedProduct)return;
-            const options=tryonSelectedProduct.id===currentProduct.id?variants:[];
+            const options=Array.isArray(tryonProductVariants)?tryonProductVariants:[];
             const sizes=[...new Set(options.map(v=>v.size).filter(Boolean))];
             const colors=[...new Set(options.map(v=>v.color).filter(Boolean))];
             panel.style.display=(sizes.length||colors.length)?'block':'none';
@@ -671,6 +673,8 @@
                 const blob=await response.blob();
                 const name=product.name_en||product.name||'garment';
                 await tryonClient.setImage(blob,{prompt:'Substitute the current garment with '+name+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                const {data:productVariants,error:variantError}=await supabaseClient.from('product_variants').select('id,product_id,size,color,stock,image_url').eq('product_id',product.id);
+                tryonProductVariants=variantError?[]:(productVariants||[]);
                 setTryOnGarmentPreview(product);
                 status.textContent=english?'Item changed. Live try-on is still running.':'تم تغيير المنتج، والتجربة مستمرة دون إيقاف الكاميرا.';
                 document.getElementById('tryonProductPicker').style.display='none';
