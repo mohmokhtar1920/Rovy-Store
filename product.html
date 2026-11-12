@@ -101,6 +101,11 @@
           <div style="flex:1;min-width:0"><strong id="tryonGarmentName" style="display:block;font-size:13px">المنتج المختار</strong><small id="tryonGarmentHint" style="color:#777">يمكنك تغيير المنتج أثناء تشغيل الكاميرا</small></div>
           <button type="button" id="tryonChooseGarment" onclick="toggleTryOnProductPicker()" style="border:1px solid #b58a61;background:#fff;border-radius:8px;padding:8px;font:700 12px Cairo;cursor:pointer">تغيير المنتج</button>
         </div>
+        <div id="tryonVariantOptions" style="display:none;padding:10px 0;border-bottom:1px solid #eee;margin-bottom:8px">
+          <div id="tryonColorOptions" style="margin-bottom:10px"></div>
+          <div id="tryonSizeOptions"></div>
+          <small id="tryonVariantHint" style="display:block;color:#777;margin-top:8px"></small>
+        </div>
         <div id="tryonProductPicker" style="display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:190px;overflow:auto;padding:10px 0"></div>
         <div class="tryon-stage"><video id="tryonOutput" autoplay playsinline></video><video id="tryonLocal" class="tryon-local" autoplay muted playsinline></video></div>
         <div class="tryon-status" id="tryonStatus">جهّز الكاميرا واضغط بدء التجربة.</div>
@@ -543,6 +548,7 @@
         function openVirtualTryOn(){
             document.getElementById('tryonModal').classList.add('open');
             document.getElementById('tryonStatus').textContent = english ? 'Press start and allow camera access.' : 'اضغط بدء التجربة واسمح باستخدام الكاميرا.';
+            tryonSelectedSize=null;tryonSelectedColor=null;tryonSelectedVariant=null;
             setTryOnGarmentPreview(currentProduct);
             loadTryOnProducts();
         }
@@ -553,6 +559,67 @@
             image.src=product.image_url||'';
             document.getElementById('tryonGarmentName').textContent=product.name_en||product.name||'';
             document.getElementById('tryonGarmentHint').textContent=english?'Selected item for virtual try-on':'المنتج المختار للتجربة الافتراضية';
+            renderTryOnVariantOptions();
+        }
+        let tryonSelectedVariant=null, tryonSelectedSize=null, tryonSelectedColor=null;
+        function renderTryOnVariantOptions(){
+            const panel=document.getElementById('tryonVariantOptions');
+            const colorBox=document.getElementById('tryonColorOptions');
+            const sizeBox=document.getElementById('tryonSizeOptions');
+            const hint=document.getElementById('tryonVariantHint');
+            if(!panel||!tryonSelectedProduct)return;
+            const options=tryonSelectedProduct.id===currentProduct.id?variants:[];
+            const sizes=[...new Set(options.map(v=>v.size).filter(Boolean))];
+            const colors=[...new Set(options.map(v=>v.color).filter(Boolean))];
+            panel.style.display=(sizes.length||colors.length)?'block':'none';
+            if(!sizes.length&&!colors.length)return;
+            if(!sizes.includes(tryonSelectedSize))tryonSelectedSize=sizes[0]||null;
+            if(!colors.includes(tryonSelectedColor))tryonSelectedColor=colors[0]||null;
+            colorBox.innerHTML=colors.length?'<strong style="display:block;font-size:13px;margin-bottom:6px">'+(english?'Color':'اللون')+'</strong><div style="display:flex;gap:7px;flex-wrap:wrap"></div>':'';
+            sizeBox.innerHTML=sizes.length?'<strong style="display:block;font-size:13px;margin-bottom:6px">'+(english?'Size':'المقاس')+'</strong><div style="display:flex;gap:7px;flex-wrap:wrap"></div>':'';
+            const addOptions=(box,values,selected,kind)=>{
+                if(!values.length)return;
+                const row=box.querySelector('div');
+                values.forEach(value=>{
+                    const available=options.some(v=>(kind==='color'?v.color:v.size)===value&&Number(v.stock)>0);
+                    const button=document.createElement('button');
+                    button.type='button';button.textContent=value;button.disabled=!available;
+                    button.style.cssText='padding:7px 13px;border:1px solid '+(value===selected?'#b58a61':'#ddd')+';background:'+(value===selected?'#b58a61':'#fff')+';color:'+(value===selected?'#fff':'#333')+';border-radius:8px;font:700 12px Cairo;opacity:'+(available?'1':'.4')+';cursor:pointer';
+                    button.addEventListener('click',()=>{if(kind==='color')tryonSelectedColor=value;else tryonSelectedSize=value;renderTryOnVariantOptions();applyTryOnVariant();});
+                    row.append(button);
+                });
+            };
+            addOptions(colorBox,colors,tryonSelectedColor,'color');
+            addOptions(sizeBox,sizes,tryonSelectedSize,'size');
+            tryonSelectedVariant=options.find(v=>(!tryonSelectedSize||v.size===tryonSelectedSize)&&(!tryonSelectedColor||v.color===tryonSelectedColor))||null;
+            hint.textContent=tryonSelectedVariant&&Number(tryonSelectedVariant.stock)<=0?(english?'This combination is out of stock.':'الاختيار ده نفد من المخزون.'):(english?'Choose the color and size you want to preview.':'اختار اللون والمقاس اللي عايز تجربهم.');
+        }
+        async function applyTryOnVariant(){
+            const hint=document.getElementById('tryonVariantHint');
+            if(!tryonSelectedVariant)return;
+            if(Number(tryonSelectedVariant.stock)<=0){hint.textContent=english?'This combination is out of stock.':'الاختيار ده نفد من المخزون.';return;}
+            const variantImage=tryonSelectedVariant.image_url;
+            if(!variantImage){
+                hint.textContent=english?'Selected size/color. No dedicated variant photo is uploaded, so the base product photo remains.':'تم اختيار اللون والمقاس. مفيش صورة مخصصة للاختيار ده مرفوعة، فهتفضل صورة المنتج الأساسية.';
+                return;
+            }
+            if(!tryonClient||!tryonActive){
+                setTryOnGarmentPreview({...tryonSelectedProduct,image_url:variantImage});
+                hint.textContent=english?'Variant photo selected; it will be used when the camera starts.':'تم اختيار صورة اللون، وهتظهر عند تشغيل الكاميرا.';
+                return;
+            }
+            try{
+                hint.textContent=english?'Applying variant photo…':'جاري تطبيق صورة اللون المختار…';
+                const response=await fetch(variantImage,{mode:'cors'});
+                if(!response.ok)throw new Error('VARIANT_IMAGE_FAILED');
+                const blob=await response.blob();
+                await tryonClient.setImage(blob,{prompt:'Use this exact garment variant. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                setTryOnGarmentPreview({...tryonSelectedProduct,image_url:variantImage});
+                hint.textContent=english?'Variant photo applied to the live try-on.':'تم تطبيق صورة اللون المختار على التجربة المباشرة.';
+            }catch(error){
+                console.error('Try-on variant image error:',error);
+                hint.textContent=english?'Could not apply this variant photo.':'تعذر تطبيق صورة اللون المختار.';
+            }
         }
         function toggleTryOnProductPicker(){
             const picker=document.getElementById('tryonProductPicker');
@@ -592,6 +659,7 @@
         async function changeTryOnGarment(product){
             if(!tryonClient||!tryonActive){document.getElementById('tryonStatus').textContent=english?'Start the camera before changing the item.':'شغّل الكاميرا أولاً قبل تغيير المنتج.';return;}
             if(tryonChangingGarment)return;
+            tryonSelectedSize=null;tryonSelectedColor=null;tryonSelectedVariant=null;
             tryonChangingGarment=true;
             const status=document.getElementById('tryonStatus');
             const choose=document.getElementById('tryonChooseGarment');
