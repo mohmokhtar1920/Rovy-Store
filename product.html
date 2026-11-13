@@ -774,6 +774,7 @@
             tryonFacingMode=nextMode;
             await startVirtualTryOn({strictFacing:true});
             if(tryonActive){status.textContent=english?'Camera switched successfully.':'تم تبديل الكاميرا بنجاح.';return;}
+            if(tryonCancelRequested||!document.getElementById('tryonModal').classList.contains('open'))return;
             status.textContent=english?'Switch failed. Restoring the previous camera…':'التبديل لم ينجح. بنرجع للكاميرا السابقة…';
             tryonFacingMode=previousMode;
             await startVirtualTryOn({strictFacing:true});
