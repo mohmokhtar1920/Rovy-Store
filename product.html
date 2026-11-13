@@ -696,9 +696,9 @@
         async function startVirtualTryOn(options={}){
             const status=document.getElementById('tryonStatus'), start=document.getElementById('tryonStart'), stop=document.getElementById('tryonStop');
             if(tryonActive||tryonStarting)return;
-            tryonStarting=true;
             if(!window.DecartSDK){status.textContent='تعذر تحميل مكتبة التجربة. حدّث الصفحة وحاول مرة أخرى.';return;}
             if(!navigator.mediaDevices?.getUserMedia){status.textContent='المتصفح لا يدعم الكاميرا. افتح الموقع من متصفح حديث وباتصال آمن.';return;}
+            tryonStarting=true;
             start.disabled=true;
             try{
                 status.textContent='جارٍ فتح الكاميرا…';
