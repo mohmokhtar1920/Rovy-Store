@@ -42,7 +42,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <form id="authForm">
 <div class="field" id="nameField" style="display:none"><label for="fullName">الاسم بالكامل</label><input id="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك"></div>
 <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" required autocomplete="email" placeholder="name@example.com" dir="ltr"></div>
-<div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" required minlength="8" autocomplete="current-password" placeholder="8 أحرف على الأقل" dir="ltr"></div>
+<div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" required autocomplete="current-password" placeholder="8 أحرف على الأقل" dir="ltr"></div>
 <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
 </form>
 <div class="notice" id="notice" role="status"></div>
@@ -110,6 +110,7 @@ function setMode(next){
  $('signupTab').classList.toggle('active',mode==='signup');
  $('nameField').style.display=mode==='signup'?'block':'none';
  $('password').autocomplete=mode==='signup'?'new-password':'current-password';
+ $('password').placeholder=mode==='signup'?(english?'At least 8 characters':'8 أحرف على الأقل'):(english?'Enter your password':'اكتب كلمة المرور');
  $('submitBtn').textContent=mode==='signup'?(english?'Create Account':'إنشاء حساب جديد'):(english?'Sign In':'تسجيل الدخول');
  $('notice').className='notice';$('notice').textContent='';
 }
