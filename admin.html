@@ -302,11 +302,14 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     $('staffRole').textContent=roleNames[staff.role] || staff.role;
     document.querySelectorAll('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
   }
+  let enteringApp=false;
   async function enterApp() {
-    const {data:{user},error}=await client.auth.getUser();
-    if(error || !user) return showLogin('سجّل الدخول للمتابعة.');
-    currentUser=user;
-    try {
+    if(enteringApp)return;
+    enteringApp=true;
+    try{
+      const {data:{user},error}=await client.auth.getUser();
+      if(error || !user){showLogin('سجّل الدخول للمتابعة.');return;}
+      currentUser=user;
       await loadStaff();
       showApp();
       await loadOrders();
@@ -316,7 +319,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       await client.auth.signOut();
       staff=null;
       showLogin(e.message || 'لا يمكن التحقق من صلاحيات الحساب.');
-    }
+    } finally { enteringApp=false; }
   }
   $('loginForm').addEventListener('submit',async e=>{
     e.preventDefault();
@@ -331,7 +334,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   $('logoutBtn').addEventListener('click',async()=>{await client.auth.signOut();staff=null;orders=[];products=[];coupons=[];showLogin('تم تسجيل الخروج.');});
   client.auth.onAuthStateChange((event,session)=>{
     if(event==='SIGNED_OUT'){staff=null;showLogin();}
-    if(event==='SIGNED_IN' && session && !$('appView').classList.contains('hidden')===false){setTimeout(enterApp,0);}
+    if(event==='SIGNED_IN' && session && $('appView').classList.contains('hidden')){setTimeout(()=>{if($('appView').classList.contains('hidden'))enterApp();},0);}
   });
 
   async function loadOrders() {
