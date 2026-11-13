@@ -338,7 +338,8 @@
             if(productError||!product){container.innerHTML='<p role="alert">تعذر العثور على المنتج أو أنه لم يعد متاحاً.</p>';return;}
             currentProduct = product;
 
-            const { data: vars } = await supabaseClient.from('product_variants').select('*').eq('product_id', productId);
+            const { data: vars,error:variantsError } = await supabaseClient.from('product_variants').select('*').eq('product_id', numericProductId);
+            if(variantsError){container.innerHTML='<p role="alert">تعذر تحميل المقاسات والألوان والمخزون. حدّث الصفحة وحاول مرة أخرى قبل إضافة المنتج إلى السلة.</p><button type="button" onclick="location.reload()">إعادة المحاولة</button>';return;}
             variants = vars || [];
 
             renderProduct();
@@ -623,7 +624,8 @@
             }
             try{
                 hint.textContent=english?'Applying variant photo…':'جاري تطبيق صورة اللون المختار…';
-                const response=await fetch(variantImage,{mode:'cors'});
+                const safeVariantImage=safeImageURL(variantImage);if(!safeVariantImage)throw new Error('INVALID_VARIANT_IMAGE');
+                const response=await fetch(safeVariantImage,{mode:'cors'});
                 if(!response.ok)throw new Error('VARIANT_IMAGE_FAILED');
                 const blob=await response.blob();
                 await tryonClient.setImage(blob,{prompt:'Use this exact garment variant. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
@@ -728,7 +730,8 @@
                 tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
                 ensureTryOnNotCancelled();
                 const initialGarment=tryonSelectedProduct||currentProduct;
-                const imageResponse=await fetch(initialGarment.image_url,{mode:'cors'});
+                const initialGarmentUrl=safeImageURL(initialGarment.image_url);if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
+                const imageResponse=await fetch(initialGarmentUrl,{mode:'cors'});
                 ensureTryOnNotCancelled();
                 if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const garmentBlob=await imageResponse.blob();
