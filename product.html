@@ -724,7 +724,7 @@
                 ensureTryOnNotCancelled();
                 const tokenData=await tokenResponse.json().catch(()=>({}));
                 ensureTryOnNotCancelled();
-                if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':'TOKEN_FAILED');
+                if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':(tokenData.error||'TOKEN_FAILED'));
                 status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
                 const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
                 tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
@@ -747,7 +747,7 @@
                 status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
             }catch(error){
                 console.error('Virtual try-on error:',error);
-                const messages={DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secret.',TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.'};
+                const messages={DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secret.',TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',TOKEN_CREATION_FAILED:'خدمة القياس غير متاحة مؤقتاً. حاول بعد قليل.',TOKEN_SERVICE_UNAVAILABLE:'تعذر الاتصال بخدمة القياس. تحقق من الإنترنت وحاول مرة أخرى.',TRYON_RATE_LIMITED:'وصلت إلى الحد المؤقت لمحاولات القياس. انتظر 10 دقائق ثم حاول مرة أخرى.',RATE_LIMIT_NOT_CONFIGURED:'خدمة الحماية من المحاولات المتكررة غير جاهزة. تواصل مع الدعم.',RATE_LIMIT_UNAVAILABLE:'تعذر التحقق من صلاحية تشغيل القياس. حاول مرة أخرى بعد قليل.',PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.'};
                 status.textContent=error.message==='TRYON_CANCELLED'?(english?'Try-on closed. Camera stopped.':'تم إغلاق التجربة وإيقاف الكاميرا.'):(messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':error.name==='NotFoundError'?'لم يتم العثور على كاميرا متاحة على الجهاز.':error.name==='NotReadableError'?'الكاميرا مستخدمة في تطبيق آخر. اقفل التطبيق وجرب تاني.':error.name==='OverconstrainedError'?'الكاميرا لا تدعم الإعداد المطلوب. جرّب كاميرا أخرى.':error.message==='CAMERA_FACING_MISMATCH'?'المتصفح لم يفتح الكاميرا المطلوبة.':'تعذر بدء التجربة. تأكد من اتصال الإنترنت وإعداد حساب Decart وحاول مرة أخرى.'));
                 if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
                 tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
