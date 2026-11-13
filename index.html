@@ -507,7 +507,7 @@
                             <h4 data-cart-name="${id}">${name}</h4>
                             <p>${price.toLocaleString('en-US')} × ${quantity} = ${(price*quantity).toLocaleString('en-US')} جنيه</p>
                         </div>
-                        <button class="remove-item" onclick="removeFromCart(${id})" aria-label="حذف المنتج"><i class="fas fa-trash"></i></button>
+                        <button class="remove-item" data-remove-cart="${escapeHTML(item.cartItemId||String(id)+'-no-variant')}" onclick="removeFromCart(this.dataset.removeCart)" aria-label="حذف هذا الاختيار من السلة"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
             });
@@ -520,7 +520,7 @@
             translateCartNames();
         }
 
-        function removeFromCart(id) { cart = cart.filter(item => item.id !== id); updateCart(); }
+        function removeFromCart(cartItemKey) { const key=String(cartItemKey??'');cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==key);updateCart(); }
         function toggleCart() { document.getElementById('cartSidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
         function checkout() { if (cart.length === 0) { showToast(english ? 'Add at least one product before checkout.' : 'أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.', 'info', english ? 'Your cart is empty' : 'سلتك فارغة'); return; } window.location.href = 'checkout.html'; }
         function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
