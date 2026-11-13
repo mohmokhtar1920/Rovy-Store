@@ -672,7 +672,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     }catch(err){$('couponError').textContent=err.message||'تعذر حفظ الكوبون.';}
     finally{$('saveCouponBtn').disabled=false;}
   });
-  function csvCell(v){return '"'+String(v??'').replace(/"/g,'""')+'"';}
+  function csvCell(v){let value=String(v??'');if(/^[\s]*[=+\-@]/.test(value))value="'"+value;return '"'+value.replace(/"/g,'""')+'"';}
   $('exportCsvBtn').addEventListener('click',()=>{
     if(!isManager())return;
     const rows=[['رقم الطلب','اسم العميل','الهاتف','العنوان','الإجمالي','الحالة','التاريخ']];
