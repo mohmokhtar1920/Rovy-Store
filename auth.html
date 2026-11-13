@@ -47,7 +47,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 </form>
 <div class="notice" id="notice" role="status"></div>
 <div id="otpPanel" style="display:none;margin-top:18px">
- <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 6 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="000000" dir="ltr"></div>
+ <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 6 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="00000000" dir="ltr"></div>
  <button class="submit" id="verifyOtpBtn" type="button">تأكيد البريد الإلكتروني</button>
  <button class="secondary" id="resendOtpBtn" type="button" style="width:100%;margin-top:10px;background:#fff">إعادة إرسال الكود</button>
 </div>
@@ -165,7 +165,7 @@ $('authForm').addEventListener('submit',async e=>{
 });
 $('verifyOtpBtn').addEventListener('click',async()=>{
   const token=$('emailOtp').value.trim();
-  if(!/^\d{6}$/.test(token)){setNotice(english?'Enter the 6-digit verification code.':'اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
+  if(!/^\d{8}$/.test(token)){setNotice(english?'Enter the 8-digit verification code.':'اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
   const btn=$('verifyOtpBtn');btn.disabled=true;
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
