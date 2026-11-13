@@ -47,7 +47,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 </form>
 <div class="notice" id="notice" role="status"></div>
 <div id="otpPanel" style="display:none;margin-top:18px">
- <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 6 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="00000000" dir="ltr"></div>
+ <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 8 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="00000000" dir="ltr"></div>
  <button class="submit" id="verifyOtpBtn" type="button">تأكيد البريد الإلكتروني</button>
  <button class="secondary" id="resendOtpBtn" type="button" style="width:100%;margin-top:10px;background:#fff">إعادة إرسال الكود</button>
 </div>
@@ -95,7 +95,7 @@ function applyAuthLanguage(){
  $('email').previousElementSibling.textContent=english?'Email Address':'البريد الإلكتروني';
  $('password').previousElementSibling.textContent=english?'Password':'كلمة المرور';
  $('password').placeholder=english?'At least 8 characters':'8 أحرف على الأقل';
- $('emailOtp').previousElementSibling.textContent=english?'6-digit verification code':'كود التأكيد المكوّن من 6 أرقام';
+ $('emailOtp').previousElementSibling.textContent=english?'8-digit verification code':'كود التأكيد المكوّن من 8 أرقام';
  $('verifyOtpBtn').textContent=english?'Verify Email':'تأكيد البريد الإلكتروني';
  $('resendOtpBtn').textContent=english?'Resend Code':'إعادة إرسال الكود';
  $('accountPanel').querySelector('h1').textContent=english?'Your Account is Ready':'حسابك جاهز';
@@ -149,7 +149,7 @@ $('authForm').addEventListener('submit',async e=>{
      pendingSignupEmail=email;
      $('authForm').style.display='none';
      $('otpPanel').style.display='block';
-     setNotice('تم إنشاء الحساب. أدخل كود التأكيد المكوّن من 6 أرقام الذي أرسلناه إلى بريدك الإلكتروني.','success');
+     setNotice('تم إنشاء الحساب. أدخل كود التأكيد المكوّن من 8 أرقام الذي أرسلناه إلى بريدك الإلكتروني.','success');
    }
   }else{
    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
