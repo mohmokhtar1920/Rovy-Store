@@ -385,7 +385,7 @@
                 card.className = 'category';
                 card.addEventListener('click', () => filterCategory(category.name));
                 const img = document.createElement('img');
-                img.src = product ? product.image_url : fallbackImages[index % fallbackImages.length];
+                img.src = product ? (safeImageURL(product.image_url) || fallbackImages[index % fallbackImages.length]) : fallbackImages[index % fallbackImages.length];
                 img.alt = category.name;
                 const title = document.createElement('h3');
                 title.textContent = category.name;
