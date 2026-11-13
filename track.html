@@ -144,6 +144,16 @@
             color: #856404;
         }
 
+        .status-confirmed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-preparing {
+            background: #e2d9f3;
+            color: #4a2b75;
+        }
+
         .status-shipped {
             background: #cce5ff;
             color: #004085;
@@ -446,6 +456,8 @@ const itemsList = document.getElementById('resItemsList');
 
 const statusMap = {
     pending: ['قيد الانتظار', 'status-pending'],
+    confirmed: ['تم تأكيد الطلب', 'status-confirmed'],
+    preparing: ['جاري تجهيز الطلب', 'status-preparing'],
     shipped: ['تم الشحن', 'status-shipped'],
     delivered: ['تم التوصيل', 'status-delivered'],
     cancelled: ['ملغي', 'status-cancelled']
