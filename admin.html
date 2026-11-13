@@ -682,7 +682,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     orders.forEach(o=>rows.push([o.id,o.customer_name,o.customer_phone,o.customer_address,o.total_price,statusNames[o.status]||o.status,o.created_at]));
     const csv='\uFEFF'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='rovy-orders.csv';a.click();URL.revokeObjectURL(url);
+    const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='rovy-orders.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
   });
   $('loginView').classList.remove('hidden');
   client.auth.getSession().then(({data})=>{if(data.session)enterApp();});
