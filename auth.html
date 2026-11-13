@@ -165,7 +165,7 @@ $('authForm').addEventListener('submit',async e=>{
 });
 $('verifyOtpBtn').addEventListener('click',async()=>{
   const token=$('emailOtp').value.trim();
-  if(!/^\d{8}$/.test(token)){setNotice(english?'Enter the 8-digit verification code.':'اكتب كود التأكيد المكوّن من 6 أرقام.');return;}
+  if(!/^\d{8}$/.test(token)){setNotice(english?'Enter the 8-digit verification code.':'اكتب كود التأكيد المكوّن من 8 أرقام.');return;}
   const btn=$('verifyOtpBtn');btn.disabled=true;
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
