@@ -67,7 +67,7 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:
 const $=id=>document.getElementById(id);
 let english=localStorage.getItem('rovyLanguage')==='en';
 let mode='login';
-let pendingSignupEmail='';
+let pendingSignupEmail=sessionStorage.getItem('rovyPendingSignupEmail')||'';
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
@@ -120,13 +120,18 @@ function showAccount(user){
  $('accountEmail').textContent=user.email||'';
  $('continueLink').href=nextPage;
 }
-function redirectAfterAuth(){localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
+function redirectAfterAuth(){sessionStorage.removeItem('rovyPendingSignupEmail');localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
 async function checkSession(){
  const {data,error}=await supabaseClient.auth.getSession();
  if(error){setNotice(english?'Could not verify your session. Refresh the page and try again.':'تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
  if(data.session){
+   sessionStorage.removeItem('rovyPendingSignupEmail');
    if(nextPage==='checkout.html') redirectAfterAuth();
    else showAccount(data.session.user);
+ }else if(pendingSignupEmail){
+   $('authForm').style.display='none';
+   $('otpPanel').style.display='block';
+   setNotice(english?'Enter the 8-digit code sent to '+pendingSignupEmail:'أدخل كود التأكيد المكوّن من 8 أرقام المرسل إلى '+pendingSignupEmail,'success');
  }
 }
 $('loginTab').addEventListener('click',()=>setMode('login'));
@@ -147,6 +152,7 @@ $('authForm').addEventListener('submit',async e=>{
    if(data.session){setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
    else {
      pendingSignupEmail=email;
+     sessionStorage.setItem('rovyPendingSignupEmail',email);
      $('authForm').style.display='none';
      $('otpPanel').style.display='block';
      setNotice('تم إنشاء الحساب. أدخل كود التأكيد المكوّن من 8 أرقام الذي أرسلناه إلى بريدك الإلكتروني.','success');
@@ -170,6 +176,8 @@ $('verifyOtpBtn').addEventListener('click',async()=>{
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
     if(error)throw error;
+    sessionStorage.removeItem('rovyPendingSignupEmail');
+    pendingSignupEmail='';
     if(data.session)redirectAfterAuth();
     else{$('otpPanel').style.display='none';$('authForm').style.display='block';setMode('login');setNotice(english?'Email confirmed. Please sign in to continue.':'تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');}
   }catch(err){setNotice(err.message||'الكود غير صحيح أو انتهت صلاحيته.');}
