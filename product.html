@@ -79,7 +79,7 @@
         .tryon-modal{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;padding:14px}
         .tryon-modal.open{display:flex}.tryon-box{width:min(100%,760px);max-height:94vh;overflow:auto;background:#fff;border-radius:18px;padding:14px;direction:rtl}
         .tryon-stage{position:relative;background:#111;border-radius:12px;overflow:hidden;min-height:220px;aspect-ratio:9/16;max-height:65vh;margin:12px auto}
-        .tryon-stage video{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.tryon-local{opacity:0}
+        .tryon-stage video{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;transition:opacity .18s ease}.tryon-local{opacity:1}.tryon-stage:not(.is-live) #tryonOutput{opacity:0}.tryon-stage.is-live #tryonOutput{opacity:1}.tryon-stage.is-live #tryonLocal{opacity:0}
         .tryon-controls{display:flex;gap:8px;flex-wrap:wrap}.tryon-controls button{flex:1;min-width:120px;padding:11px;border:0;border-radius:9px;background:#17202c;color:#fff;font:700 14px 'Cairo',sans-serif}
         .tryon-controls button:disabled{opacity:.45}.tryon-status{font-size:13px;color:#666;line-height:1.7;min-height:24px}
         @media(min-width:600px){.tryon-stage{aspect-ratio:16/9;max-height:60vh}}
@@ -628,7 +628,7 @@
                 const response=await fetch(safeVariantImage,{mode:'cors'});
                 if(!response.ok)throw new Error('VARIANT_IMAGE_FAILED');
                 const blob=await response.blob();
-                await tryonClient.setImage(blob,{prompt:'Use this exact garment variant. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                await tryonClient.setImage(blob,{prompt:'Use this exact garment variant. Preserve its color, fabric texture, pattern and cut.',enhance:false});
                 setTryOnGarmentPreview({...tryonSelectedProduct,image_url:variantImage});
                 hint.textContent=english?'Variant photo applied to the live try-on.':'تم تطبيق صورة اللون المختار على التجربة المباشرة.';
             }catch(error){
@@ -686,7 +686,7 @@
                 if(!response.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const blob=await response.blob();
                 const name=product.name_en||product.name||'garment';
-                await tryonClient.setImage(blob,{prompt:'Substitute the current garment with '+name+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                await tryonClient.setImage(blob,{prompt:'Substitute the current garment with '+name+'. Preserve its color, fabric texture, pattern and cut.',enhance:false});
                 const {data:productVariants,error:variantError}=await supabaseClient.from('product_variants').select('id,product_id,size,color,stock,image_url').eq('product_id',product.id);
                 tryonProductVariants=variantError?[]:(productVariants||[]);
                 setTryOnGarmentPreview(product);
@@ -718,7 +718,7 @@
                 ensureTryOnNotCancelled();
                 const actualFacing=tryonCameraStream.getVideoTracks()[0]?.getSettings?.().facingMode;
                 if(options.strictFacing&&actualFacing&&actualFacing!==tryonFacingMode)throw new Error('CAMERA_FACING_MISMATCH');
-                document.getElementById('tryonLocal').srcObject=tryonCameraStream;
+                const localVideo=document.getElementById('tryonLocal');const tryonStage=localVideo.closest('.tryon-stage');if(tryonStage)tryonStage.classList.remove('is-live');localVideo.srcObject=tryonCameraStream;localVideo.play().catch(()=>{});
                 status.textContent=english?'Getting a secure try-on session…':'جاري تجهيز تصريح آمن للتجربة…';
                 const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
                 ensureTryOnNotCancelled();
@@ -727,7 +727,7 @@
                 if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':(tokenData.error||'TOKEN_FAILED'));
                 status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
                 const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
-                tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
+                tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');const stage=output.closest('.tryon-stage');const revealOutput=()=>{if(stage&&output.readyState>=2)stage.classList.add('is-live');};output.srcObject=remoteStream;output.addEventListener('loadeddata',revealOutput,{once:true});output.play().then(revealOutput).catch(()=>{});}});
                 ensureTryOnNotCancelled();
                 const initialGarment=tryonSelectedProduct||currentProduct;
                 const initialGarmentUrl=safeImageURL(initialGarment.image_url);if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
@@ -737,7 +737,7 @@
                 const garmentBlob=await imageResponse.blob();
                 ensureTryOnNotCancelled();
                 const garmentName=initialGarment.name_en||initialGarment.name||'garment';
-                await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.',enhance:false});
                 ensureTryOnNotCancelled();
                 setTryOnGarmentPreview(initialGarment);
                 tryonActive=true;stop.disabled=false;
@@ -822,7 +822,7 @@
             tryonCancelRequested=true;
             if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
             tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
-            document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;tryonActive=false;
+            document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;document.querySelector('.tryon-stage')?.classList.remove('is-live');tryonActive=false;
             const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=false;if(stop)stop.disabled=true;
             const status=document.getElementById('tryonStatus');if(status)status.textContent='تم إيقاف الكاميرا.';
             tryonStarting=false;
