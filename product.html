@@ -716,6 +716,7 @@
                 const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
                 ensureTryOnNotCancelled();
                 const tokenData=await tokenResponse.json().catch(()=>({}));
+                ensureTryOnNotCancelled();
                 if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':'TOKEN_FAILED');
                 status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
                 const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
@@ -726,6 +727,7 @@
                 ensureTryOnNotCancelled();
                 if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const garmentBlob=await imageResponse.blob();
+                ensureTryOnNotCancelled();
                 const garmentName=initialGarment.name_en||initialGarment.name||'garment';
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
                 ensureTryOnNotCancelled();
