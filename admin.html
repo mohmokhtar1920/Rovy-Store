@@ -569,6 +569,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     await rpc('admin_save_product_images',{p_product_id:Number(productId),p_images:ready});
   }
   let productVariantDrafts=[];
+  let productVariantsLoaded=true;
   function renderVariantAdminRows(){
     $('variantAdminRows').innerHTML=productVariantDrafts.map((v,i)=>`
       <div class="panel" style="padding:12px;margin-top:10px">
@@ -588,6 +589,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const {data,error}=await client.from('product_variants').select('id,size,color,stock,image_url').eq('product_id',productId).order('id');
     if(error)throw error;
     productVariantDrafts=(data||[]).map(v=>({...v,file:null,preview_url:null}));
+    productVariantsLoaded=true;
     renderVariantAdminRows();
   }
   $('addVariantRow').addEventListener('click',()=>{
@@ -636,12 +638,13 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     $('productModalTitle').textContent=p?'تعديل منتج':'إضافة منتج';
     $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';fillCategorySelect(p?.category||'');
     $('pDescription').value=p?.description||'';$('productError').textContent='';
-    productImages=[];productVariantDrafts=[];renderImagePreview();renderVariantAdminRows();$('productModal').classList.remove('hidden');
-    if(p){try{await loadProductImages(p);await loadProductVariants(p.id);}catch(err){$('productError').textContent='تعذر تحميل بيانات المنتج: '+err.message;}}
+    productImages=[];productVariantDrafts=[];productVariantsLoaded=!p;renderImagePreview();renderVariantAdminRows();$('productModal').classList.remove('hidden');
+    if(p){try{await loadProductImages(p);await loadProductVariants(p.id);}catch(err){productVariantsLoaded=false;$('productError').textContent='تعذر تحميل بيانات المنتج: '+err.message;}}
   }
   $('productForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveProductBtn').disabled=true;$('productError').textContent='';
     try{
+      if(!productVariantsLoaded)throw new Error('تعذر تحميل تركيبات المنتج الحالية. أغلق النافذة وافتح المنتج مرة أخرى قبل الحفظ حتى لا تُحذف المقاسات والألوان الموجودة.');
       if(!productImages.length)throw new Error('أضف صورة واحدة على الأقل للمنتج.');
       const mainImage=productImages.find(im=>im.is_primary);
       const saved=await rpc('admin_save_product',{
