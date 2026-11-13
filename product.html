@@ -109,7 +109,7 @@
         <div id="tryonProductPicker" style="display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:190px;overflow:auto;padding:10px 0"></div>
         <div class="tryon-stage"><video id="tryonOutput" autoplay playsinline></video><video id="tryonLocal" class="tryon-local" autoplay muted playsinline></video></div>
         <div class="tryon-status" id="tryonStatus">جهّز الكاميرا واضغط بدء التجربة.</div>
-        <div class="tryon-controls"><button type="button" id="tryonStart" onclick="startVirtualTryOn()">بدء التجربة</button><button type="button" id="tryonStop" onclick="stopVirtualTryOn()" disabled>إيقاف الكاميرا</button></div>
+        <div class="tryon-controls"><button type="button" id="tryonStart" onclick="startVirtualTryOn()">بدء التجربة</button><button type="button" id="tryonStop" onclick="stopVirtualTryOn()" disabled>إيقاف الكاميرا</button><button type="button" id="tryonSwitchCamera" onclick="switchTryOnCamera()" disabled>تبديل الكاميرا</button><button type="button" id="tryonCapture" onclick="captureTryOnPhoto()" disabled>التقاط صورة</button><button type="button" id="tryonDownload" onclick="downloadTryOnPhoto()" disabled>حفظ الصورة</button></div><div id="tryonPhotoPreview" style="display:none;margin-top:12px;text-align:center"><img id="tryonCapturedImage" alt="صورة تجربة الملابس" style="display:block;width:min(100%,360px);max-height:55vh;object-fit:contain;margin:auto;border-radius:12px;background:#f4f4f4"><small style="display:block;color:#777;margin-top:6px">الصورة من معاينة غرفة القياس الحالية.</small></div>
         <small style="display:block;color:#888;margin-top:10px">التجربة محاكاة مرئية وليست تحديدًا للمقاس أو ضمانًا للملاءمة. ستعمل الكاميرا بعد موافقتك فقط.</small>
       </div>
     </div>
@@ -544,6 +544,7 @@
 
 
         let tryonClient = null, tryonCameraStream = null, tryonActive = false;
+        let tryonFacingMode='user', tryonPhotoBlob=null, tryonPhotoUrl=null;
         let tryonSelectedProduct = null, tryonProductsLoaded = false, tryonChangingGarment = false;
         function openVirtualTryOn(){
             document.getElementById('tryonModal').classList.add('open');
@@ -697,7 +698,7 @@
                 status.textContent='جارٍ فتح الكاميرا…';
                 const model=window.DecartSDK.models.realtime('lucy-vton-3.6');
                 status.textContent='جارٍ فتح الكاميرا وتجهيز الاتصال معاً…';
-                const cameraPromise=navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:'user',width:{ideal:480,max:640},height:{ideal:360,max:480},frameRate:{ideal:20,max:24}}});
+                const cameraPromise=navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:tryonFacingMode},width:{ideal:480,max:640},height:{ideal:360,max:480},frameRate:{ideal:20,max:24}}});
                 const tokenPromise=fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
                 const [cameraStream,tokenResponse]=await Promise.all([cameraPromise,tokenPromise]);
                 tryonCameraStream=cameraStream;
@@ -715,6 +716,8 @@
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
                 setTryOnGarmentPreview(initialGarment);
                 tryonActive=true;stop.disabled=false;
+                document.getElementById('tryonSwitchCamera').disabled=false;
+                document.getElementById('tryonCapture').disabled=false;
                 if(tryonSelectedVariant&&tryonSelectedVariant.image_url)await applyTryOnVariant();
                 status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
             }catch(error){
@@ -724,7 +727,60 @@
                 if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
                 tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
                 document.getElementById('tryonLocal').srcObject=null;start.disabled=false;stop.disabled=true;
+                document.getElementById('tryonSwitchCamera').disabled=true;document.getElementById('tryonCapture').disabled=true;
             }
+        }
+        async function switchTryOnCamera(){
+            if(!tryonActive)return;
+            const button=document.getElementById('tryonSwitchCamera');
+            button.disabled=true;
+            const nextMode=tryonFacingMode==='user'?'environment':'user';
+            const status=document.getElementById('tryonStatus');
+            status.textContent=english?'Switching camera…':'جاري تبديل الكاميرا وإعادة تشغيل التجربة…';
+            try{
+                if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
+                tryonClient=null;
+                if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());
+                tryonCameraStream=null;
+                document.getElementById('tryonLocal').srcObject=null;
+                document.getElementById('tryonOutput').srcObject=null;
+                tryonActive=false;
+                tryonFacingMode=nextMode;
+                document.getElementById('tryonStart').disabled=false;
+                await startVirtualTryOn();
+                if(!tryonActive){tryonFacingMode=nextMode==='user'?'environment':'user';throw new Error('CAMERA_SWITCH_FAILED');}
+                status.textContent=english?'Camera switched successfully.':'تم تبديل الكاميرا بنجاح.';
+            }catch(error){
+                console.error('Try-on camera switch error:',error);
+                status.textContent=english?'Could not switch camera. Try again or check browser permissions.':'تعذر تبديل الكاميرا. جرّب مرة أخرى وتأكد من صلاحيات المتصفح.';
+                button.disabled=!tryonActive;
+            }
+        }
+        function captureTryOnPhoto(){
+            const video=document.getElementById('tryonOutput');
+            if(!video||video.readyState<2||!video.videoWidth||!video.videoHeight){
+                document.getElementById('tryonStatus').textContent=english?'The live preview is not ready yet.':'معاينة التجربة لسه مش جاهزة. استنى لحظة وجرب تاني.';return;
+            }
+            const canvas=document.createElement('canvas');
+            canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+            const context=canvas.getContext('2d');
+            context.drawImage(video,0,0,canvas.width,canvas.height);
+            canvas.toBlob(blob=>{
+                if(!blob){document.getElementById('tryonStatus').textContent=english?'Could not create the photo.':'تعذر تجهيز الصورة. حاول مرة تانية.';return;}
+                tryonPhotoBlob=blob;
+                if(tryonPhotoUrl)URL.revokeObjectURL(tryonPhotoUrl);
+                tryonPhotoUrl=URL.createObjectURL(blob);
+                document.getElementById('tryonCapturedImage').src=tryonPhotoUrl;
+                document.getElementById('tryonPhotoPreview').style.display='block';
+                document.getElementById('tryonDownload').disabled=false;
+                document.getElementById('tryonStatus').textContent=english?'Photo captured. You can save it to your device.':'اتصورت النتيجة! تقدر دلوقتي تحفظ الصورة على جهازك.';
+            },'image/jpeg',0.92);
+        }
+        function downloadTryOnPhoto(){
+            if(!tryonPhotoBlob||!tryonPhotoUrl)return;
+            const link=document.createElement('a');
+            link.href=tryonPhotoUrl;link.download='rovy-virtual-tryon-'+Date.now()+'.jpg';
+            document.body.appendChild(link);link.click();link.remove();
         }
         function stopVirtualTryOn(){
             if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
@@ -732,6 +788,7 @@
             document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;tryonActive=false;
             const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=false;if(stop)stop.disabled=true;
             const status=document.getElementById('tryonStatus');if(status)status.textContent='تم إيقاف الكاميرا.';
+            const switchButton=document.getElementById('tryonSwitchCamera'),captureButton=document.getElementById('tryonCapture');if(switchButton)switchButton.disabled=true;if(captureButton)captureButton.disabled=true;
             const picker=document.getElementById('tryonProductPicker');if(picker)picker.style.display='none';
             const choose=document.getElementById('tryonChooseGarment');if(choose){choose.disabled=false;choose.textContent=english?'Change item':'تغيير المنتج';}
         }
