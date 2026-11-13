@@ -85,8 +85,13 @@
             const message = document.getElementById('message').value.trim();
             if(!name||!phone||!message)return;
             const waText = encodeURIComponent(`مرحباً، أنا ${name} برقم الموبايل ${phone}\n\n${message}`);
-            const waWindow=window.open(`https://wa.me/201012853009?text=${waText}`, '_blank', 'noopener,noreferrer');
-            if(!waWindow) alert('تعذر فتح واتساب. اسمح بالنوافذ المنبثقة أو افتح رابط واتساب مباشرة.');
+            const link=document.createElement('a');
+            link.href=`https://wa.me/201012853009?text=${waText}`;
+            link.target='_blank';
+            link.rel='noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
         });
     </script>
 </body>
