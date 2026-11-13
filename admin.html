@@ -169,8 +169,8 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
       <section id="page-reports" class="page hidden">
         <div class="pagehead"><div><h1>التقارير</h1><div class="muted">ملخص مبني على بيانات الطلبات التي ترجعها قاعدة البيانات</div></div><button class="btn light" id="exportCsvBtn">تصدير الطلبات CSV</button></div>
         <div class="stats">
-          <div class="stat"><small>إجمالي قيمة الطلبات</small><strong id="reportTotal">0 ج.م</strong></div>
-          <div class="stat"><small>متوسط قيمة الطلب</small><strong id="reportAverage">0 ج.م</strong></div>
+          <div class="stat"><small>إجمالي قيمة الطلبات غير الملغاة</small><strong id="reportTotal">0 ج.م</strong></div>
+          <div class="stat"><small>متوسط قيمة الطلب غير الملغى</small><strong id="reportAverage">0 ج.م</strong></div>
           <div class="stat"><small>طلبات ملغاة</small><strong id="reportCancelled">0</strong></div>
           <div class="stat"><small>إجمالي القطع المطلوبة</small><strong id="reportItems">0</strong></div>
         </div>
@@ -444,12 +444,13 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     </tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد كوبونات حتى الآن.</div>';
   }
   function renderReports() {
-    const total=orders.reduce((s,o)=>s+Number(o.total_price||0),0);
+    const reportableOrders=orders.filter(o=>o.status!=='cancelled');
+    const total=reportableOrders.reduce((s,o)=>s+Number(o.total_price||0),0);
     $('reportTotal').textContent=money(total);
-    $('reportAverage').textContent=money(orders.length?total/orders.length:0);
+    $('reportAverage').textContent=money(reportableOrders.length?total/reportableOrders.length:0);
     $('reportCancelled').textContent=orders.filter(o=>o.status==='cancelled').length;
     const counts={}; let pieces=0;
-    orders.forEach(o=>itemsFor(o).forEach(i=>{const q=Number(i.quantity||0);pieces+=q;const n=i.product_name||i.name||'منتج';counts[n]=(counts[n]||0)+q;}));
+    reportableOrders.forEach(o=>itemsFor(o).forEach(i=>{const q=Number(i.quantity||0);pieces+=q;const n=i.product_name||i.name||'منتج';counts[n]=(counts[n]||0)+q;}));
     $('reportItems').textContent=pieces;
     const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
     $('topProducts').innerHTML=top.length?top.map(([n,q])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 2px"><strong>${esc(n)}</strong><span>${q} قطعة</span></div>`).join(''):'<div class="empty">لا توجد بيانات كافية بعد.</div>';
