@@ -617,9 +617,13 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
   });
   async function saveProductVariants(productId){
     const ready=[];
+    const combinations=new Set();
     for(let i=0;i<productVariantDrafts.length;i++){
       const v=productVariantDrafts[i];
       if(!String(v.color||'').trim()||!String(v.size||'').trim())throw new Error('اكتب اللون والمقاس لكل تركيبة أو احذف السطر الناقص.');
+      const combination=String(v.size).trim().toLocaleLowerCase()+'::'+String(v.color).trim().toLocaleLowerCase();
+      if(combinations.has(combination))throw new Error('هناك تركيبة مكررة لنفس المقاس واللون. عدّل أحد السطرين قبل الحفظ.');
+      combinations.add(combination);
       if(!Number.isInteger(Number(v.stock))||Number(v.stock)<0)throw new Error('المخزون لازم يكون رقم صحيح أكبر من أو يساوي صفر.');
       let imageUrl=v.image_url||null;
       if(v.file){
