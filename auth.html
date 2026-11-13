@@ -50,6 +50,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
  <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 8 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="00000000" dir="ltr"></div>
  <button class="submit" id="verifyOtpBtn" type="button">تأكيد البريد الإلكتروني</button>
  <button class="secondary" id="resendOtpBtn" type="button" style="width:100%;margin-top:10px;background:#fff">إعادة إرسال الكود</button>
+ <button class="secondary" id="changePendingEmailBtn" type="button" style="width:100%;margin-top:10px;background:#fff">استخدام بريد إلكتروني آخر</button>
 </div>
 </section>
 <section class="auth-card account-panel" id="accountPanel">
@@ -67,7 +68,9 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:
 const $=id=>document.getElementById(id);
 let english=localStorage.getItem('rovyLanguage')==='en';
 let mode='login';
-let pendingSignupEmail=sessionStorage.getItem('rovyPendingSignupEmail')||'';
+const PENDING_EMAIL_KEY='rovyPendingSignupEmail';
+let pendingSignupEmail=localStorage.getItem(PENDING_EMAIL_KEY)||sessionStorage.getItem(PENDING_EMAIL_KEY)||'';
+if(pendingSignupEmail)localStorage.setItem(PENDING_EMAIL_KEY,pendingSignupEmail);
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
 const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
@@ -98,6 +101,7 @@ function applyAuthLanguage(){
  $('emailOtp').previousElementSibling.textContent=english?'8-digit verification code':'كود التأكيد المكوّن من 8 أرقام';
  $('verifyOtpBtn').textContent=english?'Verify Email':'تأكيد البريد الإلكتروني';
  $('resendOtpBtn').textContent=english?'Resend Code':'إعادة إرسال الكود';
+ $('changePendingEmailBtn').textContent=english?'Use a different email':'استخدام بريد إلكتروني آخر';
  $('accountPanel').querySelector('h1').textContent=english?'Your Account is Ready':'حسابك جاهز';
  $('accountPanel').querySelector('.subtitle').textContent=english?'You are currently signed in to ROVY STORE.':'أنت مسجل الدخول حالياً في ROVY STORE.';
  $('continueLink').textContent=english?'Continue Shopping':'متابعة التسوق';
@@ -120,12 +124,13 @@ function showAccount(user){
  $('accountEmail').textContent=user.email||'';
  $('continueLink').href=nextPage;
 }
-function redirectAfterAuth(){sessionStorage.removeItem('rovyPendingSignupEmail');localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
+function clearPendingSignup(){sessionStorage.removeItem(PENDING_EMAIL_KEY);localStorage.removeItem(PENDING_EMAIL_KEY);pendingSignupEmail='';}
+function redirectAfterAuth(){clearPendingSignup();localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
 async function checkSession(){
  const {data,error}=await supabaseClient.auth.getSession();
  if(error){setNotice(english?'Could not verify your session. Refresh the page and try again.':'تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
  if(data.session){
-   sessionStorage.removeItem('rovyPendingSignupEmail');
+   clearPendingSignup();
    if(nextPage==='checkout.html') redirectAfterAuth();
    else showAccount(data.session.user);
  }else if(pendingSignupEmail){
@@ -152,7 +157,8 @@ $('authForm').addEventListener('submit',async e=>{
    if(data.session){setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
    else {
      pendingSignupEmail=email;
-     sessionStorage.setItem('rovyPendingSignupEmail',email);
+     localStorage.setItem(PENDING_EMAIL_KEY,email);
+     sessionStorage.setItem(PENDING_EMAIL_KEY,email);
      $('authForm').style.display='none';
      $('otpPanel').style.display='block';
      setNotice('تم إنشاء الحساب. أدخل كود التأكيد المكوّن من 8 أرقام الذي أرسلناه إلى بريدك الإلكتروني.','success');
@@ -176,8 +182,7 @@ $('verifyOtpBtn').addEventListener('click',async()=>{
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
     if(error)throw error;
-    sessionStorage.removeItem('rovyPendingSignupEmail');
-    pendingSignupEmail='';
+    clearPendingSignup();
     if(data.session)redirectAfterAuth();
     else{$('otpPanel').style.display='none';$('authForm').style.display='block';setMode('login');setNotice(english?'Email confirmed. Please sign in to continue.':'تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');}
   }catch(err){setNotice(err.message||'الكود غير صحيح أو انتهت صلاحيته.');}
