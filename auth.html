@@ -170,7 +170,7 @@ $('verifyOtpBtn').addEventListener('click',async()=>{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
     if(error)throw error;
     if(data.session)redirectAfterAuth();
-    else setNotice('تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');
+    else{$('otpPanel').style.display='none';$('authForm').style.display='block';setMode('login');setNotice(english?'Email confirmed. Please sign in to continue.':'تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');}
   }catch(err){setNotice(err.message||'الكود غير صحيح أو انتهت صلاحيته.');}
   finally{btn.disabled=false;}
 });
