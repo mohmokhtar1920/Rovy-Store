@@ -43,7 +43,7 @@
                 <i class="fab fa-whatsapp"></i>
                 <div>
                     <h4>واتساب (الأسرع للرد)</h4>
-                    <p><a href="https://wa.me/201012853009" target="_blank" style="color: #25d366; text-decoration: none; font-weight: bold;">01012853009</a></p>
+                    <p><a href="https://wa.me/201012853009" target="_blank" rel="noopener noreferrer" style="color: #25d366; text-decoration: none; font-weight: bold;">01012853009</a></p>
                 </div>
             </div>
             
@@ -88,12 +88,13 @@
         // تحويل الرسالة للواتساب مباشرة
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const message = document.getElementById('message').value;
-            
-            const waText = `مرحباً، أنا ${name} برقم الموبايل ${phone}%0A%0A${message}`;
-            window.open(`https://wa.me/201012853009?text=${waText}`, '_blank');
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const message = document.getElementById('message').value.trim();
+            if(!name||!phone||!message)return;
+            const waText = encodeURIComponent(`مرحباً، أنا ${name} برقم الموبايل ${phone}\n\n${message}`);
+            const waWindow=window.open(`https://wa.me/201012853009?text=${waText}`, '_blank', 'noopener,noreferrer');
+            if(!waWindow) alert('تعذر فتح واتساب. اسمح بالنوافذ المنبثقة أو افتح رابط واتساب مباشرة.');
         });
     </script>
 </body>
