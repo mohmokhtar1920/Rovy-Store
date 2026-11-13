@@ -543,9 +543,10 @@
         });
 
 
-        let tryonClient = null, tryonCameraStream = null, tryonActive = false, tryonStarting = false;
+        let tryonClient = null, tryonCameraStream = null, tryonActive = false, tryonStarting = false, tryonCancelRequested = false;
         let tryonFacingMode='user', tryonPhotoBlob=null, tryonPhotoUrl=null;
         let tryonSelectedProduct = null, tryonProductsLoaded = false, tryonChangingGarment = false;
+        function ensureTryOnNotCancelled(){if(tryonCancelRequested)throw new Error('TRYON_CANCELLED');}
         function openVirtualTryOn(){
             if(tryonPhotoUrl){URL.revokeObjectURL(tryonPhotoUrl);tryonPhotoUrl=null;}
             tryonPhotoBlob=null;
@@ -699,6 +700,7 @@
             if(!window.DecartSDK){status.textContent='تعذر تحميل مكتبة التجربة. حدّث الصفحة وحاول مرة أخرى.';return;}
             if(!navigator.mediaDevices?.getUserMedia){status.textContent='المتصفح لا يدعم الكاميرا. افتح الموقع من متصفح حديث وباتصال آمن.';return;}
             tryonStarting=true;
+            tryonCancelRequested=false;
             start.disabled=true;
             try{
                 status.textContent='جارٍ فتح الكاميرا…';
@@ -706,22 +708,27 @@
                 status.textContent='جارٍ فتح الكاميرا وتجهيز الاتصال معاً…';
                 const facingConstraint=options.strictFacing?{exact:tryonFacingMode}:{ideal:tryonFacingMode};
                 tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:{ideal:480,max:640},height:{ideal:360,max:480},frameRate:{ideal:20,max:24}}});
+                ensureTryOnNotCancelled();
                 const actualFacing=tryonCameraStream.getVideoTracks()[0]?.getSettings?.().facingMode;
                 if(options.strictFacing&&actualFacing&&actualFacing!==tryonFacingMode)throw new Error('CAMERA_FACING_MISMATCH');
                 document.getElementById('tryonLocal').srcObject=tryonCameraStream;
                 status.textContent=english?'Getting a secure try-on session…':'جاري تجهيز تصريح آمن للتجربة…';
                 const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
+                ensureTryOnNotCancelled();
                 const tokenData=await tokenResponse.json().catch(()=>({}));
                 if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':'TOKEN_FAILED');
                 status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
                 const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
                 tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');output.srcObject=remoteStream;output.play().catch(()=>{});}});
+                ensureTryOnNotCancelled();
                 const initialGarment=tryonSelectedProduct||currentProduct;
                 const imageResponse=await fetch(initialGarment.image_url,{mode:'cors'});
+                ensureTryOnNotCancelled();
                 if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const garmentBlob=await imageResponse.blob();
                 const garmentName=initialGarment.name_en||initialGarment.name||'garment';
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern, cut and visible design details as closely as possible.',enhance:true});
+                ensureTryOnNotCancelled();
                 setTryOnGarmentPreview(initialGarment);
                 tryonActive=true;stop.disabled=false;
                 document.getElementById('tryonSwitchCamera').disabled=false;
@@ -731,7 +738,7 @@
             }catch(error){
                 console.error('Virtual try-on error:',error);
                 const messages={DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secret.',TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.'};
-                status.textContent=messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':error.name==='NotFoundError'?'لم يتم العثور على كاميرا متاحة على الجهاز.':error.name==='NotReadableError'?'الكاميرا مستخدمة في تطبيق آخر. اقفل التطبيق وجرب تاني.':error.name==='OverconstrainedError'?'الكاميرا لا تدعم الإعداد المطلوب. جرّب كاميرا أخرى.':error.message==='CAMERA_FACING_MISMATCH'?'المتصفح لم يفتح الكاميرا المطلوبة.':'تعذر بدء التجربة. تأكد من اتصال الإنترنت وإعداد حساب Decart وحاول مرة أخرى.');
+                status.textContent=error.message==='TRYON_CANCELLED'?(english?'Try-on closed. Camera stopped.':'تم إغلاق التجربة وإيقاف الكاميرا.'):(messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':error.name==='NotFoundError'?'لم يتم العثور على كاميرا متاحة على الجهاز.':error.name==='NotReadableError'?'الكاميرا مستخدمة في تطبيق آخر. اقفل التطبيق وجرب تاني.':error.name==='OverconstrainedError'?'الكاميرا لا تدعم الإعداد المطلوب. جرّب كاميرا أخرى.':error.message==='CAMERA_FACING_MISMATCH'?'المتصفح لم يفتح الكاميرا المطلوبة.':'تعذر بدء التجربة. تأكد من اتصال الإنترنت وإعداد حساب Decart وحاول مرة أخرى.'));
                 if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
                 tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
                 document.getElementById('tryonLocal').srcObject=null;start.disabled=false;stop.disabled=true;
@@ -801,6 +808,7 @@
         }
         function closeVirtualTryOn(){stopVirtualTryOn();const modal=document.getElementById('tryonModal');if(modal)modal.classList.remove('open');}
         function stopVirtualTryOn(){
+            tryonCancelRequested=true;
             if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
             tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
             document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;tryonActive=false;
