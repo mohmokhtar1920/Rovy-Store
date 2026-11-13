@@ -431,7 +431,7 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
     const q=$('productSearch').value.trim().toLowerCase();
     const list=products.filter(p=>`${p.name||''} ${p.category||''}`.toLowerCase().includes(q));
     $('productsTable').innerHTML=list.length?`<table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(p=>`<tr>
-      <td><strong>${esc(p.name)}</strong>${p.image_url?`<div class="muted">صورة مضافة</div>`:''}</td><td>${esc(p.category||'—')}</td><td>${money(p.price)}</td><td>${Number(p.stock||0)}</td>
+      <td><strong>${esc(p.name)}</strong>${p.image_url?`<div class="muted">صورة مضافة</div>`:''}</td><td>${esc(p.category||'—')}</td><td>${money(p.price)}</td><td>${p.has_variants?`${Number(p.variant_stock||0)} <span class="muted">(إجمالي الخيارات)</span>`:Number(p.stock||0)}</td>
       <td><span class="${p.is_active?'pill green':'pill red'}">${p.is_active?'نشط':'موقوف'}</span></td>
       <td><div class="actions"><button class="mini gold" data-edit-product="${esc(p.id)}">تعديل</button><button class="mini ${p.is_active?'red':'gold'}" data-toggle-product="${esc(p.id)}" data-active="${p.is_active?'0':'1'}">${p.is_active?'إيقاف':'تفعيل'}</button></div></td>
     </tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد منتجات مطابقة.</div>';
