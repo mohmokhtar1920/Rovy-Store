@@ -141,11 +141,11 @@
                 </div>
                 <div class="form-group">
                     <label>اسمك</label>
-                    <input type="text" id="reviewerName" required placeholder="اكتب اسمك هنا">
+                    <input type="text" id="reviewerName" required maxlength="80" autocomplete="name" placeholder="اكتب اسمك هنا">
                 </div>
                 <div class="form-group">
                     <label>رأيك في المنتج</label>
-                    <textarea id="reviewComment" rows="3" placeholder="إيه رأيك في الخامة والمقاس؟"></textarea>
+                    <textarea id="reviewComment" rows="3" maxlength="1200" placeholder="إيه رأيك في الخامة والمقاس؟"></textarea>
                 </div>
                 <button type="submit" class="btn-review">إرسال التقييم</button>
             </form>
@@ -234,11 +234,14 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'sb-bkjwfmjxmxgxgaxwrnsh-auth-token' } });
         
+        function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+        function safeImageURL(value){try{const u=new URL(String(value||''),location.href);return u.protocol==='https:'?u.href:'';}catch{return '';}}
+        function loadCartSafely(){try{const value=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(value)?value.filter(x=>x&&typeof x==='object'&&Number.isSafeInteger(Number(x.id))&&Number(x.id)>0&&Number.isSafeInteger(Number(x.quantity))&&Number(x.quantity)>0&&Number.isFinite(Number(x.price))&&Number(x.price)>=0):[];}catch{return [];}}
         let english = localStorage.getItem('rovyLanguage') === 'en';
         let currentProduct = null;
         let variants = [];
         let selectedSize = null, selectedColor = null, selectedVariantId = null;
-        let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
+        let cart = loadCartSafely();
         let selectedRating = 0;
 
         const translationCache = (() => {
@@ -328,9 +331,11 @@
         const productId = new URLSearchParams(window.location.search).get('id');
 
         async function loadProduct() {
-            if(!productId) return;
-            const { data: product } = await supabaseClient.from('products').select('*').eq('id', productId).single();
-            if(!product) return;
+            const numericProductId=Number(productId);
+            const container=document.getElementById('productContainer');
+            if(!productId||!Number.isSafeInteger(numericProductId)||numericProductId<=0){container.innerHTML='<p role="alert">المنتج المطلوب غير موجود. ارجع إلى المتجر واختر منتجاً آخر.</p>';return;}
+            const { data: product,error:productError } = await supabaseClient.from('products').select('*').eq('id', numericProductId).single();
+            if(productError||!product){container.innerHTML='<p role="alert">تعذر العثور على المنتج أو أنه لم يعد متاحاً.</p>';return;}
             currentProduct = product;
 
             const { data: vars } = await supabaseClient.from('product_variants').select('*').eq('product_id', productId);
@@ -348,12 +353,13 @@
                 const grid = document.getElementById('relatedGrid');
                 grid.innerHTML = '';
                 data.forEach(p => {
+                    const id=Number(p.id);if(!Number.isSafeInteger(id)||id<=0)return;
                     grid.innerHTML += `
                         <div class="product-card">
-                            <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}"></a>
+                            <a href="product.html?id=${id}"><img src="${escapeHTML(safeImageURL(p.image_url))}" alt="${escapeHTML(p.name||'منتج')}" loading="lazy"></a>
                             <div class="product-info">
-                                <a href="product.html?id=${p.id}" style="text-decoration:none; color:inherit;"><div class="product-title-small" data-related-name="${p.id}">${p.name_en || p.name}</div></a>
-                                <div class="product-price-small">${p.price} جنيه</div>
+                                <a href="product.html?id=${id}" style="text-decoration:none; color:inherit;"><div class="product-title-small" data-related-name="${id}">${escapeHTML(p.name_en || p.name || 'منتج')}</div></a>
+                                <div class="product-price-small">${Number(p.price).toLocaleString('en-US')} جنيه</div>
                             </div>
                         </div>`;
                 });
@@ -367,11 +373,12 @@
             let gallery = currentProduct.gallery_images;
             if (typeof gallery === 'string') { try { gallery = JSON.parse(gallery); } catch(e) { gallery = []; } }
             if (gallery && Array.isArray(gallery) && gallery.length > 0) allImages = allImages.concat(gallery);
-
+            allImages=allImages.map(safeImageURL).filter(Boolean);
+            if(!allImages.length)allImages=[''];
             let galleryHtml = `
                 <div class="gallery-container">
-                    <img src="${allImages[0]}" class="main-image" id="mainImage">
-                    <div class="thumbnails">${allImages.map((img, index) => `<img src="${img}" class="thumb-img ${index === 0 ? 'active' : ''}" onclick="changeImage(this, '${img}')">`).join('')}</div>
+                    <img src="${escapeHTML(allImages[0])}" alt="${escapeHTML(currentProduct.name||'صورة المنتج')}" class="main-image" id="mainImage">
+                    <div class="thumbnails">${allImages.filter(Boolean).map((img, index) => `<img src="${escapeHTML(img)}" alt="${escapeHTML(currentProduct.name||'صورة المنتج')} ${index+1}" class="thumb-img ${index === 0 ? 'active' : ''}" data-image-url="${escapeHTML(img)}" onclick="changeImage(this)" loading="lazy">`).join('')}</div>
                 </div>`;
 
             let sizesHtml = '', colorsHtml = '', allSizes = [], allColors = [];
@@ -385,10 +392,10 @@
             container.innerHTML = `
                 ${galleryHtml}
                 <div class="product-details">
-                    <div class="product-category" data-product-category>${currentProduct.category}</div>
-                    <h1 class="product-title" data-product-name>${currentProduct.name_en || currentProduct.name}</h1>
+                    <div class="product-category" data-product-category>${escapeHTML(currentProduct.category||'')}</div>
+                    <h1 class="product-title" data-product-name>${escapeHTML(currentProduct.name_en || currentProduct.name || 'منتج')}</h1>
                     <div class="product-price">${currentProduct.price} ${english ? 'EGP' : 'جنيه'}</div>
-                    <div class="product-desc" data-product-description>${currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.')}</div>
+                    <div class="product-desc" data-product-description>${escapeHTML(currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.'))}</div>
                     ${sizesHtml}${colorsHtml}
                     <div id="stockNotice"></div>
                     <button type="button" class="tryon-btn" onclick="openVirtualTryOn()">✨ جرّب المنتج بالكاميرا مباشرة</button>
@@ -414,12 +421,12 @@
             translateCurrentProductContent();
         }
 
-        function changeImage(thumb, imgUrl) { document.getElementById('mainImage').src = imgUrl; document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active')); thumb.classList.add('active'); }
+        function changeImage(thumb) { const imageUrl=safeImageURL(thumb?.dataset?.imageUrl);if(!imageUrl)return;document.getElementById('mainImage').src=imageUrl;document.querySelectorAll('.thumb-img').forEach(t=>t.classList.remove('active'));thumb.classList.add('active'); }
         
         function renderOptions(allSizes, allColors) {
             const sizesList = document.getElementById('sizesList'), colorsList = document.getElementById('colorsList');
-            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectSize('${size}', event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
-            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" onclick="selectColor('${color}', event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
+            if (sizesList) allSizes.forEach(size => { const isAvail = variants.some(v => v.size === size && Number(v.stock) > 0); sizesList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" data-size="${escapeHTML(size)}" onclick="selectSize(this.dataset.size, event)" ${!isAvail ? 'disabled' : ''}>${size}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
+            if (colorsList) allColors.forEach(color => { const isAvail = variants.some(v => v.color === color && Number(v.stock) > 0); colorsList.innerHTML += `<button class="option-btn ${!isAvail ? 'out-of-stock' : ''}" data-color="${escapeHTML(color)}" onclick="selectColor(this.dataset.color, event)" ${!isAvail ? 'disabled' : ''}>${color}${!isAvail ? (english ? ' — Sold out' : ' — نفد') : ''}</button>`; });
         }
         function selectSize(size, event) { selectedSize = size; document.querySelectorAll('#sizesList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
         function selectColor(color, event) { selectedColor = color; document.querySelectorAll('#colorsList .option-btn').forEach(b => b.classList.remove('selected')); event.target.classList.add('selected'); checkSelection(); }
@@ -475,11 +482,11 @@
                     reviewsList.innerHTML += `
                         <div class="review-card">
                             <div class="review-top">
-                                <span class="reviewer-name">${review.customer_name}</span>
+                                <span class="reviewer-name">${escapeHTML(review.customer_name||'عميل')}</span>
                                 <span class="review-date">${new Date(review.created_at).toLocaleDateString('ar-EG')}</span>
                             </div>
                             <div style="margin-bottom: 8px;">${starsHtml}</div>
-                            <p class="review-comment">${review.comment || 'لا يوجد تعليق'}</p>
+                            <p class="review-comment">${escapeHTML(review.comment || 'لا يوجد تعليق')}</p>
                         </div>
                     `;
                 });
@@ -519,17 +526,13 @@
             e.preventDefault();
             if (selectedRating === 0) { showToast("اختار عدد النجوم قبل إرسال تقييمك.", "info", "التقييم"); return; }
 
-            const name = document.getElementById('reviewerName').value;
-            const comment = document.getElementById('reviewComment').value;
-
-            const { error } = await supabaseClient.from('reviews').insert([{
-                product_id: productId,
-                customer_name: name,
-                rating: selectedRating,
-                comment: comment
-            }]);
-
-            if(error) {
+            const name = document.getElementById('reviewerName').value.trim();
+            const comment = document.getElementById('reviewComment').value.trim();
+            if(name.length<2||name.length>80||comment.length>1200){showToast('الاسم يجب أن يكون من حرفين إلى 80 حرفاً، والتعليق حتى 1200 حرف.','info','راجع بيانات التقييم');return;}
+            const reviewButton=e.target.querySelector('button[type="submit"]');reviewButton.disabled=true;
+            let error=null;
+            try{const result=await supabaseClient.from('reviews').insert([{product_id:Number(productId),customer_name:name,rating:selectedRating,comment:comment||null}]);error=result.error;}catch(err){error=err;}
+            if(error){
                 showToast("تعذر إرسال تقييمك الآن. حاول مرة أخرى بعد قليل.", "error", "لم يتم إرسال التقييم");
             } else {
                 showToast("شكراً لمشاركة رأيك معنا.", "success", "تم إرسال تقييمك");
@@ -540,6 +543,7 @@
                 });
                 loadReviews();
             }
+            reviewButton.disabled=false;
         });
 
 
@@ -564,7 +568,7 @@
             if(!product)return;
             tryonSelectedProduct=product;
             const image=document.getElementById('tryonGarmentPreview');
-            image.src=product.image_url||'';
+            image.src=safeImageURL(product.image_url)||'';
             document.getElementById('tryonGarmentName').textContent=product.name_en||product.name||'';
             document.getElementById('tryonGarmentHint').textContent=english?'Selected item for virtual try-on':'المنتج المختار للتجربة الافتراضية';
             renderTryOnVariantOptions();
@@ -649,7 +653,7 @@
                     button.type='button';
                     button.style.cssText='border:1px solid #eee;border-radius:9px;background:#fff;padding:5px;cursor:pointer;min-width:0';
                     const img=document.createElement('img');
-                    img.src=product.image_url;img.alt=product.name||'';
+                    img.src=safeImageURL(product.image_url);img.alt=product.name||'';
                     img.style.cssText='width:100%;height:82px;object-fit:contain;display:block';
                     const label=document.createElement('span');
                     label.textContent=product.name_en||product.name||'';
@@ -675,7 +679,8 @@
             choose.disabled=true;
             status.textContent=english?'Applying the selected item…':'جاري تطبيق المنتج المختار على الصورة…';
             try{
-                const response=await fetch(product.image_url,{mode:'cors'});
+                const garmentUrl=safeImageURL(product.image_url);if(!garmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
+                const response=await fetch(garmentUrl,{mode:'cors'});
                 if(!response.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const blob=await response.blob();
                 const name=product.name_en||product.name||'garment';
