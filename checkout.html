@@ -229,7 +229,8 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'sb-bkjwfmjxmxgxgaxwrnsh-auth-token' } });
 
     let english = localStorage.getItem('rovyLanguage') === 'en';
-    let cart = JSON.parse(localStorage.getItem('rovyCart')) || [];
+    function loadCheckoutCartSafely(){try{const value=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(value)?value.filter(x=>x&&typeof x==='object'&&Number.isSafeInteger(Number(x.id))&&Number(x.id)>0&&Number.isSafeInteger(Number(x.quantity))&&Number(x.quantity)>0&&Number.isFinite(Number(x.price))&&Number(x.price)>=0):[];}catch{return [];}}
+    let cart = loadCheckoutCartSafely();
     let originalTotal = 0;
     let finalTotal = 0;
     let appliedCouponCode = null;
@@ -330,6 +331,11 @@
         updateCheckoutTotals();
     }
 
+    document.getElementById('couponCode').addEventListener('input',()=>{
+        const typed=document.getElementById('couponCode').value.trim().toUpperCase();
+        if(appliedCouponCode&&typed!==appliedCouponCode){appliedCouponCode=null;finalTotal=originalTotal;document.getElementById('couponMsg').textContent='';updateCheckoutTotals();}
+    });
+
     async function applyCoupon() {
         const code = document.getElementById('couponCode').value.trim().toUpperCase();
         const msg = document.getElementById('couponMsg');
@@ -399,6 +405,8 @@
             return;
         }
 
+        const couponTyped=document.getElementById('couponCode').value.trim().toUpperCase();
+        if(couponTyped && couponTyped!==appliedCouponCode){showToast('اضغط تطبيق للتحقق من كود الخصم قبل تأكيد الطلب.','info','تحقق من الكوبون');return;}
         const btn = document.getElementById('submitBtn');
 
         const name = document.getElementById('cName').value.trim();
@@ -509,7 +517,7 @@
     });
 
     applyCheckoutLanguage();
-    initCheckout();
+    initCheckout().catch(error=>{console.error('Checkout initialization error:',error);showToast('تعذر تحميل بيانات الشحن الآن. حدّث الصفحة أو حاول مرة أخرى لاحقاً.','error','تعذر تجهيز إتمام الطلب');const section=document.getElementById('checkoutSection');if(section)section.style.display='grid';});
 </script>
 
 </body>
