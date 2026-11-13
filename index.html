@@ -345,11 +345,17 @@
         }
 
 
+        function showStoreLoadError(message){
+            const grid=document.getElementById('newProductsGrid');
+            if(grid)grid.innerHTML='<div role="alert" style="grid-column:1/-1;text-align:center;padding:24px;color:#8a3030">'+escapeHTML(message)+'<br><button type="button" onclick="fetchProducts()" style="margin-top:12px;padding:9px 18px;border:0;border-radius:8px;background:#171717;color:#fff;cursor:pointer">إعادة المحاولة</button></div>';
+            const best=document.getElementById('bestSellers');if(best)best.style.display='none';
+        }
         async function fetchProducts() {
             const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
-            if (error) return;
-            allProducts = data;
-            const { data: variantRows } = await supabaseClient.from('product_variants').select('product_id, stock');
+            if (error){console.error('Products load error:',error);showStoreLoadError('تعذر تحميل المنتجات الآن. تحقق من الاتصال وحاول مرة أخرى.');return;}
+            allProducts = Array.isArray(data)?data:[];
+            const { data: variantRows,error:variantError } = await supabaseClient.from('product_variants').select('product_id, stock');
+            if(variantError){console.error('Product variants load error:',variantError);showStoreLoadError('تعذر التحقق من مخزون المقاسات والألوان. أعد المحاولة قبل التسوق.');return;}
             productVariantStock = {};
             (variantRows || []).forEach(v => {
                 const key = String(v.product_id);
@@ -401,6 +407,7 @@
                 
                 const newGrid = document.getElementById('newProductsGrid');
                 newGrid.innerHTML = '';
+                if(!allProducts.length){newGrid.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#777;padding:24px">لا توجد منتجات متاحة حالياً.</p>';document.getElementById('bestSellers').style.display='none';return;}
                 allProducts.slice(0, 4).forEach(p => {
                     newGrid.innerHTML += createProductCard(p);
                 });
