@@ -235,6 +235,7 @@
     let appliedCouponCode = null;
     let shippingGovernorates = [];
     let shippingFee = null;
+    let checkoutSubmitting = false;
 
 
     async function initCheckout(){
@@ -396,34 +397,41 @@
 
     document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const {data:authData}=await supabaseClient.auth.getSession();
-        if(!authData.session){
+        const btn=document.getElementById('submitBtn');
+        if(checkoutSubmitting)return;
+        checkoutSubmitting=true;btn.disabled=true;
+        const restoreSubmit=()=>{checkoutSubmitting=false;btn.disabled=false;btn.textContent=english?'Confirm Order':'تأكيد الطلب';};
+        let authData;
+        try{const authResult=await supabaseClient.auth.getSession();if(authResult.error)throw authResult.error;authData=authResult.data;}
+        catch(error){restoreSubmit();showToast(english?'Could not verify your account. Please try again.':'تعذر التحقق من تسجيل الدخول. حاول مرة أخرى.','error','تعذر التحقق من الحساب');return;}
+        if(!authData?.session){
+            restoreSubmit();
             localStorage.setItem('rovyAuthNext','checkout.html');
             window.location.href='auth.html?next=checkout.html';
             return;
         }
 
         const couponTyped=document.getElementById('couponCode').value.trim().toUpperCase();
-        if(couponTyped && couponTyped!==appliedCouponCode){showToast('اضغط تطبيق للتحقق من كود الخصم قبل تأكيد الطلب.','info','تحقق من الكوبون');return;}
-        const btn = document.getElementById('submitBtn');
-
+        if(couponTyped && couponTyped!==appliedCouponCode){restoreSubmit();showToast('اضغط تطبيق للتحقق من كود الخصم قبل تأكيد الطلب.','info','تحقق من الكوبون');return;}
         const name = document.getElementById('cName').value.trim();
         const phone = document.getElementById('cPhone').value.trim();
         const address = document.getElementById('cAddress').value.trim();
         const governorateId = Number(document.getElementById('cGovernorate').value);
 
         if (!name || !phone || !address || !Number.isSafeInteger(governorateId) || governorateId<=0) {
+            restoreSubmit();
             showToast("راجع الاسم ورقم الموبايل والمحافظة والعنوان، وتأكد من استكمال البيانات المطلوبة.", "info", "بيانات التوصيل");
             return;
         }
 
         if (shippingFee===null || !Number.isFinite(shippingFee)) {
+            restoreSubmit();
             showToast("سعر الشحن للمحافظة المختارة لم يتم تحديده بعد. اختر محافظة أخرى أو تواصل معنا.", "info", "سعر الشحن غير محدد");
             return;
         }
 
         if (!Array.isArray(cart) || cart.length === 0) {
+            restoreSubmit();
             showToast("سلة المشتريات فارغة. أضف المنتجات أولاً ثم أكمل طلبك.", "info", "سلتك فارغة");
             return;
         }
@@ -436,6 +444,7 @@
 
             if (!Number.isSafeInteger(productId) || productId <= 0 ||
                 !Number.isSafeInteger(quantity) || quantity <= 0) {
+                restoreSubmit();
                 showToast("يوجد منتج ببيانات غير مكتملة داخل السلة. ارجع للسلة وحدّث المنتجات.", "error", "راجع سلة المشتريات");
                 return;
             }
@@ -446,6 +455,7 @@
                 variantId = Number(item.variantId);
 
                 if (!Number.isSafeInteger(variantId) || variantId <= 0) {
+                    restoreSubmit();
                     showToast("بيانات المقاس أو اللون لأحد المنتجات غير مكتملة. أعد اختيار المنتج من صفحة المتجر.", "error", "راجع خيارات المنتج");
                     return;
                 }
@@ -460,7 +470,6 @@
             });
         }
 
-        btn.disabled = true;
         btn.textContent = english ? 'Confirming order...' : 'جاري تأكيد الطلب...';
 
         try {
@@ -510,8 +519,7 @@
             }
             showToast(friendlyMessage, "error", "تعذر تأكيد الطلب");
 
-            btn.disabled = false;
-            btn.textContent = english ? 'Confirm Order' : 'تأكيد الطلب';
+            restoreSubmit();
         }
     });
 
