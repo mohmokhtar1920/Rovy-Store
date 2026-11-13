@@ -237,6 +237,14 @@
     let shippingFee = null;
     let checkoutSubmitting = false;
 
+    async function getVerifiedCustomer(){
+        const {data,error}=await supabaseClient.auth.getUser();
+        if(error)throw error;
+        if(!data?.user)throw new Error('يجب تسجيل الدخول أولاً لإتمام الطلب');
+        if(!data.user.email_confirmed_at)throw new Error('يجب تأكيد البريد الإلكتروني قبل إتمام الطلب');
+        return data.user;
+    }
+
 
     async function initCheckout(){
         const {data,error}=await supabaseClient.auth.getSession();
@@ -245,7 +253,16 @@
             window.location.replace('auth.html?next=checkout.html');
             return;
         }
-        const fullName=data.session.user.user_metadata?.full_name;
+        let verifiedUser;
+        try{verifiedUser=await getVerifiedCustomer();}
+        catch(verificationError){
+            showToast(verificationError.message||'يجب تأكيد البريد الإلكتروني قبل إتمام الطلب.','error','تأكيد البريد الإلكتروني مطلوب');
+            await supabaseClient.auth.signOut();
+            localStorage.setItem('rovyAuthNext','checkout.html');
+            setTimeout(()=>window.location.replace('auth.html?next=checkout.html'),900);
+            return;
+        }
+        const fullName=verifiedUser.user_metadata?.full_name;
         const nameInput=document.getElementById('cName');
         if(fullName && nameInput && !nameInput.value) nameInput.value=fullName;
         document.getElementById('checkoutSection').style.display='grid';
@@ -408,6 +425,15 @@
             restoreSubmit();
             localStorage.setItem('rovyAuthNext','checkout.html');
             window.location.href='auth.html?next=checkout.html';
+            return;
+        }
+        try{await getVerifiedCustomer();}
+        catch(verificationError){
+            restoreSubmit();
+            showToast(verificationError.message||'يجب تأكيد البريد الإلكتروني قبل إتمام الطلب.','error','تأكيد البريد الإلكتروني مطلوب');
+            await supabaseClient.auth.signOut();
+            localStorage.setItem('rovyAuthNext','checkout.html');
+            setTimeout(()=>window.location.href='auth.html?next=checkout.html',900);
             return;
         }
 
