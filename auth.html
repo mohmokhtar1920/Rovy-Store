@@ -45,6 +45,19 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" required autocomplete="current-password" placeholder="8 أحرف على الأقل" dir="ltr"></div>
 <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
 </form>
+<button type="button" id="forgotPasswordBtn" class="secondary" style="width:100%;margin-top:12px;border:0;background:transparent">نسيت كلمة المرور؟</button>
+<div id="forgotPanel" style="display:none;margin-top:18px">
+ <p class="subtitle" id="forgotHint">اكتب بريدك الإلكتروني وسنرسل لك رابطاً آمناً لتعيين كلمة مرور جديدة.</p>
+ <div class="field"><label for="forgotEmail">البريد الإلكتروني</label><input id="forgotEmail" type="email" autocomplete="email" placeholder="name@example.com" dir="ltr"></div>
+ <button class="submit" id="sendResetBtn" type="button">إرسال رابط الاسترجاع</button>
+ <button class="secondary" id="backToLoginBtn" type="button" style="width:100%;margin-top:10px">العودة لتسجيل الدخول</button>
+</div>
+<div id="recoveryPanel" style="display:none;margin-top:18px">
+ <p class="subtitle" id="recoveryHint">أنشئ كلمة مرور جديدة لحسابك.</p>
+ <div class="field"><label for="newPassword">كلمة المرور الجديدة</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" placeholder="8 أحرف على الأقل" dir="ltr"></div>
+ <div class="field"><label for="confirmNewPassword">تأكيد كلمة المرور</label><input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" placeholder="أعد كتابة كلمة المرور" dir="ltr"></div>
+ <button class="submit" id="saveNewPasswordBtn" type="button">حفظ كلمة المرور الجديدة</button>
+</div>
 <div class="notice" id="notice" role="status"></div>
 <div id="otpPanel" style="display:none;margin-top:18px">
  <div class="field"><label for="emailOtp">كود التأكيد المكوّن من 8 أرقام</label><input id="emailOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{8}" placeholder="00000000" dir="ltr"></div>
@@ -102,6 +115,15 @@ function applyAuthLanguage(){
  $('verifyOtpBtn').textContent=english?'Verify Email':'تأكيد البريد الإلكتروني';
  $('resendOtpBtn').textContent=english?'Resend Code':'إعادة إرسال الكود';
  $('changePendingEmailBtn').textContent=english?'Use a different email':'استخدام بريد إلكتروني آخر';
+ $('forgotPasswordBtn').textContent=english?'Forgot password?':'نسيت كلمة المرور؟';
+ $('forgotHint').textContent=english?'Enter your email and we will send a secure password reset link.':'اكتب بريدك الإلكتروني وسنرسل لك رابطاً آمناً لتعيين كلمة مرور جديدة.';
+ $('forgotEmail').previousElementSibling.textContent=english?'Email Address':'البريد الإلكتروني';
+ $('sendResetBtn').textContent=english?'Send Reset Link':'إرسال رابط الاسترجاع';
+ $('backToLoginBtn').textContent=english?'Back to Sign In':'العودة لتسجيل الدخول';
+ $('recoveryHint').textContent=english?'Create a new password for your account.':'أنشئ كلمة مرور جديدة لحسابك.';
+ $('newPassword').previousElementSibling.textContent=english?'New Password':'كلمة المرور الجديدة';
+ $('confirmNewPassword').previousElementSibling.textContent=english?'Confirm Password':'تأكيد كلمة المرور';
+ $('saveNewPasswordBtn').textContent=english?'Save New Password':'حفظ كلمة المرور الجديدة';
  $('accountPanel').querySelector('h1').textContent=english?'Your Account is Ready':'حسابك جاهز';
  $('accountPanel').querySelector('.subtitle').textContent=english?'You are currently signed in to ROVY STORE.':'أنت مسجل الدخول حالياً في ROVY STORE.';
  $('continueLink').textContent=english?'Continue Shopping':'متابعة التسوق';
@@ -116,6 +138,7 @@ function setMode(next){
  $('password').autocomplete=mode==='signup'?'new-password':'current-password';
  $('password').placeholder=mode==='signup'?(english?'At least 8 characters':'8 أحرف على الأقل'):(english?'Enter your password':'اكتب كلمة المرور');
  $('submitBtn').textContent=mode==='signup'?(english?'Create Account':'إنشاء حساب جديد'):(english?'Sign In':'تسجيل الدخول');
+ $('forgotPasswordBtn').style.display=mode==='login'?'block':'none';
  $('notice').className='notice';$('notice').textContent='';
 }
 function showAccount(user){
@@ -197,12 +220,50 @@ $('resendOtpBtn').addEventListener('click',async()=>{
   }catch(err){setNotice(err.message||'تعذرت إعادة إرسال الكود. حاول لاحقاً.');}
   finally{btn.disabled=false;}
 });
+$('forgotPasswordBtn').addEventListener('click',()=>{
+ $('authForm').style.display='none';$('authTabs').style.display='none';$('forgotPasswordBtn').style.display='none';$('forgotPanel').style.display='block';$('forgotEmail').value=$('email').value.trim();$('notice').className='notice';
+});
+$('backToLoginBtn').addEventListener('click',()=>{
+ $('forgotPanel').style.display='none';$('authForm').style.display='block';$('authTabs').style.display='grid';$('forgotPasswordBtn').style.display='block';$('email').value=$('forgotEmail').value.trim();setMode('login');
+});
+$('sendResetBtn').addEventListener('click',async()=>{
+ const email=$('forgotEmail').value.trim().toLowerCase();
+ if(!email){setNotice(english?'Enter your email address.':'اكتب بريدك الإلكتروني أولاً.');return;}
+ const btn=$('sendResetBtn');btn.disabled=true;
+ try{
+  const redirectTo=location.origin+location.pathname+'?password-recovery=1';
+  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error)throw error;
+  setNotice(english?'If an account exists for this email, a password reset link has been sent. Check your inbox and spam folder.':'لو فيه حساب مسجل بالبريد ده، هيوصلك رابط استرجاع كلمة المرور. راجع الوارد والرسائل غير المرغوب فيها.','success');
+ }catch(err){setNotice(err.message|| (english?'Could not send the reset link. Try again later.':'تعذر إرسال رابط الاسترجاع. حاول مرة أخرى لاحقاً.'));}
+ finally{btn.disabled=false;}
+});
+$('saveNewPasswordBtn').addEventListener('click',async()=>{
+ const password=$('newPassword').value,confirm=$('confirmNewPassword').value;
+ if(password.length<8){setNotice(english?'Password must be at least 8 characters.':'كلمة المرور لازم تكون 8 أحرف على الأقل.');return;}
+ if(password!==confirm){setNotice(english?'Passwords do not match.':'كلمتا المرور غير متطابقتين.');return;}
+ const btn=$('saveNewPasswordBtn');btn.disabled=true;
+ try{
+  const {error}=await supabaseClient.auth.updateUser({password});
+  if(error)throw error;
+  $('recoveryPanel').style.display='none';$('authTabs').style.display='grid';$('authForm').style.display='block';$('forgotPasswordBtn').style.display='block';
+  $('password').value='';$('newPassword').value='';$('confirmNewPassword').value='';
+  await supabaseClient.auth.signOut();setMode('login');
+  setNotice(english?'Your password has been changed successfully. Please sign in with your new password.':'تم تغيير كلمة المرور بنجاح. سجّل الدخول الآن باستخدام كلمة المرور الجديدة.','success');
+ }catch(err){setNotice(err.message|| (english?'Could not update your password. Request a new reset link.':'تعذر تغيير كلمة المرور. اطلب رابط استرجاع جديداً.'));}
+ finally{btn.disabled=false;}
+});
 $('signOutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
  if(error){setNotice(english?'Could not sign out. Please try again.':'تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
  location.replace('index.html');
 });
 supabaseClient.auth.onAuthStateChange((event,session)=>{
+ if(event==='PASSWORD_RECOVERY' && session){
+  $('authCard').style.display='block';$('accountPanel').style.display='none';
+  $('authTabs').style.display='none';$('authForm').style.display='none';$('otpPanel').style.display='none';$('forgotPanel').style.display='none';$('forgotPasswordBtn').style.display='none';$('recoveryPanel').style.display='block';
+  $('notice').className='notice';$('notice').textContent='';
+ }
  if(session && event==='SIGNED_IN' && nextPage==='checkout.html') redirectAfterAuth();
 });
 applyAuthLanguage();
