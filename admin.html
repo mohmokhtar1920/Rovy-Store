@@ -715,6 +715,38 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     popup.document.close();
   }
 
+
+  let storeWaybills=[];
+  async function loadStoreWaybills(){
+    const data=await rpc('admin_list_store_waybills');
+    storeWaybills=Array.isArray(data)?data:[];
+    renderStoreWaybills();
+  }
+  function renderStoreWaybills(){
+    if(!$('waybillsTable'))return;
+    const q=($('waybillSearch')?.value||'').trim().toLowerCase();
+    const rows=storeWaybills.filter(x=>[x.waybill_number,x.order_id,x.customer_name,x.customer_phone,x.tracking_number,x.shipping_company_name].some(v=>String(v??'').toLowerCase().includes(q)));
+    $('waybillsTable').innerHTML=rows.length?'<table><thead><tr><th>رقم البوليصة</th><th>الطلب</th><th>المستلم</th><th>شركة الشحن</th><th>رقم التتبع</th><th>تحصيل عند التسليم</th><th>الإصدار</th><th></th></tr></thead><tbody>'+
+      rows.map(x=>'<tr><td><strong>'+esc(x.waybill_number)+'</strong></td><td>#'+esc(x.order_id)+'</td><td>'+esc(x.customer_name||'—')+'<div class="muted">'+esc(x.customer_phone||'')+'</div></td><td>'+esc(x.shipping_company_name||'غير محددة')+'</td><td>'+esc(x.tracking_number||'—')+'</td><td>'+money(x.cod_due||0)+'</td><td>'+esc(new Date(x.issued_at).toLocaleString('ar-EG'))+'</td><td><button class="mini gold" data-open-waybill="'+esc(x.id)+'">عرض / طباعة</button></td></tr>').join('')+'</tbody></table>':'<div class="empty">لا توجد بوليصات مطابقة.</div>';
+  }
+  async function issueStoreWaybill(orderId){
+    try{const result=await rpc('admin_issue_store_waybill',{p_order_id:Number(orderId)});notify(result.created?'تم إصدار بوليصة الشحن وحفظها.':'البوليصة موجودة بالفعل، تم فتح النسخة المحفوظة.');await loadStoreWaybills();if(result.waybill_id)await openStoreWaybill(result.waybill_id,true);}
+    catch(err){notify(err.message||'تعذر إصدار بوليصة الشحن.',true);}
+  }
+  async function openStoreWaybill(id,autoPrint=false){
+    try{const data=await rpc('admin_get_store_waybill',{p_waybill_id:Number(id)});printStoreWaybill(data,autoPrint);}
+    catch(err){notify(err.message||'تعذر فتح البوليصة.',true);}
+  }
+  function printStoreWaybill(doc,autoPrint=false){
+    const s=doc.snapshot||{};
+    const rows=(s.items||[]).map((it,n)=>'<tr><td>'+(n+1)+'</td><td><strong>'+esc(it.product_name||'منتج')+'</strong><div>'+[it.size?'المقاس: '+it.size:'',it.color?'اللون: '+it.color:''].filter(Boolean).map(esc).join(' · ')+'</div></td><td>'+Number(it.quantity||0)+'</td></tr>').join('');
+    const popup=window.open('','_blank','width=950,height=850');
+    if(!popup){notify('اسمح بفتح النوافذ المنبثقة لطباعة البوليصة.',true);return;}
+    const issued=new Date(doc.issued_at).toLocaleString('ar-EG');
+    popup.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(doc.waybill_number)+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script><style>*{box-sizing:border-box}body{margin:0;background:#eef0f3;font-family:Cairo,Arial,sans-serif;color:#172335}.paper{max-width:900px;margin:20px auto;background:white;padding:28px;border:1px solid #e5e8ed}.head{display:flex;justify-content:space-between;gap:15px;border-bottom:4px solid #d8b45b;padding-bottom:18px}.brand{font-size:28px;font-weight:900;color:#101d31}.brand span{color:#b28a31}.serial{text-align:left;font-size:12px}.serial strong{display:block;font-size:17px;color:#a47c26}.codes{display:flex;justify-content:space-between;align-items:center;background:#faf8f1;padding:12px;margin:15px 0;border:1px solid #eee3c4;border-radius:10px}.codes svg{width:300px;height:65px}.qr{width:90px;height:90px}.section{border:1px solid #e7eaf0;border-radius:10px;margin:13px 0;overflow:hidden}.section h3{margin:0;padding:9px 13px;background:#172538;color:#f1d58e;font-size:14px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}.item{font-size:13px;overflow-wrap:anywhere}.item b{display:block;color:#788292;font-size:11px}.paper table{width:100%;border-collapse:collapse}.paper th{background:#f5f6f8;text-align:right;padding:10px}.paper td{padding:10px;border-bottom:1px solid #e8ebef}.totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}.amount{padding:12px;background:#f5f6f8;border-radius:9px}.amount small{display:block;color:#697789}.amount strong{font-size:20px}.cod{background:#172538;color:white}.cod small{color:#e5ce91}.cod strong{color:#f1d58e;font-size:24px}.sign{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:24px 12px}.sign div{border-top:1px solid #aeb7c2;padding-top:8px;text-align:center;font-size:11px;color:#697789}.foot{text-align:center;border-top:1px solid #e8ebef;padding-top:12px;color:#788292;font-size:10px}.printbar{position:fixed;top:10px;left:10px}@media print{body{background:white}.paper{margin:0;border:0;padding:8mm}.printbar{display:none}}@media(max-width:600px){.paper{padding:12px;margin:0}.head{flex-direction:column}.serial{text-align:right}.grid,.totals{grid-template-columns:1fr}.codes{flex-direction:column}}</style></head><body><div class="printbar"><button onclick="window.print()">طباعة / حفظ PDF</button></div><main class="paper"><header class="head"><div><div class="brand">ROVY <span>STORE</span></div><div>بوليصة شحن · SHIPPING WAYBILL</div></div><div class="serial">رقم البوليصة<strong>'+esc(doc.waybill_number)+'</strong>رقم الطلب: #'+esc(s.order_id)+'<br>تاريخ الإصدار: '+esc(issued)+'</div></header><div class="codes"><div><svg id="barcode"></svg><div>'+esc(doc.waybill_number)+'</div></div><div id="qrcode" class="qr"></div></div><section class="section"><h3>بيانات المستلم</h3><div class="grid"><div class="item"><b>اسم العميل</b><strong>'+esc(s.customer_name||'—')+'</strong></div><div class="item"><b>الهاتف</b><strong>'+esc(s.customer_phone||'—')+'</strong></div><div class="item"><b>المحافظة</b><strong>'+esc(s.governorate_name||'—')+'</strong></div><div class="item"><b>العنوان</b><strong>'+esc(s.customer_address||'—')+'</strong></div></div></section><section class="section"><h3>تفاصيل الشحنة</h3><table><thead><tr><th>#</th><th>وصف المنتجات</th><th>الكمية</th></tr></thead><tbody>'+rows+'</tbody></table><div class="grid"><div class="item"><b>إجمالي القطع</b><strong>'+Number(s.total_quantity||0)+'</strong></div><div class="item"><b>عدد الطرود</b><strong>1 — قابل للتعديل يدويًا</strong></div><div class="item"><b>شركة الشحن</b><strong>'+esc(s.shipping_company_name||'غير محددة')+'</strong></div><div class="item"><b>رقم التتبع</b><strong>'+esc(s.tracking_number||'لم يُسجل بعد')+'</strong></div><div class="item"><b>الوزن</b><strong>غير محدد</strong></div><div class="item"><b>حالة الطلب</b><strong>'+esc(s.order_status||'—')+'</strong></div></div></section><section class="section"><h3>بيانات التحصيل</h3><div class="totals"><div class="amount"><small>إجمالي الطلب</small><strong>'+money(s.order_total)+'</strong></div><div class="amount"><small>مصاريف الشحن</small><strong>'+money(s.shipping_fee)+'</strong></div><div class="amount"><small>مدفوع مقدمًا للشحن</small><strong>'+(s.shipping_payment_approved?money(s.shipping_paid_advance):'غير معتمد')+'</strong></div><div class="amount cod"><small>المطلوب تحصيله عند التسليم</small><strong>'+money(s.cod_due)+'</strong></div></div></section><section class="section"><h3>تأكيد التسليم</h3><div class="sign"><div>اسم المندوب</div><div>توقيع المستلم</div><div>تاريخ ووقت التسليم</div></div></section><footer class="foot">ROVY STORE · مستند شحن داخلي وليس بوليصة رسمية صادرة من شركة الشحن.</footer></main><script>try{if(window.JsBarcode)JsBarcode("#barcode",'+JSON.stringify(String(doc.waybill_number||'')) +',{format:"CODE128",displayValue:false,margin:0,height:54});}catch(e){}try{if(window.QRCode)new QRCode(document.getElementById("qrcode"),{text:'+JSON.stringify('ROVY WAYBILL '+String(doc.waybill_number||'')+' ORDER '+s.order_id)+',width:86,height:86});}catch(e){}window.onload=()=>{'+(autoPrint?'setTimeout(()=>window.print(),700);':'')+'};<\/script></body></html>');
+    popup.document.close();
+  }
+
   async function loadOrders() {
     $('ordersTable').innerHTML='<div class="empty">جاري تحميل الطلبات…</div>';
     const filter=$('orderFilter').value || null;
@@ -1069,18 +1101,24 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
       if(page==='finance'&&staff?.role!=='owner')return;
       if(page==='invoices'&&!['owner','manager','customer_service'].includes(staff?.role))return;
+      if(page==='waybills'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       if(page==='staff'&&staff?.role!=='owner')return;
       if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
       if(page==='invoices')loadStoreInvoices().catch(err=>notify(err.message||'تعذر تحميل الفواتير.',true));
+      if(page==='waybills')loadStoreWaybills().catch(err=>notify(err.message||'تعذر تحميل البوليصات.',true));
       return;
     }
     const issueInvoice=e.target.closest('[data-issue-invoice]');
     if(issueInvoice){await issueStoreInvoice(issueInvoice.dataset.id,issueInvoice.dataset.issueInvoice);return;}
     const openInvoice=e.target.closest('[data-open-invoice]');
     if(openInvoice){await openStoreInvoice(openInvoice.dataset.openInvoice);return;}
+    const issueWaybill=e.target.closest('[data-issue-waybill]');
+    if(issueWaybill){if(!['owner','manager','customer_service'].includes(staff?.role))return;await issueStoreWaybill(issueWaybill.dataset.id);return;}
+    const openWaybill=e.target.closest('[data-open-waybill]');
+    if(openWaybill){await openStoreWaybill(openWaybill.dataset.openWaybill);return;}
     const expenseDelete=e.target.closest('[data-delete-expense]');
     if(expenseDelete){if(!confirm('هل تريد حذف المصروف من السجل؟'))return;try{await rpc('admin_delete_store_expense',{p_expense_id:Number(expenseDelete.dataset.deleteExpense)});notify('تم حذف المصروف.');await loadFinancialCenter();}catch(err){notify(err.message||'تعذر حذف المصروف.',true);}return;}
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
@@ -1148,6 +1186,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('refreshInvoices').addEventListener('click',()=>loadStoreInvoices().then(()=>notify('تم تحديث أرشيف الفواتير.')).catch(e=>notify(e.message,true)));
   $('invoiceSearch').addEventListener('input',renderStoreInvoices);
   $('invoiceTypeFilter').addEventListener('change',renderStoreInvoices);
+  $('refreshWaybills').addEventListener('click',()=>loadStoreWaybills().then(()=>notify('تم تحديث أرشيف البوليصات.')).catch(e=>notify(e.message,true)));
+  $('waybillSearch').addEventListener('input',renderStoreWaybills);
 
   $('refreshShippingAccounts').addEventListener('click',()=>loadShippingAccounts().then(()=>notify('تم تحديث حسابات شركات الشحن.')).catch(e=>notify(e.message,true)));
   $('shippingCompanyForm').addEventListener('submit',async e=>{
