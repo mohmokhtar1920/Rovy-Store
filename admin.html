@@ -243,6 +243,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn active" data-page="dashboard">▦ الرئيسية</button>
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
       <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
+      <button class="navbtn" data-page="activity">◷ سجل النشاط</button>
+      <button class="navbtn owner-only" data-page="staff">♙ الموظفون والصلاحيات</button>
       <button class="navbtn manager-only" data-page="products">◇ المنتجات</button>
       <button class="navbtn manager-only" data-page="categories">▣ الأقسام</button>
       <button class="navbtn manager-only" data-page="shipping">🚚 الشحن والمحافظات</button>
@@ -268,6 +270,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       </section>
 
       <section id="page-payments" class="page hidden payment-review-only"><div class="pagehead"><div><h1>مراجعة مدفوعات الشحن</h1><div class="muted">راجع إيصالات التحويل واعتمدها أو ارفضها قبل تأكيد الطلب</div></div><button class="btn light" id="reloadPayments">تحديث المدفوعات</button></div><div class="stats"><div class="stat"><small>بانتظار المراجعة</small><strong id="paymentPendingCount">0</strong></div><div class="stat"><small>تم اعتمادها</small><strong id="paymentApprovedCount">0</strong></div><div class="stat"><small>مرفوضة</small><strong id="paymentRejectedCount">0</strong></div></div><div class="toolbar"><input id="paymentSearch" placeholder="بحث برقم الطلب أو اسم العميل أو الهاتف"><select id="paymentFilter"><option value="">كل حالات الدفع</option><option value="pending_review">بانتظار المراجعة</option><option value="approved">معتمد</option><option value="rejected">مرفوض</option><option value="unpaid">غير مدفوع</option></select></div><div class="panel"><div id="paymentsTable" class="table-wrap"><div class="empty">جاري تحميل المدفوعات…</div></div></div></section>
+      <section id="page-activity" class="page hidden"><div class="pagehead"><div><h1>سجل النشاط</h1><div class="muted">تاريخ تغييرات حالات الطلبات ومن قام بها</div></div><button class="btn light" id="reloadActivity">تحديث السجل</button></div><div class="panel"><div id="activityTable" class="table-wrap"><div class="empty">جاري تحميل سجل النشاط…</div></div></div></section>
+      <section id="page-staff" class="page hidden owner-only"><div class="pagehead"><div><h1>الموظفون والصلاحيات</h1><div class="muted">إدارة حسابات الموظفين الموجودة وتحديد دور كل حساب</div></div><button class="btn gold" id="addStaffBtn">＋ إضافة موظف</button></div><div class="notice">لإضافة موظف جديد، يجب أن يكون لديه حساب مسجل مسبقًا بنفس البريد الإلكتروني. هذه الصفحة تربط الحساب بدور داخل لوحة الإدارة؛ ولا تنشئ كلمة مرور أو ترسل دعوة.</div><div class="panel"><div id="staffTable" class="table-wrap"><div class="empty">جاري تحميل الموظفين…</div></div></div></section>
       <section id="page-products" class="page hidden">
         <div class="pagehead"><div><h1>المنتجات</h1><div class="muted">إضافة وتعديل المنتجات والتحكم في ظهورها</div></div><details class="action-dropdown page-action"><summary class="btn gold">＋ إضافة منتج ▾</summary><div class="dropdown-menu"><button type="button" id="addProductBtn">إضافة منتج جديد</button></div></details></div>
         <div class="notice">ارفع حتى 20 صورة لكل منتج من جهازك، وحدد الصورة الرئيسية التي ستظهر في واجهة المتجر.</div>
@@ -368,6 +372,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     </form>
   </div>
 </div>
+<div id="staffModal" class="modal-back hidden"><div class="modal" style="width:min(470px,100%)"><div class="modal-head"><h2 id="staffModalTitle">إضافة موظف</h2><button class="close" data-close="staffModal">✕</button></div><form id="staffForm"><input type="hidden" id="staffUserId"><div class="field" id="staffEmailWrap"><label for="staffEmail">البريد الإلكتروني للحساب المسجل *</label><input id="staffEmail" type="email" required></div><div class="field"><label for="staffFullName">اسم الموظف *</label><input id="staffFullName" maxlength="100" required></div><div class="field"><label for="staffRoleSelect">الصلاحية *</label><select id="staffRoleSelect" required><option value="manager">مدير</option><option value="customer_service">خدمة العملاء</option><option value="shipping">الشحن</option></select></div><label style="display:flex;align-items:center;gap:9px;margin:12px 0"><input id="staffActive" type="checkbox" checked> حساب نشط</label><div class="modal-actions"><button class="btn gold" type="submit" id="saveStaffBtn">حفظ الموظف</button><button class="btn light" type="button" data-close="staffModal">إلغاء</button></div><div id="staffError" class="error"></div></form></div></div>
 <div id="orderImageViewer" class="image-viewer hidden" role="dialog" aria-modal="true" aria-label="تكبير صورة المنتج"><button type="button" id="closeOrderImage">إغلاق ✕</button><img id="orderImageLarge" src="" alt="صورة المنتج مكبرة"></div>
 <div id="toast" class="toast hidden" role="status"></div>
 
@@ -378,7 +383,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
-  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], shippingGovernorates = [], productImages = [], toastTimer = null;
+  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], shippingGovernorates = [], productImages = [], staffMembers = [], activityItems = [], toastTimer = null;
   $('togglePassword').addEventListener('click',()=>{
   const passwordInput=$('password');
   const isHidden=passwordInput.type==='password';
@@ -425,6 +430,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('staffRole').textContent=roleNames[staff.role] || staff.role;
     document.querySelectorAll('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
     document.querySelectorAll('.payment-review-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
+    document.querySelectorAll('.owner-only').forEach(el=>el.classList.toggle('hidden',staff.role!=='owner'));
   }
   let enteringApp=false;
   async function enterApp() {
@@ -438,6 +444,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       showApp();
       await loadOrders();
       if(isManager()) { await loadProducts(); await loadCategories(); await loadShippingGovernorates(); await loadCoupons(); }
+      try { await loadActivity(); } catch(e) { console.warn('Activity log unavailable:',e); }
+      if(staff.role==='owner') { try { await loadStaffMembers(); } catch(e) { console.warn('Staff list unavailable:',e); } }
       renderDashboard();
     } catch(e) {
       await client.auth.signOut();
@@ -559,6 +567,53 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const rows=orders.filter(o=>[o.id,o.customer_name,o.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
     $('ordersTable').innerHTML=rows.length?`<table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>${rows.map(o=>orderRow(o)).join('')}</tbody></table>`:'<div class="empty">لا توجد طلبات مطابقة.</div>';
   }
+  async function loadStaffMembers(){
+    if(staff?.role!=='owner')return;
+    const data=await rpc('admin_list_staff_profiles');
+    staffMembers=Array.isArray(data)?data:[];
+    renderStaffMembers();
+  }
+  function renderStaffMembers(){
+    const roles={owner:'مالك المتجر',manager:'مدير',customer_service:'خدمة العملاء',shipping:'الشحن'};
+    $('staffTable').innerHTML=staffMembers.length?'<table><thead><tr><th>الموظف</th><th>البريد الإلكتروني</th><th>الصلاحية</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>'+
+      staffMembers.map(m=>'<tr><td><strong>'+esc(m.full_name)+'</strong></td><td>'+esc(m.email||'—')+'</td><td>'+esc(roles[m.role]||m.role)+'</td><td><span class="pill '+(m.is_active?'green':'red')+'">'+(m.is_active?'نشط':'موقوف')+'</span></td><td>'+(m.role==='owner'?'—':'<details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-staff="'+esc(m.user_id)+'">تعديل الصلاحية والاسم</button><button type="button" data-toggle-staff="'+esc(m.user_id)+'">'+(m.is_active?'إيقاف الحساب':'إعادة تفعيل الحساب')+'</button></div></details>')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">لا يوجد موظفون مسجلون.</div>';
+  }
+  function openStaffModal(member=null){
+    $('staffForm').reset();$('staffError').textContent='';
+    $('staffUserId').value=member?.user_id||'';
+    $('staffModalTitle').textContent=member?'تعديل بيانات الموظف':'إضافة موظف';
+    $('staffEmailWrap').classList.toggle('hidden',!!member);
+    $('staffEmail').required=!member;
+    $('staffEmail').value=member?.email||'';
+    $('staffFullName').value=member?.full_name||'';
+    $('staffRoleSelect').value=member?.role||'customer_service';
+    $('staffActive').checked=member?!!member.is_active:true;
+    $('staffActive').disabled=!member;
+    $('staffModal').classList.remove('hidden');
+  }
+  async function saveStaffProfile(e){
+    e.preventDefault();$('saveStaffBtn').disabled=true;$('staffError').textContent='';
+    try{
+      const id=$('staffUserId').value;
+      if(id){
+        await rpc('admin_update_staff_profile',{p_user_id:id,p_full_name:$('staffFullName').value.trim(),p_role:$('staffRoleSelect').value,p_is_active:$('staffActive').checked});
+      }else{
+        await rpc('admin_create_staff_profile',{p_email:$('staffEmail').value.trim(),p_full_name:$('staffFullName').value.trim(),p_role:$('staffRoleSelect').value});
+      }
+      $('staffModal').classList.add('hidden');notify(id?'تم تحديث بيانات الموظف.':'تم ربط الحساب بالمتجر كموظف.');await loadStaffMembers();
+    }catch(err){$('staffError').textContent=err.message||'تعذر حفظ بيانات الموظف.';}
+    finally{$('saveStaffBtn').disabled=false;}
+  }
+  async function loadActivity(){
+    const data=await rpc('admin_list_order_status_history',{p_limit:150});
+    activityItems=Array.isArray(data)?data:[];
+    renderActivity();
+  }
+  function renderActivity(){
+    const labels={pending:'قيد الانتظار',confirmed:'تم التأكيد',preparing:'قيد التجهيز',shipped:'تم الشحن',delivered:'تم التوصيل',cancelled:'ملغي'};
+    $('activityTable').innerHTML=activityItems.length?'<table><thead><tr><th>التاريخ</th><th>رقم الطلب</th><th>التغيير</th><th>بواسطة</th><th>ملاحظات</th></tr></thead><tbody>'+
+      activityItems.map(a=>'<tr><td>'+esc(a.created_at?new Date(a.created_at).toLocaleString('ar-EG'):'—')+'</td><td><strong>#'+esc(a.order_id)+'</strong></td><td>'+esc(labels[a.old_status]||a.old_status||'—')+' ← '+esc(labels[a.new_status]||a.new_status)+'</td><td>'+esc(a.changed_by_name||'—')+'</td><td>'+esc(a.notes||'—')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">لا توجد تغييرات مسجلة حتى الآن.</div>';
+  }
   function renderPayments(){
     if(!['owner','manager','customer_service'].includes(staff?.role))return;
     const pending=orders.filter(o=>o.shipping_payment_status==='pending_review');
@@ -631,6 +686,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(dropdownButton)dropdownButton.closest('details')?.removeAttribute('open');
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
+      if(page==='staff'&&staff?.role!=='owner')return;
       if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
@@ -671,12 +727,17 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const toggleShipping=e.target.closest('[data-toggle-shipping-governorate]'); if(toggleShipping){try{await rpc('admin_set_shipping_governorate_active',{p_governorate_id:Number(toggleShipping.dataset.toggleShippingGovernorate),p_is_active:toggleShipping.dataset.active==='1'});notify('تم تحديث حالة المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
     const deleteShipping=e.target.closest('[data-delete-shipping-governorate]'); if(deleteShipping){const id=Number(deleteShipping.dataset.deleteShippingGovernorate);const g=shippingGovernorates.find(x=>Number(x.id)===id);if(!g)return;if(!confirm('حذف محافظة '+g.name+' نهائيًا؟ بيانات الطلبات السابقة ستظل محفوظة.'))return;try{await rpc('admin_delete_shipping_governorate',{p_governorate_id:id});notify('تم حذف المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
     const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
+    const editStaff=e.target.closest('[data-edit-staff]'); if(editStaff){const member=staffMembers.find(x=>x.user_id===editStaff.dataset.editStaff);if(member)openStaffModal(member);return;}
+    const toggleStaff=e.target.closest('[data-toggle-staff]'); if(toggleStaff){const member=staffMembers.find(x=>x.user_id===toggleStaff.dataset.toggleStaff);if(member){try{await rpc('admin_update_staff_profile',{p_user_id:member.user_id,p_full_name:member.full_name,p_role:member.role,p_is_active:!member.is_active});notify('تم تحديث حالة الموظف.');await loadStaffMembers();}catch(err){notify(err.message||'تعذر تحديث الموظف.',true);}}return;}
     const toggleC=e.target.closest('[data-toggle-coupon]'); if(toggleC){try{await rpc('admin_set_coupon_active',{p_coupon_id:Number(toggleC.dataset.toggleCoupon),p_is_active:toggleC.dataset.active==='1'});notify('تم تحديث حالة الكوبون.');await loadCoupons();}catch(err){notify(err.message,true);}return;}
   });
   $('closeOrderImage').addEventListener('click',()=>{$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('orderImageViewer').classList.contains('hidden')){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';}});
   $('orderSearch').addEventListener('input',renderOrders);
   $('paymentSearch').addEventListener('input',renderPayments);
+  $('reloadActivity').addEventListener('click',()=>loadActivity().then(()=>notify('تم تحديث سجل النشاط.')).catch(e=>notify(e.message,true)));
+  $('addStaffBtn').addEventListener('click',()=>openStaffModal());
+  $('staffForm').addEventListener('submit',saveStaffProfile);
   $('paymentFilter').addEventListener('change',renderPayments);
   $('reloadPayments').addEventListener('click',()=>loadOrders().then(()=>notify('تم تحديث بيانات المدفوعات.')).catch(e=>notify(e.message,true)));
   $('productSearch').addEventListener('input',renderProducts);
