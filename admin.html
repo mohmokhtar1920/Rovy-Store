@@ -294,6 +294,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn active" data-page="dashboard">▦ الرئيسية</button>
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
       <button class="navbtn invoice-access-only hidden" data-page="invoices">▧ الفواتير والمستندات</button>
+      <button class="navbtn invoice-access-only hidden" data-page="waybills">▤ بوليصات الشحن</button>
       <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
       <button class="navbtn" data-page="activity">◷ سجل النشاط</button>
       <button class="navbtn owner-only" data-page="staff">♙ الموظفون والصلاحيات</button>
@@ -423,7 +424,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         </div>
         <div class="notice" style="margin-top:14px">تنبيه: هذا مستند تجاري/محاسبي داخلي وليس فاتورة ضريبية إلكترونية معتمدة من مصلحة الضرائب المصرية.</div>
       </section>
-      <section id="page-finance" class="page hidden owner-only">
+<section id="page-waybills" class="page hidden invoice-access-only"><div class="invoice-hero"><div><span class="eyebrow">ROVY STORE · SHIPPING DOCUMENTS</span><h1>بوليصات الشحن</h1><p>إصدار وأرشفة بوليصات الشحن.</p></div><div class="invoice-hero-mark">R</div></div><div class="panel"><div class="panel-heading"><div><h3>أرشيف بوليصات الشحن</h3><p>نسخة ثابتة من بيانات الطلب وقت الإصدار.</p></div><button class="btn light" id="refreshWaybills">↻ تحديث</button></div><div class="invoice-toolbar"><input id="waybillSearch" placeholder="ابحث برقم البوليصة أو الطلب أو العميل أو التتبع"></div><div id="waybillsTable" class="table-wrap"><div class="empty">اضغط تحديث لعرض البوليصات.</div></div></div><div class="notice" style="margin-top:14px">مستند شحن داخلي وليس بوليصة رسمية صادرة من شركة الشحن. الوزن والمندوب وعدد الطرود تُستكمل يدويًا.</div></section>
+            <section id="page-finance" class="page hidden owner-only">
         <div class="pagehead"><div><h1>FINANCIAL CENTER</h1><div class="muted">مركزك المالي الخاص — الأرقام الداخلية للمالك فقط</div></div><button class="btn light" id="refreshFinance">↻ تحديث الحسابات</button></div>
         <div class="notice">الأرقام محسوبة من المخزون والطلبات المسجلة والمصاريف التي تدخلها هنا. قيمة الطلبات قيد التوصيل تقديرية وليست إثباتًا لتحصيل شركة الشحن للمبلغ.</div>
         <div class="finance-section-title"><div><h2>رأس المال والمخزون</h2><p>قيمة البضاعة الموجودة حاليًا</p></div></div>
@@ -828,7 +830,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       ${compact?'':`<td>${summary}</td>`}
       <td>${money(o.total_price)}</td>
       <td><span class="${statusClass[o.status]||'pill'}">${esc(statusNames[o.status]||o.status)}</span></td>
-      ${compact?'':`<td><div class="actions">${statusActions(o)}${['owner','manager','customer_service'].includes(staff.role)?`<button class="mini" data-issue-invoice="customer" data-id="${esc(o.id)}">فاتورة العميل</button>`:''}${staff.role==='owner'?`<button class="mini gold" data-issue-invoice="internal" data-id="${esc(o.id)}">مستند داخلي</button>`:''} </div></td>`}
+      ${compact?'':`<td><div class="actions">${statusActions(o)}${['owner','manager','customer_service'].includes(staff.role)?`<button class="mini" data-issue-invoice="customer" data-id="${esc(o.id)}">فاتورة العميل</button><button class="mini gold invoice-access-only" data-issue-waybill data-id="${esc(o.id)}">بوليصة الشحن</button>`:''}${staff.role==='owner'?`<button class="mini gold" data-issue-invoice="internal" data-id="${esc(o.id)}">مستند داخلي</button>`:''} </div></td>`}
     </tr>`;
   }
   function nextStatuses(status,role) {
