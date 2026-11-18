@@ -14,17 +14,24 @@
     if(window.supabase?.createClient)client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORE_KEY}});
   }catch(e){return;}
   function sourceName(){
+    const saved=sessionStorage.getItem('rovyAnalyticsSessionSource');
+    if(saved)return saved;
     const q=new URLSearchParams(location.search);
     const utm=(q.get('utm_source')||q.get('source')||'').toLowerCase();
-    if(utm)return utm.slice(0,80);
-    const h=(document.referrer?new URL(document.referrer).hostname:'').replace(/^www\./,'').toLowerCase();
-    if(!h)return 'direct';
-    if(/facebook|fb\./.test(h))return 'facebook';
-    if(/instagram/.test(h))return 'instagram';
-    if(/google/.test(h))return 'google';
-    if(/tiktok/.test(h))return 'tiktok';
-    if(/youtube/.test(h))return 'youtube';
-    return h.slice(0,80);
+    let value='';
+    if(utm)value=utm.slice(0,80);
+    else{
+      let h='';try{h=document.referrer?new URL(document.referrer).hostname.replace(/^www\./,'').toLowerCase():'';}catch(e){}
+      if(!h)value='direct';
+      else if(/facebook|fb\./.test(h))value='facebook';
+      else if(/instagram/.test(h))value='instagram';
+      else if(/google/.test(h))value='google';
+      else if(/tiktok/.test(h))value='tiktok';
+      else if(/youtube/.test(h))value='youtube';
+      else value=h.slice(0,80);
+    }
+    sessionStorage.setItem('rovyAnalyticsSessionSource',value);
+    return value;
   }
   async function track(type,opts){
     if(!client)return false;
