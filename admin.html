@@ -367,6 +367,13 @@ main{padding:18px 16px}
     const filter=$('orderFilter').value || null;
     const data=await rpc('admin_list_orders',{p_status:filter});
     orders=Array.isArray(data)?data:[];
+    if(staff && ['owner','manager','customer_service'].includes(staff.role)){
+      try{
+        const payments=await rpc('admin_list_shipping_payments');
+        const byId=new Map((Array.isArray(payments)?payments:[]).map(p=>[String(p.id),p]));
+        orders=orders.map(o=>({...o,...(byId.get(String(o.id))||{})}));
+      }catch(paymentError){console.warn('Could not load shipping payment review data:',paymentError);}
+    }
     renderOrders(); renderDashboard(); renderReports();
   }
   async function loadProducts() {
@@ -438,8 +445,14 @@ main{padding:18px 16px}
     return [];
   }
   function statusActions(o) {
-    const next=nextStatuses(o.status,staff.role);
-    return next.map(s=>`<button class="mini ${s==='cancelled'?'red':'gold'}" data-order-action="${esc(s)}" data-id="${esc(o.id)}">${esc(statusNames[s])}</button>`).join('') || '<span class="muted">لا توجد إجراءات</span>';
+    const next=nextStatuses(o.status,staff.role).filter(s=>!(s==='confirmed' && o.shipping_payment_status!=='approved'));
+    const statusText={unpaid:'لم يتم دفع الشحن',pending_review:'إيصال الشحن قيد المراجعة',approved:'تم اعتماد دفع الشحن',rejected:'إيصال الشحن مرفوض'};
+    const paymentLabel=o.shipping_payment_status?'<div class="muted" style="margin:5px 0">'+esc(statusText[o.shipping_payment_status]||o.shipping_payment_status)+'</div>':'';
+    const proof=o.shipping_payment_proof_path?`<button class="mini" data-payment-proof="${esc(o.id)}">عرض إيصال الشحن</button>`:'';
+    const review=o.shipping_payment_status==='pending_review' && ['owner','manager','customer_service'].includes(staff.role)
+      ? `<button class="mini gold" data-payment-review="approve" data-id="${esc(o.id)}">اعتماد الإيصال</button><button class="mini red" data-payment-review="reject" data-id="${esc(o.id)}">رفض الإيصال</button>`:'';
+    const actions=next.map(s=>`<button class="mini ${s==='cancelled'?'red':'gold'}" data-order-action="${esc(s)}" data-id="${esc(o.id)}">${esc(statusNames[s])}</button>`).join('');
+    return paymentLabel+proof+review+actions || '<span class="muted">لا توجد إجراءات</span>';
   }
   function renderOrders() {
     const q=$('orderSearch').value.trim().toLowerCase();
@@ -495,6 +508,29 @@ main{padding:18px 16px}
       return;
     }
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
+    const proofButton=e.target.closest('[data-payment-proof]');
+    if(proofButton){
+      const order=orders.find(o=>String(o.id)===proofButton.dataset.paymentProof);
+      if(!order?.shipping_payment_proof_path){notify('لا توجد صورة إيصال لهذا الطلب.',true);return;}
+      try{
+        const {data,error}=await client.storage.from('payment-proofs').createSignedUrl(order.shipping_payment_proof_path,300);
+        if(error)throw error;
+        $('orderImageLarge').src=data.signedUrl;$('orderImageViewer').classList.remove('hidden');
+      }catch(err){notify(err.message||'تعذر فتح إيصال الدفع.',true);}
+      return;
+    }
+    const reviewButton=e.target.closest('[data-payment-review]');
+    if(reviewButton){
+      const approved=reviewButton.dataset.paymentReview==='approve';
+      const notes=prompt(approved?'ملاحظات اعتماد الدفع (اختياري):':'سبب رفض إيصال الدفع:')??null;
+      if(notes===null)return;
+      try{
+        await rpc('admin_review_shipping_payment',{p_order_id:Number(reviewButton.dataset.id),p_approved:approved,p_notes:notes||null});
+        notify(approved?'تم اعتماد دفع الشحن. يمكنك الآن تأكيد الطلب.':'تم رفض الإيصال. يمكن للعميل رفع إيصال جديد.');
+        await loadOrders();
+      }catch(err){notify(err.message||'تعذر مراجعة إثبات الدفع.',true);}
+      return;
+    }
     const orderImage=e.target.closest('[data-order-image]');if(orderImage){$('orderImageLarge').src=orderImage.dataset.orderImage;$('orderImageViewer').classList.remove('hidden');return;}
     if(e.target.id==='orderImageViewer'||e.target.id==='closeOrderImage'){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';return;}
     const act=e.target.closest('[data-order-action]'); if(act){await changeOrder(act.dataset.id,act.dataset.orderAction);return;}
