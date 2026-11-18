@@ -805,7 +805,6 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   });
   $('closeOrderImage').addEventListener('click',()=>{$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('orderImageViewer').classList.contains('hidden')){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';}});
-  $('orderSearch').addEventListener('input',renderOrders);
   $('paymentSearch').addEventListener('input',renderPayments);
   $('reloadActivity').addEventListener('click',()=>loadActivity().then(()=>notify('تم تحديث سجل النشاط.')).catch(e=>notify(e.message,true)));
   $('addStaffBtn').addEventListener('click',()=>openStaffModal());
