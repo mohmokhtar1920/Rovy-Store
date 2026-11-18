@@ -79,12 +79,13 @@ async function init(){
  if(authError||!current){localStorage.setItem('rovyAuthNext','payment.html?order='+encodeURIComponent(orderId));location.href='auth.html?next='+encodeURIComponent('payment.html?order='+orderId);return;}
  if(!current.email_confirmed_at)throw new Error('يجب تأكيد البريد الإلكتروني أولاً.');
  user=current;
- const {data,error}=await supabaseClient.from('orders').select('id,customer_user_id,status,total_price,shipping_fee,governorate_name,shipping_payment_status,shipping_payment_method,shipping_payment_proof_path,shipping_payment_review_notes').eq('id',Number(orderId)).eq('customer_user_id',user.id).single();
+ const {data,error}=await supabaseClient.from('orders').select('id,customer_user_id,status,total_price,shipping_fee,shipping_payment_required,governorate_name,shipping_payment_status,shipping_payment_method,shipping_payment_proof_path,shipping_payment_review_notes').eq('id',Number(orderId)).eq('customer_user_id',user.id).single();
  if(error)throw error;order=data;
  $('orderNumber').textContent='#'+order.id;$('shippingAmount').textContent=money(order.shipping_fee);
  $('productsAmount').textContent=money(Math.max(0,Number(order.total_price)-Number(order.shipping_fee)));
  $('governorate').textContent=order.governorate_name||'—';
  const status=order.shipping_payment_status;
+ if(order.shipping_payment_required===false){ $('paymentFormCard').classList.add('hidden');setStatus('هذا الطلب سابق لتفعيل الدفع المسبق للشحن، ولا يحتاج إلى تحويل مصاريف الشحن.','ok');return; }
  if(status==='approved'){ $('paymentFormCard').classList.add('hidden');setStatus('تم اعتماد إيصال الدفع بنجاح. طلبك جاهز لمراجعة فريق المتجر وتأكيده.','ok');return;}
  if(status==='pending_review'){ $('paymentFormCard').classList.add('hidden');setStatus('استلمنا صورة التحويل. إثبات الدفع قيد المراجعة من فريق المتجر.','');return;}
  if(order.status!=='pending'){$('paymentFormCard').classList.add('hidden');setStatus('هذا الطلب لم يعد متاحاً لإرسال إثبات دفع.','bad');return;}
