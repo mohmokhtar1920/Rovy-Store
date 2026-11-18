@@ -360,7 +360,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div class="pagehead"><div><h1>التقارير</h1><div class="muted">ملخص مبني على بيانات الطلبات التي ترجعها قاعدة البيانات</div></div><button class="btn light" id="exportCsvBtn">تصدير الطلبات CSV</button></div>
         <div class="toolbar" style="margin-bottom:16px"><label class="muted" for="reportPeriod" style="align-self:center">الفترة:</label><select id="reportPeriod"><option value="7">آخر 7 أيام</option><option value="30" selected>آخر 30 يوم</option><option value="90">آخر 90 يوم</option><option value="180">آخر 6 شهور</option><option value="all">كل الفترات</option></select><span id="reportScope" class="muted" style="align-self:center"></span></div>
         <div class="stats">
-          <div class="stat"><small>صافي مبيعات المنتجات بعد الخصم</small><strong id="reportTotal">0 ج.م</strong></div>
+          <div class="stat"><small>صافي قيمة الطلبات غير الملغاة بعد الخصم (بدون الشحن)</small><strong id="reportTotal">0 ج.م</strong></div>
           <div class="stat"><small>متوسط قيمة الطلب</small><strong id="reportAverage">0 ج.م</strong></div>
           <div class="stat"><small>طلبات ملغاة</small><strong id="reportCancelled">0</strong></div>
           <div class="stat"><small>إجمالي القطع المباعة</small><strong id="reportItems">0</strong></div>
@@ -372,7 +372,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
           <div class="stat"><small>بيانات تكلفة غير مكتملة</small><strong id="reportMissingCost">—</strong></div>
         </div>
         <div id="reportCostNote" class="notice owner-only hidden" aria-live="polite"></div>
-        <div class="panel"><h3>قيمة المبيعات خلال آخر 6 أشهر (بدون الشحن)</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div>
+        <div class="panel"><h3>قيمة الطلبات غير الملغاة خلال آخر 6 أشهر (بدون الشحن)</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div>
         <div class="panel" style="margin-top:16px"><h3>أكثر المنتجات مبيعًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
       </section>
     </main>
