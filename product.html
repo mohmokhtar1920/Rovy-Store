@@ -827,7 +827,7 @@
                 const model=window.DecartSDK.models.realtime('lucy-vton-3.6');
                 status.textContent='جارٍ فتح الكاميرا وتجهيز الاتصال معاً…';
                 const facingConstraint=options.strictFacing?{exact:tryonFacingMode}:{ideal:tryonFacingMode};
-                tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:{ideal:model.width},height:{ideal:model.height},frameRate:{ideal:model.fps}}});
+                tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:model.width||1280,height:model.height||720,frameRate:model.fps||30}});
                 ensureTryOnNotCancelled();
                 const actualFacing=tryonCameraStream.getVideoTracks()[0]?.getSettings?.().facingMode;
                 if(options.strictFacing&&actualFacing&&actualFacing!==tryonFacingMode)throw new Error('CAMERA_FACING_MISMATCH');
