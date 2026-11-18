@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROVY STYLE STUDIO | نسّق إطلالتك</title>
+<meta name="description" content="كوّن إطلالتك بنفسك من قطع ROVY STORE واحفظها أو شاركها وأضفها للسلة بضغطة واحدة.">
+<meta name="theme-color" content="#171717">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#171717;--gold:#b58a61;--cream:#f7f3ed;--muted:#777;--line:#e9e3dc;--green:#17834c}
+*{box-sizing:border-box}body{margin:0;background:#fbfaf8;color:var(--ink);font-family:Cairo,sans-serif}button,select{font:inherit}button{cursor:pointer}
+.top{background:var(--ink);color:#e9d4bd;text-align:center;padding:8px 12px;font-size:12px;letter-spacing:.3px}
+header{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:20}
+.logo{font-size:26px;font-weight:900;letter-spacing:2px;text-decoration:none;color:var(--ink)}.logo span{color:var(--gold)}
+.head-actions{display:flex;gap:10px;align-items:center}.head-actions a,.head-actions button{border:1px solid var(--line);background:#fff;border-radius:30px;padding:9px 15px;text-decoration:none;color:var(--ink);font-weight:700;font-size:13px}
+.hero{background:radial-gradient(circle at 15% 30%,#55402f 0,transparent 35%),linear-gradient(115deg,#151515,#28221d 60%,#3c2d21);color:#fff;padding:54px 6% 46px;position:relative;overflow:hidden}
+.hero:after{content:"ROVY";position:absolute;left:4%;bottom:-52px;font-size:clamp(100px,20vw,230px);font-weight:900;color:rgba(255,255,255,.035);letter-spacing:10px;pointer-events:none}
+.hero-inner{max-width:1180px;margin:auto;position:relative;z-index:1}.eyebrow{color:#d9b995;font-size:12px;font-weight:800;letter-spacing:2px}.hero h1{font-size:clamp(34px,6vw,64px);line-height:1.2;margin:12px 0 14px;font-weight:900}.hero p{color:#e2d8ce;max-width:640px;line-height:2;margin:0;font-size:15px}.hero-tags{display:flex;gap:9px;flex-wrap:wrap;margin-top:22px}.hero-tags span{border:1px solid #ffffff38;border-radius:30px;padding:7px 13px;font-size:12px;color:#f1e6dc}
+main{max-width:1240px;margin:0 auto;padding:28px 22px 70px}.studio-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(340px,.8fr);gap:22px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 35px rgba(32,22,12,.045);overflow:hidden}.panel-head{padding:19px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.panel-head h2{font-size:18px;margin:0;font-weight:900}.panel-head small{color:var(--muted)}
+.builder-body{padding:20px}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px}.step{background:#f7f4ef;border-radius:12px;padding:11px 8px;text-align:center;font-size:11px;color:#7b6b5b;font-weight:700}.step b{display:block;width:24px;height:24px;border-radius:50%;background:#e8ded2;color:#684b32;margin:0 auto 5px;line-height:24px}
+.filters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field select{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 8px;color:#333;font-size:12px;outline:none}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.slot{border:1px dashed #d7c8b8;background:#fcfaf7;border-radius:15px;min-height:132px;padding:12px;display:flex;gap:12px;align-items:center;position:relative}.slot.filled{border-style:solid;background:#fff}.slot img{width:82px;height:96px;object-fit:contain;background:#f4f1ed;border-radius:10px}.slot-empty-icon{width:82px;height:96px;border-radius:10px;background:#f0ebe4;display:grid;place-items:center;color:#b29b83;font-size:25px;flex-shrink:0}.slot-info{min-width:0;flex:1}.slot-label{font-size:11px;color:var(--gold);font-weight:900}.slot-name{font-size:13px;font-weight:800;line-height:1.5;margin:4px 0}.slot-meta{font-size:11px;color:var(--muted)}.slot-price{font-weight:900;color:#8c603b;font-size:13px;margin-top:5px}.slot-remove{position:absolute;top:8px;left:8px;border:0;background:#fff0ef;color:#b43b32;border-radius:8px;width:27px;height:27px}
+.look-summary{margin-top:18px;background:#171717;color:#fff;border-radius:16px;padding:17px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px}.look-summary small{color:#c8b9aa}.look-total{font-size:23px;font-weight:900;color:#e0bb91}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.btn{border:0;border-radius:12px;padding:13px 14px;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px}.btn-primary{background:var(--gold);color:#fff}.btn-dark{background:#171717;color:#fff}.btn-outline{background:#fff;border:1px solid var(--line);color:#333}.btn:disabled{opacity:.45;cursor:not-allowed}
+.products-panel{margin-top:22px}.products-toolbar{padding:14px 18px;display:flex;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);flex-wrap:wrap}.products-toolbar input{flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:12px}.products-count{font-size:12px;color:var(--muted)}
+.product-grid{padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.product{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;display:flex;flex-direction:column;min-width:0}.product img{width:100%;height:155px;object-fit:contain;background:#f7f5f2}.product-info{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}.product-name{font-size:12px;font-weight:800;line-height:1.5;min-height:36px}.product-price{font-size:14px;color:#93643e;font-weight:900}.product-stock{font-size:10px;color:var(--green)}.product select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;font-size:11px;background:#fff}.product .btn{padding:9px;font-size:11px;margin-top:auto}
+.side{position:sticky;top:92px}.preview{padding:18px}.preview-canvas{min-height:420px;border-radius:17px;background:linear-gradient(160deg,#f5eee5,#e9dfd3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:18px}
+.preview-watermark{position:absolute;bottom:12px;right:15px;color:#9c8065;font-size:10px;font-weight:900;letter-spacing:2px}
+.preview-figure{width:100%;max-width:330px;display:flex;flex-direction:column;align-items:center;gap:0;position:relative;z-index:1}
+.figure-head{width:52px;height:52px;border-radius:50%;background:#c9a98c;box-shadow:inset -7px -3px 0 #b99375;margin-bottom:8px;position:relative}.figure-head:before{content:"";position:absolute;width:57px;height:25px;background:#49372b;border-radius:28px 28px 9px 9px;top:-7px;left:-3px}
+.figure-body{width:145px;height:155px;background:#c5b19d;clip-path:polygon(22% 0,78% 0,100% 100%,0 100%);border-radius:20px 20px 8px 8px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.figure-body img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.figure-legs{display:flex;gap:8px;height:130px}.figure-leg{width:55px;background:#887d72;border-radius:5px 5px 12px 12px;position:relative}.figure-leg img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.figure-shoes{display:flex;gap:16px;margin-top:4px}.figure-shoe{width:52px;height:20px;border-radius:14px 7px 8px 8px;background:#514b45}
+.preview-caption{text-align:center;color:#806b58;font-size:11px;margin-top:12px;line-height:1.8}
+.saved-row{padding:15px 18px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}.saved-row strong{font-size:12px}.saved-row button{border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:800}
+.saved-list{padding:0 18px 15px;display:flex;gap:8px;overflow:auto}.saved-look{flex:0 0 auto;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;background:#fbfaf8;cursor:pointer}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:#171717;color:#fff;padding:12px 18px;border-radius:12px;opacity:0;visibility:hidden;transition:.2s;z-index:99;font-size:13px;max-width:90%;text-align:center}.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.loading,.empty{padding:35px 15px;text-align:center;color:var(--muted);font-size:13px;grid-column:1/-1}
+footer{text-align:center;background:#171717;color:#aaa;padding:22px;font-size:11px}
+@media(max-width:900px){.studio-grid{grid-template-columns:1fr}.side{position:static;grid-row:1}.preview-canvas{min-height:340px}.preview-figure{transform:scale(.85)}}
+@media(max-width:600px){header{height:62px;padding:0 4%}.logo{font-size:22px}.head-actions a{padding:8px 10px;font-size:11px}.hero{padding:38px 6% 34px}.hero h1{font-size:36px}main{padding:16px 12px 45px}.builder-body{padding:14px}.filters{grid-template-columns:1fr 1fr}.filters .field:last-child{grid-column:1/-1}.slots{grid-template-columns:1fr}.slot{min-height:112px}.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:9px}.product img{height:135px}.preview-canvas{min-height:320px}.actions{grid-template-columns:1fr}.look-summary{padding:14px}.look-total{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="top">ROVY STYLE STUDIO · YOUR LOOK, YOUR RULES</div>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><div class="head-actions"><a href="index.html"><i class="fa-solid fa-arrow-right"></i> المتجر</a><a href="index.html#newArrivals">تسوق المنتجات</a></div></header>
+<section class="hero"><div class="hero-inner"><div class="eyebrow">STYLE IT. SAVE IT. SHARE IT.</div><h1>إطلالتك.. من اختيارك</h1><p>كوّن اللوك اللي شبهك من قطع ROVY المتاحة، جرّب أكثر من تنسيق، احفظ المفضل عندك أو شاركه مع أصحابك — وكل القطع في سلتك بضغطة واحدة.</p><div class="hero-tags"><span><i class="fa-solid fa-wand-magic-sparkles"></i> نسّق بنفسك</span><span><i class="fa-solid fa-box-open"></i> منتجات متاحة فقط</span><span><i class="fa-solid fa-share-nodes"></i> شارك إطلالتك</span></div></div></section>
+<main>
+<div class="studio-grid">
+<div>
+<section class="panel">
+<div class="panel-head"><div><h2>ابني إطلالتك</h2><small>اختار القطع اللي تكمل بعض</small></div><span style="color:var(--gold);font-weight:900;font-size:12px">01 / 03</span></div>
+<div class="builder-body">
+<div class="steps"><div class="step"><b>1</b>اختار المود</div><div class="step"><b>2</b>نسّق القطع</div><div class="step"><b>3</b>احفظ وشارك</div></div>
+<div class="filters">
+<div class="field"><label for="occasion">المناسبة</label><select id="occasion"><option value="everyday">خروجة يومية</option><option value="work">شغل / جامعة</option><option value="date">خروجة مميزة</option><option value="sport">كاجوال رياضي</option><option value="evening">سهرة</option></select></div>
+<div class="field"><label for="style">الستايل</label><select id="style"><option value="casual">Casual</option><option value="smart">Smart Casual</option><option value="sport">Sporty</option><option value="elegant">Elegant</option><option value="street">Streetwear</option></select></div>
+<div class="field"><label for="budget">ميزانية الإطلالة</label><select id="budget"><option value="0">بدون حد</option><option value="1000">حتى 1,000 ج</option><option value="2000">حتى 2,000 ج</option><option value="3000">حتى 3,000 ج</option><option value="5000">حتى 5,000 ج</option></select></div>
+</div>
+<div class="slots" id="slots">
+<div class="slot" data-slot="top"><div class="slot-empty-icon"><i class="fa-solid fa-shirt"></i></div><div class="slot-info"><div class="slot-label">القطعة الأساسية</div><div class="slot-name">اختار قطعة من المنتجات</div><div class="slot-meta">تيشيرت / قميص / فستان</div></div></div>
+<div class="slot" data-slot="bottom"><div class="slot-empty-icon"><i class="fa-solid fa-person"></i></div><div class="slot-info"><div class="slot-label">القطعة الثانية</div><div class="slot-name">كمّل اللوك</div><div class="slot-meta">بنطلون / تنورة</div></div></div>
+<div class="slot" data-slot="shoes"><div class="slot-empty-icon"><i class="fa-solid fa-shoe-prints"></i></div><div class="slot-info"><div class="slot-label">الحذاء</div><div class="slot-name">اختار الحذاء المناسب</div><div class="slot-meta">Sneakers / Shoes</div></div></div>
+<div class="slot" data-slot="accessory"><div class="slot-empty-icon"><i class="fa-solid fa-gem"></i></div><div class="slot-info"><div class="slot-label">الإكسسوار</div><div class="slot-name">اللمسة الأخيرة</div><div class="slot-meta">شنطة / ساعة / إكسسوار</div></div></div>
+</div>
+<div class="look-summary"><div><strong>إجمالي إطلالتك</strong><br><small id="lookCount">0 قطع مختارة</small></div><div class="look-total" id="lookTotal">0 ج</div></div>
+<div class="actions"><button class="btn btn-primary" id="addAll" disabled><i class="fa-solid fa-bag-shopping"></i> أضف الإطلالة للسلة</button><button class="btn btn-dark" id="saveLook" disabled><i class="fa-regular fa-bookmark"></i> احفظ الإطلالة</button><button class="btn btn-outline" id="shareLook" disabled><i class="fa-solid fa-share-nodes"></i> شارك الإطلالة</button><button class="btn btn-outline" id="clearLook"><i class="fa-solid fa-rotate-left"></i> ابدأ من جديد</button></div>
+</div>
+</section>
+<section class="panel products-panel">
+<div class="panel-head"><div><h2>اكتشف القطع</h2><small>اختار المنتج وحدد مكانه في الإطلالة</small></div><span class="products-count" id="productsCount">جاري التحميل...</span></div>
+<div class="products-toolbar"><input id="productSearch" type="search" placeholder="ابحث عن قطعة أو لون..."><span class="products-count">الأسعار بالجنيه المصري</span></div>
+<div class="product-grid" id="productGrid"><div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> بنجهزلك القطع المتاحة...</div></div>
+</section>
+</div>
+<aside class="panel side">
+<div class="panel-head"><div><h2>ROVY LOOK PREVIEW</h2><small>معاينة تنسيقك</small></div><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--gold)"></i></div>
+<div class="preview"><div class="preview-canvas"><div class="preview-figure"><div class="figure-head"></div><div class="figure-body" id="previewTop"></div><div class="figure-legs"><div class="figure-leg" id="previewBottom"></div><div class="figure-leg"></div></div><div class="figure-shoes"><div class="figure-shoe" id="previewShoes"></div><div class="figure-shoe"></div></div></div><div class="preview-watermark">ROVY STYLE STUDIO</div></div><div class="preview-caption" id="previewCaption">ابدأ باختيار قطعة، وشوف إطلالتك بتتكوّن قدامك.</div></div>
+<div class="saved-row"><strong><i class="fa-regular fa-bookmark"></i> إطلالاتك المحفوظة</strong><button id="clearSaved" type="button">مسح المحفوظات</button></div><div class="saved-list" id="savedList"><span class="products-count">لسه مفيش إطلالات محفوظة</span></div>
+</aside>
+</div>
+</main>
+<footer>© 2026 ROVY STORE · STYLE IS A WAY TO SAY WHO YOU ARE</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sb-bkjwfmjxmxgxgaxwrnsh-auth-token'}});
+const money=n=>new Intl.NumberFormat('ar-EG',{maximumFractionDigits:0}).format(Number(n)||0)+' ج';
+const safeText=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeImage=v=>{try{const u=new URL(String(v||''),location.href);return ['https:'].includes(u.protocol)?u.href:'assets/placeholder.svg'}catch{return 'assets/placeholder.svg'}};
+let products=[],variantsByProduct={},look={},cart=[];
+function toast(message){const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');clearTimeout(window.rovyToastTimer);window.rovyToastTimer=setTimeout(()=>el.classList.remove('show'),3000)}
+function slotLabel(slot){return ({top:'القطعة الأساسية',bottom:'القطعة الثانية',shoes:'الحذاء',accessory:'الإكسسوار'})[slot]||'قطعة'}
+function stockFor(p){const vs=variantsByProduct[String(p.id)]||[];return vs.length?vs.reduce((n,v)=>n+Math.max(0,Number(v.stock)||0),0):Math.max(0,Number(p.stock)||0)}
+function variantOptions(p){return (variantsByProduct[String(p.id)]||[]).filter(v=>Number(v.stock)>0)}
+function loadCart(){try{const v=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
+function inferSlot(p){const s=((p.category||'')+' '+(p.name||'')+' '+(p.name_en||'')).toLowerCase();if(/shoe|sneaker|boot|heel|حذاء|كوتشي|جزمة/.test(s))return 'shoes';if(/bag|watch|accessor|necklace|bracelet|حقيبة|شنطة|ساعة|إكسسوار/.test(s))return 'accessory';if(/pant|jean|skirt|short|trouser|بنطلون|تنورة|شورت/.test(s))return 'bottom';return 'top'}
+function renderProducts(){
+ const q=document.getElementById('productSearch').value.trim().toLowerCase();
+ const list=products.filter(p=>stockFor(p)>0&&(!q||((p.name||'')+' '+(p.name_en||'')+' '+(p.category||'')).toLowerCase().includes(q)));
+ document.getElementById('productsCount').textContent=list.length+' قطعة متاحة';
+ const grid=document.getElementById('productGrid');
+ if(!list.length){grid.innerHTML='<div class="empty">مفيش قطع متاحة مطابقة للبحث حاليًا.</div>';return}
+ grid.innerHTML=list.map(p=>{
+  const vs=variantOptions(p),hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;
+  const options=vs.map(v=>'<option value="'+v.id+'">'+safeText([v.size,v.color].filter(Boolean).join(' · ')||'اختيار')+' — متاح '+Number(v.stock)+'</option>').join('');
+  return '<article class="product" data-product="'+Number(p.id)+'"><img loading="lazy" src="'+safeText(safeImage(p.image_url))+'" alt="'+safeText(p.name)+'"><div class="product-info"><div class="product-name">'+safeText(p.name||p.name_en||'منتج')+'</div><div class="product-price">'+money(p.price)+'</div><div class="product-stock"><i class="fa-solid fa-circle-check"></i> متاح بالمخزون</div><select class="slot-select" aria-label="مكان القطعة"><option value="top">القطعة الأساسية</option><option value="bottom">القطعة الثانية</option><option value="shoes">الحذاء</option><option value="accessory">الإكسسوار</option></select>'+(hasVariants?'<select class="variant-select" aria-label="المقاس واللون">'+options+'</select>':'')+'<button class="btn btn-dark choose-product" type="button"><i class="fa-solid fa-plus"></i> أضف للإطلالة</button></div></article>'
+ }).join('');
+ grid.querySelectorAll('.product').forEach(card=>{const p=products.find(x=>Number(x.id)===Number(card.dataset.product));const slot=card.querySelector('.slot-select');slot.value=inferSlot(p);card.querySelector('.choose-product').addEventListener('click',()=>{const hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;const selected=card.querySelector('.variant-select');const v=hasVariants?variantOptions(p).find(x=>Number(x.id)===Number(selected?.value)):null;if(hasVariants&&!v){toast('اختار المقاس واللون المتاح الأول.');return}assignProduct(p,slot.value,v)})});
+}
+function assignProduct(p,slot,v){
+ const key=String(p.id)+':'+(v?String(v.id):'none');
+ look[slot]={...p,variantId:v?Number(v.id):null,size:v?.size||'',color:v?.color||'',cartItemId:Number(p.id)+'-'+(v?Number(v.id):'no-variant'),_key:key};
+ renderLook();toast('اتضافت القطعة في '+slotLabel(slot));
+}
+function removeSlot(slot){delete look[slot];renderLook()}
+function renderLook(){
+ const slots=['top','bottom','shoes','accessory'];let total=0,count=0;
+ slots.forEach(slot=>{const node=document.querySelector('[data-slot="'+slot+'"]'),p=look[slot];if(!p){node.classList.remove('filled');node.innerHTML='<div class="slot-empty-icon"><i class="'+({top:'fa-solid fa-shirt',bottom:'fa-solid fa-person',shoes:'fa-solid fa-shoe-prints',accessory:'fa-solid fa-gem'})[slot]+'"></i></div><div class="slot-info"><div class="slot-label">'+slotLabel(slot)+'</div><div class="slot-name">'+({top:'اختار قطعة من المنتجات',bottom:'كمّل اللوك',shoes:'اختار الحذاء المناسب',accessory:'اللمسة الأخيرة'})[slot]+'</div><div class="slot-meta">اضغط إضافة من قائمة القطع</div></div>';return}
+ node.classList.add('filled');total+=Number(p.price)||0;count++;node.innerHTML='<img src="'+safeText(safeImage(p.image_url))+'" alt=""><div class="slot-info"><div class="slot-label">'+slotLabel(slot)+'</div><div class="slot-name">'+safeText(p.name||p.name_en)+'</div><div class="slot-meta">'+safeText([p.size,p.color].filter(Boolean).join(' · ')||'قطعة مختارة')+'</div><div class="slot-price">'+money(p.price)+'</div></div><button class="slot-remove" type="button" aria-label="حذف"><i class="fa-solid fa-xmark"></i></button>';node.querySelector('button').addEventListener('click',()=>removeSlot(slot))});
+ document.getElementById('lookTotal').textContent=money(total);document.getElementById('lookCount').textContent=count+' قطع مختارة';['addAll','saveLook','shareLook'].forEach(id=>document.getElementById(id).disabled=count===0);
+ document.getElementById('previewCaption').textContent=count?('إطلالتك فيها '+count+' قطع بإجمالي '+money(total)+'. كمّل اختيارك أو احفظها وشاركها.'):'ابدأ باختيار قطعة، وشوف إطلالتك بتتكوّن قدامك.';
+ const setImg=(id,p)=>{const el=document.getElementById(id);el.innerHTML=p?'<img src="'+safeText(safeImage(p.image_url))+'" alt="">':''};setImg('previewTop',look.top);setImg('previewBottom',look.bottom);setImg('previewShoes',look.shoes);
+ const budget=Number(document.getElementById('budget').value)||0;const over=budget&&total>budget;document.getElementById('lookTotal').style.color=over?'#ff9a8b':'#e0bb91';if(over)document.getElementById('previewCaption').textContent='ملحوظة: إجمالي الإطلالة أعلى من الميزانية اللي اخترتها.';
+}
+function lookItems(){return Object.entries(look).map(([slot,p])=>({slot,id:Number(p.id),variantId:p.variantId||null}))}
+function persistLook(){try{const list=JSON.parse(localStorage.getItem('rovySavedLooks')||'[]');return Array.isArray(list)?list:[]}catch{return []}}
+function saveCurrentLook(){const items=lookItems();if(!items.length)return;const saved=persistLook();saved.unshift({id:Date.now(),name:document.getElementById('style').value+' · '+document.getElementById('occasion').selectedOptions[0].text,items,createdAt:new Date().toISOString()});localStorage.setItem('rovySavedLooks',JSON.stringify(saved.slice(0,12)));renderSaved();toast('اتحفظت إطلالتك على جهازك.')}
+function renderSaved(){const box=document.getElementById('savedList'),saved=persistLook();if(!saved.length){box.innerHTML='<span class="products-count">لسه مفيش إطلالات محفوظة</span>';return}box.innerHTML=saved.map((x,i)=>'<button class="saved-look" data-index="'+i+'"><i class="fa-regular fa-bookmark"></i> '+safeText(x.name||'إطلالة '+(i+1))+'</button>').join('');box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>restoreLook(saved[Number(b.dataset.index)])))}
+function restoreLook(saved){look={};(saved.items||[]).forEach(item=>{const p=products.find(x=>Number(x.id)===Number(item.id));if(!p)return;const v=item.variantId?(variantsByProduct[String(p.id)]||[]).find(x=>Number(x.id)===Number(item.variantId)&&Number(x.stock)>0):null;if(item.variantId&&!v)return;look[item.slot]={...p,variantId:v?Number(v.id):null,size:v?.size||'',color:v?.color||'',cartItemId:Number(p.id)+'-'+(v?Number(v.id):'no-variant')}});renderLook();toast('رجعنا إطلالتك المحفوظة.')}
+function shareCurrentLook(){const payload=lookItems();if(!payload.length)return;const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=location.origin+location.pathname+'?look='+encoded;const text='شوف الإطلالة اللي نسقتها من ROVY STYLE STUDIO ✨';if(navigator.share){navigator.share({title:'ROVY STYLE STUDIO',text,url}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(url).then(()=>toast('نسخنا رابط الإطلالة — ابعته لأصحابك!')).catch(()=>toast('تعذر نسخ الرابط على المتصفح ده.'))}else{prompt('انسخ رابط الإطلالة',url)}}
+async function addLookToCart(){
+ const entries=Object.values(look);if(!entries.length)return;
+ cart=loadCart();
+ for(const p of entries){
+  const live=products.find(x=>Number(x.id)===Number(p.id));if(!live||stockFor(live)<=0){toast('في قطعة لم تعد متاحة. حدّث الصفحة وحاول تاني.');return}
+  const v=p.variantId?(variantsByProduct[String(p.id)]||[]).find(x=>Number(x.id)===Number(p.variantId)&&Number(x.stock)>0):null;
+  if(p.variantId&&!v){toast('المقاس أو اللون المختار نفد. اختار بديل من القطع.');return}
+  const cartItemId=Number(p.id)+'-'+(v?Number(v.id):'no-variant');
+  const existing=cart.find(x=>String(x.cartItemId||'')===cartItemId);
+  if(existing)existing.quantity=Number(existing.quantity||0)+1;
+  else cart.push({...live,cartItemId,variantId:v?Number(v.id):null,size:v?.size||'',color:v?.color||'',quantity:1});
+ }
+ localStorage.setItem('rovyCart',JSON.stringify(cart));toast('الإطلالة اتضافت للسلة بنجاح! هننقلك للسلة دلوقتي.');setTimeout(()=>location.href='index.html#cart',900)
+}
+async function loadSharedLook(){
+ const raw=new URLSearchParams(location.search).get('look');if(!raw)return;
+ try{const norm=raw.replace(/-/g,'+').replace(/_/g,'/');const payload=JSON.parse(decodeURIComponent(escape(atob(norm))));if(!Array.isArray(payload))return;look={};payload.forEach(item=>{const p=products.find(x=>Number(x.id)===Number(item.id));if(!p)return;const v=item.variantId?(variantsByProduct[String(p.id)]||[]).find(x=>Number(x.id)===Number(item.variantId)&&Number(x.stock)>0):null;if(item.variantId&&!v)return;look[item.slot]={...p,variantId:v?Number(v.id):null,size:v?.size||'',color:v?.color||'',cartItemId:Number(p.id)+'-'+(v?Number(v.id):'no-variant')}});renderLook();if(Object.keys(look).length)toast('الإطلالة اللي اتبعتتلك جاهزة — تقدر تعدلها أو تضيفها للسلة.')}catch(e){console.warn('Invalid shared look',e)}
+}
+async function init(){
+ cart=loadCart();renderSaved();
+ const {data,error}=await db.from('products').select('*').eq('is_active',true).order('id',{ascending:false});
+ if(error){document.getElementById('productGrid').innerHTML='<div class="empty">حصلت مشكلة في تحميل المنتجات. حدّث الصفحة وحاول تاني.</div>';console.error(error);return}
+ products=Array.isArray(data)?data:[];
+ const {data:vars,error:variantError}=await db.from('product_variants').select('id,product_id,size,color,stock,image_url');
+ if(variantError){console.error(variantError);document.getElementById('productGrid').innerHTML='<div class="empty">تعذر التحقق من المقاسات والمخزون. حاول تحديث الصفحة.</div>';return}
+ (vars||[]).forEach(v=>{const k=String(v.product_id);(variantsByProduct[k] ||= []).push(v)});
+ renderProducts();await loadSharedLook();renderLook();
+}
+document.getElementById('productSearch').addEventListener('input',renderProducts);
+document.getElementById('addAll').addEventListener('click',addLookToCart);
+document.getElementById('saveLook').addEventListener('click',saveCurrentLook);
+document.getElementById('shareLook').addEventListener('click',shareCurrentLook);
+document.getElementById('clearLook').addEventListener('click',()=>{look={};renderLook()});
+document.getElementById('clearSaved').addEventListener('click',()=>{if(confirm('تمسح كل الإطلالات المحفوظة من الجهاز ده؟')){localStorage.removeItem('rovySavedLooks');renderSaved();toast('اتمسحت الإطلالات المحفوظة.')}});
+document.getElementById('budget').addEventListener('change',renderLook);
+init();
+</script>
+</body></html>
