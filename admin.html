@@ -890,6 +890,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(Number(x.delivered_missing_cost_units||0)>0)warnings.push('هناك '+x.delivered_missing_cost_units+' قطعة في طلبات مسلّمة قديمة بدون تكلفة محفوظة؛ مجمل الربح وصافي الربح تقديريان وغير مكتملين.');
     $('financeWarning').textContent=warnings.join(' ');$('financeWarning').classList.toggle('hidden',!warnings.length);
     renderFinancialExpenses();
+    await loadShippingAccounts();
   }
 
   async function loadShippingAccounts(){
