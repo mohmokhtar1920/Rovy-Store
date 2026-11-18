@@ -1172,14 +1172,16 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(dropdownButton)dropdownButton.closest('details')?.removeAttribute('open');
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
-      if(page==='finance'&&staff?.role!=='owner')return;\n      if(page==='analytics'&&staff?.role!=='owner')return;
+      if(page==='finance'&&staff?.role!=='owner')return;
+      if(page==='analytics'&&staff?.role!=='owner')return;
       if(page==='invoices'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       if(page==='waybills'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       if(page==='staff'&&staff?.role!=='owner')return;
       if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
-      if(page==='analytics')loadAnalytics().catch(err=>notify(err.message||'تعذر تحميل التحليلات.',true));\n      if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
+      if(page==='analytics')loadAnalytics().catch(err=>notify(err.message||'تعذر تحميل التحليلات.',true));
+      if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
       if(page==='invoices')loadStoreInvoices().catch(err=>notify(err.message||'تعذر تحميل الفواتير.',true));
       if(page==='waybills')loadStoreWaybills().catch(err=>notify(err.message||'تعذر تحميل البوليصات.',true));
       return;
