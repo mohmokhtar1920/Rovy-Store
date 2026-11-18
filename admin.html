@@ -225,7 +225,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 @media(max-width:900px){.order-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.orders-toolbar{grid-template-columns:1fr 1fr}.orders-toolbar input{grid-column:1/-1}}
 @media(max-width:560px){.orders-heading{align-items:flex-start}.orders-heading h1{font-size:21px}.orders-heading p{font-size:10px;max-width:240px}.orders-heading .btn{font-size:10px;padding:9px}.order-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.order-kpi{padding:11px}.order-kpi strong{font-size:21px}.orders-control-panel{padding:12px}.orders-toolbar{grid-template-columns:1fr}.orders-toolbar input{grid-column:auto}.orders-result-meta{font-size:9px;flex-direction:column;gap:3px}}
 
-</style>
+.product-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.product-kpi{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px 18px;box-shadow:0 5px 18px #17202c08;min-width:0}.product-kpi small,.product-kpi span{display:block;color:var(--muted);font-size:12px}.product-kpi strong{display:block;font-size:27px;line-height:1.6;color:var(--ink)}.product-kpi.warning strong,.product-stock-low{color:var(--red)!important}.product-kpi span{font-size:11px}.product-management-panel{padding:18px}.product-tools-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.product-tools-heading h3{margin:0 0 3px}.product-tools-heading p{margin:0;color:var(--muted);font-size:12px}.product-toolbar{display:grid;grid-template-columns:minmax(180px,2fr) repeat(4,minmax(130px,1fr));gap:9px;margin-bottom:14px}.product-toolbar input,.product-toolbar select{min-width:0;width:100%}@media(max-width:900px){.product-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.product-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.product-kpi{padding:12px}.product-kpi strong{font-size:23px}.product-tools-heading{align-items:flex-start;flex-direction:column}.product-toolbar{grid-template-columns:1fr}.product-management-panel{padding:12px}}</style>
 <meta name="theme-color" content="#171717"><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="description" content="لوحة إدارة ROVY STORE لإدارة الطلبات والمنتجات والمخزون والشحن."><meta name="theme-color" content="#171717"></head>
 <body>
 <section id="loginView" class="login-wrap">
@@ -323,8 +323,23 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <section id="page-products" class="page hidden">
         <div class="pagehead"><div><h1>المنتجات</h1><div class="muted">إضافة وتعديل المنتجات والتحكم في ظهورها</div></div><details class="action-dropdown page-action"><summary class="btn gold">＋ إضافة منتج ▾</summary><div class="dropdown-menu"><button type="button" id="addProductBtn">إضافة منتج جديد</button></div></details></div>
         <div class="notice">ارفع حتى 20 صورة لكل منتج من جهازك، وحدد الصورة الرئيسية التي ستظهر في واجهة المتجر.</div>
-        <div class="toolbar"><input id="productSearch" placeholder="ابحث عن منتج بالاسم أو القسم"></div>
-        <div class="panel"><div id="productsTable" class="table-wrap"><div class="empty">جاري تحميل المنتجات…</div></div></div>
+        <div class="product-kpis">
+          <div class="product-kpi"><small>إجمالي المنتجات</small><strong id="productsCountAll">—</strong><span>كل المنتجات المسجلة</span></div>
+          <div class="product-kpi"><small>منتجات نشطة</small><strong id="productsCountActive">—</strong><span>متاحة على المتجر</span></div>
+          <div class="product-kpi"><small>منتجات موقوفة</small><strong id="productsCountInactive">—</strong><span>غير ظاهرة للعملاء</span></div>
+          <div class="product-kpi warning"><small>مخزون منخفض / نافد</small><strong id="productsCountLow">—</strong><span>3 قطع أو أقل حسب المخزون المسجل</span></div>
+        </div>
+        <div class="panel product-management-panel">
+          <div class="product-tools-heading"><div><h3>كتالوج المنتجات</h3><p id="productsResultCount">جاري تحميل المنتجات…</p></div><span class="orders-live-label">● إدارة المخزون</span></div>
+          <div class="toolbar product-toolbar">
+            <input id="productSearch" placeholder="ابحث باسم المنتج أو القسم">
+            <select id="productCategoryFilter"><option value="">كل الأقسام</option></select>
+            <select id="productStatusFilter"><option value="">كل الحالات</option><option value="active">نشط</option><option value="inactive">موقوف</option></select>
+            <select id="productStockFilter"><option value="">كل مستويات المخزون</option><option value="low">منخفض / نافد (≤ 3)</option><option value="available">متوفر (أكثر من 3)</option></select>
+            <select id="productSort"><option value="newest">الأحدث أولاً</option><option value="name">الاسم أ-ي</option><option value="priceHigh">السعر الأعلى</option><option value="priceLow">السعر الأقل</option><option value="stockLow">الأقل مخزونًا</option><option value="stockHigh">الأعلى مخزونًا</option></select>
+          </div>
+          <div id="productsTable" class="table-wrap"><div class="empty">جاري تحميل المنتجات…</div></div>
+        </div>
       </section>
 
       <section id="page-categories" class="page hidden">
@@ -534,6 +549,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   async function loadProducts() {
     const data=await rpc('admin_list_products');
     products=Array.isArray(data)?data:[];
+    const categoryFilter=$('productCategoryFilter');
+    if(categoryFilter){const selected=categoryFilter.value;const names=[...new Set(products.map(p=>p.category).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ar'));categoryFilter.innerHTML='<option value="">كل الأقسام</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');categoryFilter.value=names.includes(selected)?selected:'';}
     renderProducts(); $('statProducts').textContent=products.length;
     if(typeof renderDashboard==='function')renderDashboard();
   }
@@ -717,14 +734,30 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if($('dashboardDate'))$('dashboardDate').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
     $('recentOrders').innerHTML=orders.length?`<table><thead><tr><th>الطلب</th><th>العميل</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>${orders.slice(0,6).map(o=>orderRow(o,true)).join('')}</tbody></table>`:'<div class="empty">لا توجد طلبات حتى الآن.</div>';
   }
+  function productStock(p){return Number(p.has_variants?p.variant_stock:p.stock)||0;}
   function renderProducts() {
-    const q=$('productSearch').value.trim().toLowerCase();
-    const list=products.filter(p=>`${p.name||''} ${p.category||''}`.toLowerCase().includes(q));
-    $('productsTable').innerHTML=list.length?`<table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(p=>`<tr>
-      <td><strong>${esc(p.name)}</strong>${p.image_url?`<div class="muted">صورة مضافة</div>`:''}</td><td>${esc(p.category||'—')}</td><td>${money(p.price)}</td><td>${p.has_variants?`${Number(p.variant_stock||0)} <span class="muted">(إجمالي الخيارات)</span>`:Number(p.stock||0)}</td>
+    const q=$('productSearch').value.trim().toLowerCase(), category=$('productCategoryFilter').value, status=$('productStatusFilter').value, stock=$('productStockFilter').value, sort=$('productSort').value;
+    const activeCount=products.filter(p=>p.is_active!==false).length;
+    $('productsCountAll').textContent=products.length; $('productsCountActive').textContent=activeCount; $('productsCountInactive').textContent=products.length-activeCount;
+    $('productsCountLow').textContent=products.filter(p=>productStock(p)<=3).length;
+    let list=products.filter(p=>{
+      const qty=productStock(p);
+      return `${p.name||''} ${p.category||''}`.toLowerCase().includes(q) && (!category||(p.category||'')===category) && (!status||(status==='active'?p.is_active!==false:p.is_active===false)) && (!stock||(stock==='low'?qty<=3:qty>3));
+    });
+    list=[...list].sort((a,b)=>{
+      if(sort==='name')return String(a.name||'').localeCompare(String(b.name||''),'ar');
+      if(sort==='priceHigh')return Number(b.price||0)-Number(a.price||0);
+      if(sort==='priceLow')return Number(a.price||0)-Number(b.price||0);
+      if(sort==='stockLow')return productStock(a)-productStock(b);
+      if(sort==='stockHigh')return productStock(b)-productStock(a);
+      return new Date(b.created_at||0)-new Date(a.created_at||0);
+    });
+    $('productsResultCount').textContent=`عرض ${list.length} من أصل ${products.length} منتج`;
+    $('productsTable').innerHTML=list.length?`<table><thead><tr><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(p=>{const qty=productStock(p);return `<tr>
+      <td><strong>${esc(p.name)}</strong>${p.image_url?`<div class="muted">صورة مضافة</div>`:''}</td><td>${esc(p.category||'—')}</td><td>${money(p.price)}</td><td><strong class="${qty<=3?'product-stock-low':''}">${qty}</strong> ${p.has_variants?'<span class="muted">(إجمالي الخيارات)</span>':qty<=3?'<span class="muted">مخزون منخفض</span>':''}</td>
       <td><span class="${p.is_active?'pill green':'pill red'}">${p.is_active?'نشط':'موقوف'}</span></td>
       <td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-product="${esc(p.id)}">تعديل المنتج</button><button type="button" data-toggle-product="${esc(p.id)}" data-active="${p.is_active?'0':'1'}">${p.is_active?'إيقاف المنتج':'تفعيل المنتج'}</button></div></details></td>
-    </tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد منتجات مطابقة.</div>';
+    </tr>`}).join('')}</tbody></table>':'<div class="empty">لا توجد منتجات مطابقة للفلاتر الحالية.</div>';
   }
   function renderCoupons() {
     $('couponsTable').innerHTML=coupons.length?`<table><thead><tr><th>الكود</th><th>الخصم</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${coupons.map(c=>`<tr>
@@ -811,7 +844,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('staffForm').addEventListener('submit',saveStaffProfile);
   $('paymentFilter').addEventListener('change',renderPayments);
   $('reloadPayments').addEventListener('click',()=>loadOrders().then(()=>notify('تم تحديث بيانات المدفوعات.')).catch(e=>notify(e.message,true)));
-  $('productSearch').addEventListener('input',renderProducts);
+  ['productSearch','productCategoryFilter','productStatusFilter','productStockFilter','productSort'].forEach(id=>$(id).addEventListener(id==='productSearch'?'input':'change',renderProducts));
   $('orderFilter').addEventListener('change',()=>loadOrders().catch(e=>notify(e.message,true)));
   $('orderSort').addEventListener('change',renderOrders);
   $('orderSearch').addEventListener('input',renderOrders);
