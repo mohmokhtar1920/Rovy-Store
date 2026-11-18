@@ -508,6 +508,7 @@
         }
         
         function addToCart() {
+            window.rovyAnalytics?.track('add_to_cart',{product_id:Number(currentProduct?.id)});
             const uniqueId = `${currentProduct.id}-${selectedVariantId || 'no-variant'}`;
             const existingItem = cart.find(item => item.cartItemId === uniqueId);
             if (existingItem) existingItem.quantity += 1;
