@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101b2b">
+<title>دفع مصاريف الشحن | ROVY STORE</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--navy:#101b2b;--gold:#d8b45b;--ink:#17202c;--muted:#788292;--line:#e8ebef;--green:#16845b;--red:#bd3543}
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:var(--ink);font-family:'Cairo',sans-serif}
+header{height:76px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 max(18px,calc((100% - 960px)/2))}
+.logo{font-size:24px;font-weight:900;color:#fff;text-decoration:none}.logo span{color:var(--gold)}
+header a.back{color:#fff;text-decoration:none;font-weight:700}
+main{width:min(760px,calc(100% - 28px));margin:28px auto 55px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:16px;box-shadow:0 8px 28px #1422380a}
+h1{font-size:25px;margin:0 0 6px}h2{font-size:18px;margin:0 0 14px}.muted{color:var(--muted);font-size:13px;line-height:1.8}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sum{background:#f7f8fa;border-radius:12px;padding:13px}.sum small{display:block;color:var(--muted)}.sum strong{font-size:21px}
+.shipping{border:1px solid #f0dfb2;background:#fff9e9}.shipping strong{color:#765915}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:12px}.method{border:1.5px solid var(--line);border-radius:13px;padding:14px;cursor:pointer;display:flex;gap:10px;align-items:center}.method:has(input:checked){border-color:var(--gold);background:#fffaf0}.method input{accent-color:#b58a22;width:18px;height:18px}.method b{display:block}.method small{color:var(--muted)}
+.account{background:#f7f8fa;border-radius:12px;padding:15px;margin-top:13px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.account strong{direction:ltr;unicode-bidi:embed;font-size:17px}.copy{border:0;border-radius:8px;background:#e9edf2;padding:8px 12px;font:700 12px Cairo;cursor:pointer}
+.field{display:block;margin:14px 0 8px;font-weight:700}.file{width:100%;padding:13px;border:1px dashed #c7ced8;border-radius:12px;background:#fafbfc}
+.preview{display:none;max-width:100%;max-height:280px;object-fit:contain;margin:14px auto 0;border-radius:12px;border:1px solid var(--line)}
+.submit{width:100%;min-height:54px;background:var(--gold);color:#17202c;border:0;border-radius:12px;font:900 17px Cairo;cursor:pointer;margin-top:12px}.submit:disabled{opacity:.5;cursor:not-allowed}
+.status{padding:13px 15px;border-radius:12px;background:#eef3fa;color:#29486d;line-height:1.8}.status.ok{background:#e8f6ef;color:#176746}.status.bad{background:#fff0f1;color:#a52e3b}
+.hidden{display:none!important}.error{color:var(--red);font-size:13px;min-height:20px}
+@media(max-width:560px){main{margin-top:17px}.card{padding:17px}.summary,.methods{grid-template-columns:1fr 1fr}h1{font-size:22px}.sum strong{font-size:18px}}
+</style>
+</head>
+<body>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><a class="back" href="index.html">العودة للمتجر</a></header>
+<main>
+<section class="card">
+<h1>دفع مصاريف الشحن</h1>
+<p class="muted">طلبك اتسجل بنجاح. ادفع مصاريف الشحن فقط، وثمن المنتجات هتدفعه عند الاستلام.</p>
+<div class="summary">
+<div class="sum"><small>رقم الطلب</small><strong id="orderNumber">—</strong></div>
+<div class="sum shipping"><small>المبلغ المطلوب تحويله الآن (الشحن فقط)</small><strong id="shippingAmount">—</strong></div>
+<div class="sum"><small>قيمة المنتجات بعد الخصم</small><strong id="productsAmount">—</strong></div>
+<div class="sum"><small>المحافظة</small><strong id="governorate">—</strong></div>
+</div>
+</section>
+<section class="card" id="paymentFormCard">
+<h2>1. اختار طريقة التحويل</h2>
+<div class="methods">
+<label class="method"><input type="radio" name="paymentMethod" value="vodafone_cash" checked><span><b>Vodafone Cash</b><small>تحويل لمحفظة فودافون كاش</small></span></label>
+<label class="method"><input type="radio" name="paymentMethod" value="instapay"><span><b>InstaPay</b><small>تحويل عبر إنستا باي</small></span></label>
+</div>
+<div class="account"><div><small class="muted" id="accountLabel">رقم Vodafone Cash</small><br><strong id="accountValue">01012853009</strong><br><small class="muted">اسم المستفيد: Mohamed Ibrahim Mokhtar</small></div><button class="copy" type="button" id="copyAccount">نسخ البيانات</button></div>
+<h2 style="margin-top:24px">2. ارفع صورة إيصال التحويل</h2>
+<p class="muted">ارفع صورة واضحة للإيصال (JPG أو PNG أو WEBP) بحد أقصى 5 ميجابايت.</p>
+<label class="field" for="proofFile">صورة إثبات الدفع</label>
+<input class="file" id="proofFile" type="file" accept="image/jpeg,image/png,image/webp">
+<img id="preview" class="preview" alt="معاينة إيصال التحويل">
+<div class="error" id="formError"></div>
+<button class="submit" id="submitProof" type="button">إرسال إثبات الدفع</button>
+</section>
+<section class="card hidden" id="statusCard"><h2>حالة دفع الشحن</h2><div id="paymentStatus" class="status"></div></section>
+</main>
+<script>
+(() => {
+'use strict';
+const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'sb-bkjwfmjxmxgxgaxwrnsh-auth-token'}});
+const $=id=>document.getElementById(id);
+const orderId=new URLSearchParams(location.search).get('order')||localStorage.getItem('rovyPendingPaymentOrder');
+let order=null,user=null;
+const money=n=>Number(n||0).toLocaleString('en-US')+' جنيه';
+function setStatus(message,type=''){ $('statusCard').classList.remove('hidden');$('paymentStatus').className='status '+type;$('paymentStatus').textContent=message; }
+function method(){return document.querySelector('input[name="paymentMethod"]:checked')?.value||'vodafone_cash';}
+function updateAccount(){const insta=method()==='instapay';$('accountLabel').textContent=insta?'عنوان InstaPay':'رقم Vodafone Cash';$('accountValue').textContent=insta?'mohamed.mokhtar99@instapay':'01012853009';$('copyAccount').textContent='نسخ البيانات';}
+async function init(){
+ if(!/^\d+$/.test(String(orderId||''))){throw new Error('رقم الطلب غير صحيح.');}
+ const {data:{user:current},error:authError}=await supabaseClient.auth.getUser();
+ if(authError||!current){localStorage.setItem('rovyAuthNext','payment.html?order='+encodeURIComponent(orderId));location.href='auth.html?next='+encodeURIComponent('payment.html?order='+orderId);return;}
+ if(!current.email_confirmed_at)throw new Error('يجب تأكيد البريد الإلكتروني أولاً.');
+ user=current;
+ const {data,error}=await supabaseClient.from('orders').select('id,customer_user_id,status,total_price,shipping_fee,governorate_name,shipping_payment_status,shipping_payment_method,shipping_payment_proof_path,shipping_payment_review_notes').eq('id',Number(orderId)).eq('customer_user_id',user.id).single();
+ if(error)throw error;order=data;
+ $('orderNumber').textContent='#'+order.id;$('shippingAmount').textContent=money(order.shipping_fee);
+ $('productsAmount').textContent=money(Math.max(0,Number(order.total_price)-Number(order.shipping_fee)));
+ $('governorate').textContent=order.governorate_name||'—';
+ const status=order.shipping_payment_status;
+ if(status==='approved'){ $('paymentFormCard').classList.add('hidden');setStatus('تم اعتماد إيصال الدفع بنجاح. طلبك جاهز لمراجعة فريق المتجر وتأكيده.','ok');return;}
+ if(status==='pending_review'){ $('paymentFormCard').classList.add('hidden');setStatus('استلمنا صورة التحويل. إثبات الدفع قيد المراجعة من فريق المتجر.','');return;}
+ if(order.status!=='pending'){$('paymentFormCard').classList.add('hidden');setStatus('هذا الطلب لم يعد متاحاً لإرسال إثبات دفع.','bad');return;}
+ if(status==='rejected'&&order.shipping_payment_review_notes){$('formError').textContent='تم رفض الإيصال السابق: '+order.shipping_payment_review_notes+' — يمكنك رفع صورة جديدة.';}
+ if(Number(order.shipping_fee)<=0){$('paymentFormCard').classList.add('hidden');setStatus('لا توجد مصاريف شحن مستحقة على هذا الطلب.','ok');}
+}
+document.querySelectorAll('input[name="paymentMethod"]').forEach(el=>el.addEventListener('change',updateAccount));
+$('copyAccount').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('accountValue').textContent);$('copyAccount').textContent='تم النسخ';}catch{$('formError').textContent='تعذر النسخ تلقائياً. يمكنك تحديد البيانات ونسخها.';}});
+$('proofFile').addEventListener('change',()=>{const file=$('proofFile').files[0];const preview=$('preview');if(!file){preview.style.display='none';preview.removeAttribute('src');return;}if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){$('formError').textContent='اختر صورة JPG أو PNG أو WEBP لا تتجاوز 5 ميجابايت.';$('proofFile').value='';preview.style.display='none';return;}preview.src=URL.createObjectURL(file);preview.style.display='block';$('formError').textContent='';});
+$('submitProof').addEventListener('click',async()=>{
+ const btn=$('submitProof'),file=$('proofFile').files[0];$('formError').textContent='';
+ if(!order||!user)return;
+ if(!file){$('formError').textContent='من فضلك اختر صورة إيصال التحويل.';return;}
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){$('formError').textContent='صيغة الصورة أو حجمها غير مقبول.';return;}
+ btn.disabled=true;btn.textContent='جاري رفع الإيصال...';
+ let path='';
+ try{
+  const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+  path=user.id+'/'+order.id+'/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
+  const {error:uploadError}=await supabaseClient.storage.from('payment-proofs').upload(path,file,{contentType:file.type,upsert:false});
+  if(uploadError)throw uploadError;
+  btn.textContent='جاري تأكيد الإرسال...';
+  const {data,error}=await supabaseClient.rpc('submit_shipping_payment_proof',{p_order_id:Number(order.id),p_payment_method:method(),p_proof_path:path});
+  if(error)throw error;
+  if(!data?.success)throw new Error('تعذر تسجيل إثبات الدفع.');
+  order.shipping_payment_status='pending_review';
+  $('paymentFormCard').classList.add('hidden');
+  setStatus('تم استلام صورة التحويل بنجاح. حالة الدفع الآن: قيد المراجعة. سنراجع الإيصال قبل تأكيد الطلب.','ok');
+ }catch(e){if(path)await supabaseClient.storage.from('payment-proofs').remove([path]);$('formError').textContent=e.message||'تعذر إرسال إثبات الدفع. حاول مرة أخرى.';btn.disabled=false;btn.textContent='إرسال إثبات الدفع';}
+});
+updateAccount();
+init().catch(e=>{console.error(e);$('paymentFormCard').classList.add('hidden');setStatus(e.message||'تعذر تحميل بيانات الطلب.','bad');});
+})();
+</script>
+</body>
+</html>
