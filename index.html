@@ -548,7 +548,7 @@
 
         function removeFromCart(cartItemKey) { const key=String(cartItemKey??'');const removed=cart.find(item=>String(item.cartItemId||String(item.id)+'-no-variant')===key);if(removed)window.rovyAnalytics?.track('remove_from_cart',{product_id:Number(removed.id)});cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==key);updateCart(); }
         function toggleCart() { document.getElementById('cartSidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
-        function checkout() { if (cart.length === 0) { showToast(english ? 'Add at least one product before checkout.' : 'أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.', 'info', english ? 'Your cart is empty' : 'سلتك فارغة'); return; } window.rovyAnalytics?.track('begin_checkout'); window.location.href = 'checkout.html'; }
+        function checkout() { if (cart.length === 0) { showToast(english ? 'Add at least one product before checkout.' : 'أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.', 'info', english ? 'Your cart is empty' : 'سلتك فارغة'); return; } window.location.href = 'checkout.html'; }
         function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
 
         if (english) {
