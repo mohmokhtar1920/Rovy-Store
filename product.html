@@ -557,7 +557,7 @@
         }
         function checkoutFromProduct(){
             if(!cart.length){showToast(english?'Add at least one product before checkout.':'أضف منتجاً واحداً على الأقل قبل إتمام الطلب.','info',english?'Your cart is empty':'سلتك فارغة');return;}
-            window.rovyAnalytics?.track('begin_checkout');window.location.href='checkout.html';
+            window.location.href='checkout.html';
         }
 
         async function loadReviews() {
