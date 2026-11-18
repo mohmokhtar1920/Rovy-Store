@@ -238,6 +238,30 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 @media(max-width:900px){.shipping-company-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.shipping-company-cards{gap:7px}.shipping-company-card{padding:10px}.shipping-company-card strong{font-size:17px}.shipping-remit-row{grid-template-columns:auto minmax(0,1fr) 90px}}
 
+ 
+/* ROVY invoice center */
+.invoice-hero{background:linear-gradient(125deg,#101b2b,#26364a);color:#fff;border-radius:18px;padding:22px;margin-bottom:16px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.invoice-hero h1{margin:4px 0;color:#f0d28a}.invoice-hero p{margin:4px 0;color:#d0d7e0}
+.invoice-hero-mark{width:64px;height:64px;border:1px solid #d8b45b;border-radius:18px;display:grid;place-items:center;color:#d8b45b;font-size:34px;font-weight:900}
+.invoice-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0}.invoice-toolbar input,.invoice-toolbar select{min-width:180px;flex:1}
+.invoice-pill{display:inline-block;border-radius:30px;padding:4px 10px;background:#f7f1e3;color:#785b1b;font-size:11px;font-weight:800}
+.invoice-actions{display:flex;gap:6px;flex-wrap:wrap}
+.invoice-paper{font-family:'Cairo',Arial,sans-serif;color:#182333;background:#fff;padding:28px;max-width:900px;margin:0 auto}
+.invoice-paper-head{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #d8b45b;padding-bottom:18px}
+.invoice-brand{font-size:26px;font-weight:900;letter-spacing:1px;color:#101b2b}.invoice-brand span{color:#b28a31}
+.invoice-number{font-size:12px;color:#657080;text-align:left}
+.invoice-paper h2{margin:20px 0 8px;color:#182333}
+.invoice-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;background:#f7f8fa;border-radius:10px;padding:14px;margin:16px 0}
+.invoice-paper table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.invoice-paper th{background:#172538;color:#f1d58e;text-align:right;padding:10px}
+.invoice-paper td{padding:10px;border-bottom:1px solid #e8ebef}
+.invoice-total{width:min(100%,360px);margin-right:auto;border:1px solid #e8ebef;border-radius:12px;padding:12px}
+.invoice-total div{display:flex;justify-content:space-between;gap:12px;padding:5px 0}
+.invoice-total .grand{border-top:2px solid #d8b45b;margin-top:6px;padding-top:10px;font-size:18px;font-weight:900}
+.invoice-foot{border-top:1px solid #e8ebef;margin-top:24px;padding-top:12px;color:#687385;font-size:11px;text-align:center}
+@media(max-width:650px){.invoice-hero{padding:16px}.invoice-hero-mark{width:48px;height:48px;font-size:26px}.invoice-paper{padding:14px}.invoice-meta{grid-template-columns:1fr}.invoice-paper-head{flex-direction:column}.invoice-number{text-align:right}}
+@media print{body{background:#fff}.invoice-paper{max-width:none;padding:0}.invoice-paper table{page-break-inside:auto}.invoice-paper tr{page-break-inside:avoid}}
+
 </style>
 <meta name="theme-color" content="#171717"><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="description" content="لوحة إدارة ROVY STORE لإدارة الطلبات والمنتجات والمخزون والشحن."><meta name="theme-color" content="#171717"></head>
 <body>
@@ -269,6 +293,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     <aside>
       <button class="navbtn active" data-page="dashboard">▦ الرئيسية</button>
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
+      <button class="navbtn invoice-access-only hidden" data-page="invoices">▧ الفواتير والمستندات</button>
       <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
       <button class="navbtn" data-page="activity">◷ سجل النشاط</button>
       <button class="navbtn owner-only" data-page="staff">♙ الموظفون والصلاحيات</button>
@@ -388,6 +413,15 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div id="reportCostNote" class="notice owner-only hidden" aria-live="polite"></div>
         <div class="panel"><h3>قيمة الطلبات غير الملغاة خلال آخر 6 أشهر (بدون الشحن)</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div>
         <div class="panel" style="margin-top:16px"><h3>أكثر المنتجات مبيعًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
+      </section>
+      <section id="page-invoices" class="page hidden invoice-access-only">
+        <div class="invoice-hero"><div><span class="eyebrow">ROVY STORE · DOCUMENT CENTER</span><h1>الفواتير والمستندات</h1><p>إصدار وأرشفة فواتير العملاء والمستندات الداخلية، مع إمكانية الطباعة والحفظ PDF.</p></div><div class="invoice-hero-mark">R</div></div>
+        <div class="panel">
+          <div class="panel-heading"><div><h3>أرشيف الفواتير</h3><p>المستندات الصادرة محفوظة كلقطة ثابتة من بيانات الطلب وقت الإصدار.</p></div><button class="btn light" id="refreshInvoices">↻ تحديث</button></div>
+          <div class="invoice-toolbar"><input id="invoiceSearch" placeholder="ابحث برقم الفاتورة أو الطلب أو اسم العميل أو الهاتف"><select id="invoiceTypeFilter"><option value="">كل أنواع الفواتير</option><option value="customer">فواتير العملاء</option><option value="internal">المستندات الداخلية</option></select></div>
+          <div id="invoicesTable" class="table-wrap"><div class="empty">اضغط تحديث لعرض الأرشيف.</div></div>
+        </div>
+        <div class="notice" style="margin-top:14px">تنبيه: هذا مستند تجاري/محاسبي داخلي وليس فاتورة ضريبية إلكترونية معتمدة من مصلحة الضرائب المصرية.</div>
       </section>
       <section id="page-finance" class="page hidden owner-only">
         <div class="pagehead"><div><h1>FINANCIAL CENTER</h1><div class="muted">مركزك المالي الخاص — الأرقام الداخلية للمالك فقط</div></div><button class="btn light" id="refreshFinance">↻ تحديث الحسابات</button></div>
@@ -599,6 +633,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('staffRole').textContent=roleNames[staff.role] || staff.role;
     document.querySelectorAll('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
     document.querySelectorAll('.payment-review-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
+    document.querySelectorAll('.invoice-access-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
     document.querySelectorAll('.owner-only').forEach(el=>el.classList.toggle('hidden',staff.role!=='owner'));
   }
   let enteringApp=false;
@@ -637,6 +672,48 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(event==='SIGNED_OUT'){staff=null;showLogin();}
     if(event==='SIGNED_IN' && session && $('appView').classList.contains('hidden')){setTimeout(()=>{if($('appView').classList.contains('hidden'))enterApp();},0);}
   });
+
+
+  let storeInvoices=[];
+  async function loadStoreInvoices(){
+    const data=await rpc('admin_list_store_invoices');
+    storeInvoices=Array.isArray(data)?data:[];
+    renderStoreInvoices();
+  }
+  function renderStoreInvoices(){
+    if(!$('invoicesTable'))return;
+    const q=($('invoiceSearch')?.value||'').trim().toLowerCase();
+    const type=$('invoiceTypeFilter')?.value||'';
+    const rows=storeInvoices.filter(x=>(!type||x.invoice_type===type)&&
+      [x.invoice_number,x.order_id,x.customer_name,x.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
+    $('invoicesTable').innerHTML=rows.length?'<table><thead><tr><th>رقم المستند</th><th>الطلب</th><th>العميل</th><th>النوع</th><th>الإجمالي</th><th>تاريخ الإصدار</th><th>إجراءات</th></tr></thead><tbody>'+
+      rows.map(x=>'<tr><td><strong>'+esc(x.invoice_number)+'</strong></td><td>#'+esc(x.order_id)+'</td><td>'+esc(x.customer_name||'—')+'<div class="muted">'+esc(x.customer_phone||'')+'</div></td><td><span class="invoice-pill">'+(x.invoice_type==='internal'?'مستند داخلي':'فاتورة عميل')+'</span></td><td>'+money(x.total||0)+'</td><td>'+esc(new Date(x.issued_at).toLocaleString('ar-EG'))+'</td><td><div class="invoice-actions"><button class="mini gold" data-open-invoice="'+esc(x.id)+'">عرض / طباعة</button></div></td></tr>').join('')+
+      '</tbody></table>':'<div class="empty">لا توجد فواتير مطابقة. يمكنك إصدار فاتورة من داخل الطلب.</div>';
+  }
+  async function issueStoreInvoice(orderId,type){
+    try{
+      const result=await rpc('admin_issue_store_invoice',{p_order_id:Number(orderId),p_invoice_type:type});
+      notify(result.created?'تم إصدار المستند وحفظه في الأرشيف.':'الفاتورة موجودة بالفعل، تم فتح النسخة المحفوظة.');
+      await loadStoreInvoices();
+      if(result.invoice_id) await openStoreInvoice(result.invoice_id,true);
+    }catch(err){notify(err.message||'تعذر إصدار الفاتورة.',true);}
+  }
+  async function openStoreInvoice(invoiceId,autoPrint=false){
+    try{
+      const data=await rpc('admin_get_store_invoice',{p_invoice_id:Number(invoiceId)});
+      printStoreInvoice(data,autoPrint);
+    }catch(err){notify(err.message||'تعذر فتح الفاتورة.',true);}
+  }
+  function printStoreInvoice(doc,autoPrint=false){
+    const s=doc.snapshot||{}, internal=doc.invoice_type==='internal';
+    const rows=(s.items||[]).map((it,n)=>'<tr><td>'+(n+1)+'</td><td><strong>'+esc(it.product_name||'منتج')+'</strong><div style="color:#77808e;font-size:11px">'+[it.size?'المقاس: '+it.size:'',it.color?'اللون: '+it.color:''].filter(Boolean).map(esc).join(' · ')+'</div></td><td>'+Number(it.quantity||0)+'</td><td>'+money(it.unit_price)+'</td><td>'+money(it.line_total)+'</td>'+(internal?'<td>'+ (it.purchase_unit_cost==null?'غير مسجل':money(it.purchase_unit_cost))+'</td><td>'+(it.purchase_line_cost==null?'—':money(it.purchase_line_cost))+'</td>':'')+'</tr>').join('');
+    const internalRows=internal?'<div><span>إجمالي تكلفة البضاعة</span><strong>'+(s.purchase_cost_total==null?'غير مكتملة':money(s.purchase_cost_total))+'</strong></div><div><span>مجمل الربح قبل مصاريف التشغيل</span><strong>'+(s.gross_profit==null?'غير متاح':money(s.gross_profit))+'</strong></div><div><span>بنود بدون تكلفة شراء</span><strong>'+Number(s.missing_cost_items||0)+'</strong></div><div><span>أجر شركة الشحن</span><strong>'+money(s.shipping_company_fee||0)+'</strong></div>':'';
+    const paymentText=s.shipping_payment_approved?'تم اعتماد دفع الشحن مقدماً ('+esc(s.shipping_payment_method||'')+')':'لم يتم اعتماد دفع الشحن مقدماً';
+    const popup=window.open('','_blank','width=1000,height=800');
+    if(!popup){notify('اسمح بفتح النوافذ المنبثقة لطباعة الفاتورة.',true);return;}
+    popup.document.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(doc.invoice_number)+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>body{margin:0;background:#f1f2f4;font-family:Cairo,Arial,sans-serif}.invoice-paper{font-family:Cairo,Arial,sans-serif;color:#182333;background:#fff;padding:28px;max-width:900px;margin:20px auto;box-shadow:0 4px 30px #0001}.invoice-paper-head{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #d8b45b;padding-bottom:18px}.invoice-brand{font-size:26px;font-weight:900;color:#101b2b}.invoice-brand span{color:#b28a31}.invoice-number{font-size:12px;color:#657080;text-align:left}.invoice-paper h2{margin:20px 0 8px}.invoice-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;background:#f7f8fa;border-radius:10px;padding:14px;margin:16px 0}.invoice-paper table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}.invoice-paper th{background:#172538;color:#f1d58e;text-align:right;padding:10px}.invoice-paper td{padding:10px;border-bottom:1px solid #e8ebef}.invoice-total{width:min(100%,380px);margin-right:auto;border:1px solid #e8ebef;border-radius:12px;padding:12px}.invoice-total div{display:flex;justify-content:space-between;gap:12px;padding:5px 0}.invoice-total .grand{border-top:2px solid #d8b45b;margin-top:6px;padding-top:10px;font-size:18px;font-weight:900}.invoice-foot{border-top:1px solid #e8ebef;margin-top:24px;padding-top:12px;color:#687385;font-size:11px;text-align:center}.toolbar{position:fixed;top:10px;left:10px;z-index:3}@media print{body{background:#fff}.invoice-paper{margin:0;max-width:none;padding:0;box-shadow:none}.toolbar{display:none}}@media(max-width:600px){.invoice-paper{padding:12px;margin:0}.invoice-meta{grid-template-columns:1fr}.invoice-paper-head{flex-direction:column}.invoice-number{text-align:right}}</style></head><body><div class="toolbar"><button onclick="window.print()">طباعة / حفظ PDF</button></div><main class="invoice-paper"><header class="invoice-paper-head"><div><div class="invoice-brand">ROVY <span>STORE</span></div><div style="color:#657080">فاتورة '+(internal?'داخلية للمالك':'بيع للعميل')+'</div></div><div class="invoice-number"><strong>'+esc(doc.invoice_number)+'</strong><br>رقم الطلب: #'+esc(s.order_id)+'<br>تاريخ الإصدار: '+esc(new Date(doc.issued_at).toLocaleString('ar-EG'))+'</div></header><h2>'+(internal?'مستند تكلفة وربحية داخلي':'فاتورة بيع')+'</h2><section class="invoice-meta"><div><b>العميل:</b> '+esc(s.customer_name||'—')+'</div><div><b>الهاتف:</b> '+esc(s.customer_phone||'—')+'</div><div><b>العنوان:</b> '+esc(s.customer_address||'—')+'</div><div><b>المحافظة:</b> '+esc(s.governorate_name||'—')+'</div><div><b>حالة الطلب:</b> '+esc(s.order_status||'—')+'</div><div><b>حالة دفع الشحن:</b> '+paymentText+'</div></section><table><thead><tr><th>#</th><th>المنتج / المواصفات</th><th>الكمية</th><th>سعر الوحدة</th><th>الإجمالي</th>'+(internal?'<th>تكلفة الوحدة</th><th>تكلفة البند</th>':'')+'</tr></thead><tbody>'+rows+'</tbody></table><section class="invoice-total"><div><span>إجمالي المنتجات</span><strong>'+money(s.subtotal)+'</strong></div><div><span>الخصم '+(s.coupon_code?'('+esc(s.coupon_code)+')':'')+'</span><strong>− '+money(s.discount_amount)+'</strong></div><div><span>الشحن</span><strong>'+money(s.shipping_fee)+'</strong></div><div class="grand"><span>الإجمالي النهائي</span><strong>'+money(s.total)+'</strong></div><div><span>مدفوع مقدماً للشحن</span><strong>'+money(s.shipping_paid_advance)+'</strong></div><div><span>المتبقي للتحصيل عند التسليم</span><strong>'+money(s.cash_due_on_delivery)+'</strong></div>'+internalRows+'</section><footer class="invoice-foot">'+(internal?'مستند داخلي سري — لا يرسل للعميل.':'شكراً لثقتك في ROVY STORE.')+'<br>هذا مستند تجاري وليس فاتورة ضريبية إلكترونية معتمدة.</footer></main><script>window.onload=()=>{'+(autoPrint?'setTimeout(()=>window.print(),500);':'')+'};</script></body></html>');
+    popup.document.close();
+  }
 
   async function loadOrders() {
     $('ordersTable').innerHTML='<div class="empty">جاري تحميل الطلبات…</div>';
@@ -719,7 +796,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       ${compact?'':`<td>${summary}</td>`}
       <td>${money(o.total_price)}</td>
       <td><span class="${statusClass[o.status]||'pill'}">${esc(statusNames[o.status]||o.status)}</span></td>
-      ${compact?'':`<td><div class="actions">${statusActions(o)}</div></td>`}
+      ${compact?'':`<td><div class="actions">${statusActions(o)}${['owner','manager','customer_service'].includes(staff.role)?`<button class="mini" data-issue-invoice="customer" data-id="${esc(o.id)}">فاتورة العميل</button>`:''}${staff.role==='owner'?`<button class="mini gold" data-issue-invoice="internal" data-id="${esc(o.id)}">مستند داخلي</button>`:''} </div></td>`}
     </tr>`;
   }
   function nextStatuses(status,role) {
@@ -991,13 +1068,19 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
       if(page==='finance'&&staff?.role!=='owner')return;
+      if(page==='invoices'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       if(page==='staff'&&staff?.role!=='owner')return;
       if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
+      if(page==='invoices')loadStoreInvoices().catch(err=>notify(err.message||'تعذر تحميل الفواتير.',true));
       return;
     }
+    const issueInvoice=e.target.closest('[data-issue-invoice]');
+    if(issueInvoice){await issueStoreInvoice(issueInvoice.dataset.id,issueInvoice.dataset.issueInvoice);return;}
+    const openInvoice=e.target.closest('[data-open-invoice]');
+    if(openInvoice){await openStoreInvoice(openInvoice.dataset.openInvoice);return;}
     const expenseDelete=e.target.closest('[data-delete-expense]');
     if(expenseDelete){if(!confirm('هل تريد حذف المصروف من السجل؟'))return;try{await rpc('admin_delete_store_expense',{p_expense_id:Number(expenseDelete.dataset.deleteExpense)});notify('تم حذف المصروف.');await loadFinancialCenter();}catch(err){notify(err.message||'تعذر حذف المصروف.',true);}return;}
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
@@ -1062,6 +1145,9 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('reloadOrders').addEventListener('click',()=>loadOrders().catch(e=>notify(e.message,true)));
   $('refreshDashboard').addEventListener('click',async()=>{try{await loadOrders();if(isManager())await loadProducts();notify('تم تحديث البيانات.');}catch(e){notify(e.message,true);}});
   $('refreshFinance').addEventListener('click',()=>loadFinancialCenter().then(()=>notify('تم تحديث المركز المالي.')).catch(e=>notify(e.message,true)));
+  $('refreshInvoices').addEventListener('click',()=>loadStoreInvoices().then(()=>notify('تم تحديث أرشيف الفواتير.')).catch(e=>notify(e.message,true)));
+  $('invoiceSearch').addEventListener('input',renderStoreInvoices);
+  $('invoiceTypeFilter').addEventListener('change',renderStoreInvoices);
 
   $('refreshShippingAccounts').addEventListener('click',()=>loadShippingAccounts().then(()=>notify('تم تحديث حسابات شركات الشحن.')).catch(e=>notify(e.message,true)));
   $('shippingCompanyForm').addEventListener('submit',async e=>{
