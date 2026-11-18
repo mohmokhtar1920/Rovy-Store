@@ -138,6 +138,17 @@
         </div>
     </div>
 
+    <section id="styleStudioPromo" style="padding:28px 5% 10px;">
+        <div style="max-width:1200px;margin:auto;border-radius:18px;padding:30px 5%;background:linear-gradient(115deg,#171717,#35291f);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;box-shadow:0 12px 30px rgba(0,0,0,.10)">
+            <div style="max-width:650px">
+                <div style="color:#d9b45b;font-size:12px;font-weight:900;letter-spacing:2px;margin-bottom:8px">ROVY STYLE STUDIO</div>
+                <h2 style="font-size:clamp(22px,4vw,32px);font-weight:900;margin:0 0 8px">مش بس تشتري قطعة.. كوّن إطلالتك كاملة.</h2>
+                <p style="color:#ddd0c2;font-size:14px;line-height:1.9;margin:0">اختار المناسبة والستايل، نسّق القطع المتاحة، واحفظ إطلالتك أو شاركها مع أصحابك.</p>
+            </div>
+            <a href="style-studio.html" style="display:inline-flex;align-items:center;gap:10px;background:#b58a61;color:#fff;text-decoration:none;padding:13px 22px;border-radius:30px;font-weight:900;white-space:nowrap">جرّب الاستوديو <i class="fas fa-arrow-left"></i></a>
+        </div>
+    </section>
+
     <section id="categories">
         <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
         <div class="categories" id="homeCategories"></div>
@@ -597,6 +608,7 @@
             document.getElementById('langBtn').textContent = 'English';
         }
         fetchProducts();
+        if (window.location.hash === '#cart') setTimeout(() => toggleCart(), 350);
         updateCart();
     </script>
 
