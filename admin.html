@@ -76,6 +76,7 @@ aside::-webkit-scrollbar{display:none}
 main{padding:18px 16px}
 }
 @media(max-width:520px){.topbar{padding:0 14px}.userbox{gap:6px}.userbox .usertext{display:none}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}}
+.finance-section-title{display:flex;justify-content:space-between;align-items:end;margin:22px 0 12px}.finance-section-title h2{margin:0;font-size:19px}.finance-section-title p{margin:4px 0 0;color:var(--muted);font-size:12px}.finance-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}.finance-card{background:linear-gradient(145deg,#202a37,#111820);border:1px solid #394352;border-radius:14px;padding:17px;min-width:0;color:#f7f3e9;box-shadow:0 8px 22px #1018200b}.finance-card small{display:block;color:#c2c8d0;font-size:12px;min-height:32px}.finance-card strong{display:block;color:#e5c477;font-size:clamp(18px,2vw,25px);margin:8px 0;overflow-wrap:anywhere}.finance-card span{display:block;color:#aab4c0;font-size:11px}.finance-card.positive strong{color:#8ed5a5}.finance-card.highlight{border-color:#b9954e;background:linear-gradient(145deg,#302817,#171a1d)}.finance-columns{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:14px;margin-top:16px}.finance-columns .panel{min-width:0}.finance-columns .formgrid{margin-top:14px}.finance-columns .formgrid .field.full{grid-column:1/-1}@media(max-width:900px){.finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.finance-columns{grid-template-columns:1fr}}@media(max-width:520px){.finance-grid{gap:8px}.finance-card{padding:12px}.finance-card strong{font-size:18px}.finance-section-title{margin-top:18px}}
 .password-wrap{position:relative}
 .password-wrap input{padding-left:48px}
 .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin-top:12px}
@@ -264,6 +265,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn manager-only" data-page="shipping">🚚 الشحن والمحافظات</button>
       <button class="navbtn manager-only" data-page="coupons">٪ الكوبونات</button>
       <button class="navbtn manager-only" data-page="reports">▥ التقارير</button>
+      <button class="navbtn owner-only" data-page="finance">◆ المركز المالي</button>
     </aside>
     <main>
       <section id="page-dashboard" class="page">
@@ -375,6 +377,48 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div class="panel"><h3>قيمة الطلبات غير الملغاة خلال آخر 6 أشهر (بدون الشحن)</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div>
         <div class="panel" style="margin-top:16px"><h3>أكثر المنتجات مبيعًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
       </section>
+      <section id="page-finance" class="page hidden owner-only">
+        <div class="pagehead"><div><h1>FINANCIAL CENTER</h1><div class="muted">مركزك المالي الخاص — الأرقام الداخلية للمالك فقط</div></div><button class="btn light" id="refreshFinance">↻ تحديث الحسابات</button></div>
+        <div class="notice">الأرقام محسوبة من المخزون والطلبات المسجلة والمصاريف التي تدخلها هنا. قيمة الطلبات قيد التوصيل تقديرية وليست إثباتًا لتحصيل شركة الشحن للمبلغ.</div>
+        <div class="finance-section-title"><div><h2>رأس المال والمخزون</h2><p>قيمة البضاعة الموجودة حاليًا</p></div></div>
+        <div class="finance-grid">
+          <div class="finance-card"><small>عدد القطع بالمخزون</small><strong id="finInventoryUnits">—</strong><span>كل المنتجات والمقاسات</span></div>
+          <div class="finance-card"><small>قيمة المخزون بسعر الشراء</small><strong id="finInventoryCost">—</strong><span>رأس المال الموجود في البضاعة</span></div>
+          <div class="finance-card"><small>قيمة المخزون بسعر البيع</small><strong id="finInventoryRetail">—</strong><span>قيمة بيع نظرية قبل الخصومات</span></div>
+          <div class="finance-card"><small>منتجات بدون تكلفة مسجلة</small><strong id="finMissingCosts">—</strong><span>راجع سعر الشراء لهذه المنتجات</span></div>
+        </div>
+        <div class="finance-section-title"><div><h2>المبيعات والتحصيل</h2><p>افصل بين البيع المكتمل والطلبات التي لم تُحصّل بعد</p></div></div>
+        <div class="finance-grid">
+          <div class="finance-card positive"><small>مبيعات الطلبات المسلّمة</small><strong id="finDeliveredRevenue">—</strong><span id="finDeliveredUnits">—</span></div>
+          <div class="finance-card"><small>طلبات لدى شركة الشحن</small><strong id="finShippedValue">—</strong><span id="finShippedCount">—</span></div>
+          <div class="finance-card"><small>طلبات قيد التجهيز</small><strong id="finPreparingValue">—</strong><span id="finPreparingCount">—</span></div>
+          <div class="finance-card"><small>طلبات جديدة لم تؤكد</small><strong id="finPendingValue">—</strong><span id="finPendingCount">—</span></div>
+        </div>
+        <div class="finance-section-title"><div><h2>الربح والمصاريف</h2><p>مجمل ربح الطلبات المسلّمة وصافي الربح بعد المصاريف المسجلة</p></div></div>
+        <div class="finance-grid">
+          <div class="finance-card"><small>تكلفة البضاعة المباعة</small><strong id="finDeliveredCost">—</strong><span>للطلبات المسلّمة فقط</span></div>
+          <div class="finance-card positive"><small>مجمل الربح المحقق</small><strong id="finGrossProfit">—</strong><span>قبل المصاريف التشغيلية</span></div>
+          <div class="finance-card"><small>إجمالي المصاريف المسجلة</small><strong id="finExpenses">—</strong><span id="finMonthExpenses">—</span></div>
+          <div class="finance-card highlight"><small>صافي الربح بعد المصاريف المسجلة</small><strong id="finNetProfit">—</strong><span>من بداية السجلات المتاحة</span></div>
+        </div>
+        <div id="financeWarning" class="notice hidden" aria-live="polite"></div>
+        <div class="finance-columns">
+          <div class="panel">
+            <div class="panel-heading"><div><h3>إضافة مصروف جديد</h3><p>سجّل التغليف أو الإعلانات أو أي تكلفة أخرى</p></div></div>
+            <form id="expenseForm" class="formgrid">
+              <div class="field"><label for="expenseDate">تاريخ المصروف</label><input type="date" id="expenseDate" required></div>
+              <div class="field"><label for="expenseCategory">نوع المصروف</label><select id="expenseCategory" required><option value="">اختر النوع</option><option>شحن وتوصيل</option><option>تغليف</option><option>إعلانات وتسويق</option><option>شراء مستلزمات</option><option>رواتب وعمولات</option><option>رسوم وخدمات</option><option>أخرى</option></select></div>
+              <div class="field full"><label for="expenseDescription">وصف المصروف</label><input type="text" id="expenseDescription" maxlength="300" placeholder="مثال: حملة إعلانية لمدة أسبوع" required></div>
+              <div class="field"><label for="expenseAmount">المبلغ بالجنيه</label><input type="number" id="expenseAmount" min="0.01" step="0.01" required></div>
+              <div class="field full"><button class="btn gold" id="saveExpenseBtn" type="submit">＋ تسجيل المصروف</button><div id="expenseError" class="error"></div></div>
+            </form>
+          </div>
+          <div class="panel">
+            <div class="panel-heading"><div><h3>سجل المصاريف</h3><p>آخر 100 مصروف مسجل</p></div></div>
+            <div id="expensesTable" class="table-wrap"><div class="empty">جاري تحميل المصاريف…</div></div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 </section>
@@ -456,7 +500,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
   const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
-  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], shippingGovernorates = [], productImages = [], staffMembers = [], activityItems = [], toastTimer = null;
+  let currentUser = null, staff = null, orders = [], products = [], coupons = [], categories = [], shippingGovernorates = [], productImages = [], staffMembers = [], activityItems = [], financialSummary = null, financialExpenses = [], toastTimer = null;
   $('togglePassword').addEventListener('click',()=>{
   const passwordInput=$('password');
   const isHidden=passwordInput.type==='password';
@@ -518,7 +562,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       await loadOrders();
       if(isManager()) { await loadProducts(); await loadCategories(); await loadShippingGovernorates(); await loadCoupons(); }
       try { await loadActivity(); } catch(e) { console.warn('Activity log unavailable:',e); }
-      if(staff.role==='owner') { try { await loadStaffMembers(); } catch(e) { console.warn('Staff list unavailable:',e); } }
+      if(staff.role==='owner') { try { await loadStaffMembers(); } catch(e) { console.warn('Staff list unavailable:',e); } try { await loadFinancialCenter(); } catch(e) { console.warn('Financial center unavailable:',e); } }
       renderDashboard();
     } catch(e) {
       await client.auth.signOut();
@@ -773,6 +817,33 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('couponsResultCount').textContent=`عرض ${list.length} من ${coupons.length} كوبون`;
     $('couponsTable').innerHTML=list.length?`<table><thead><tr><th>الكود</th><th>الخصم</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(x=>`<tr><td><strong>${esc(x.code)}</strong></td><td><strong>${Number(x.discount_percentage)}%</strong></td><td>${esc(x.created_at?new Date(x.created_at).toLocaleDateString('ar-EG'):'—')}</td><td><span class="pill ${x.is_active!==false?'green':'red'}">${x.is_active!==false?'نشط':'موقوف'}</span></td><td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-coupon="${esc(x.id)}">تعديل الكوبون</button><button type="button" data-toggle-coupon="${esc(x.id)}" data-active="${x.is_active!==false?'0':'1'}">${x.is_active!==false?'إيقاف الكوبون':'تفعيل الكوبون'}</button></div></details></td></tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد كوبونات مطابقة للفلاتر.</div>';
   }
+  async function loadFinancialCenter(){
+    if(staff?.role!=='owner')return;
+    $('expensesTable').innerHTML='<div class="empty">جاري تحميل المصاريف…</div>';
+    const [summary,expenses]=await Promise.all([rpc('admin_financial_summary'),rpc('admin_list_store_expenses')]);
+    financialSummary=summary||{};financialExpenses=Array.isArray(expenses)?expenses:[];
+    const x=financialSummary,set=(id,value)=>$(id).textContent=value;
+    set('finInventoryUnits',Number(x.inventory_units||0).toLocaleString('ar-EG')+' قطعة');
+    set('finInventoryCost',money(x.inventory_cost_value));set('finInventoryRetail',money(x.inventory_retail_value));
+    set('finMissingCosts',Number(x.missing_cost_products||0).toLocaleString('ar-EG')+' منتج');
+    set('finDeliveredRevenue',money(x.delivered_revenue));set('finDeliveredUnits',Number(x.delivered_units||0).toLocaleString('ar-EG')+' قطعة تم تسليمها');
+    set('finShippedValue',money(x.shipped_value));set('finShippedCount',Number(x.shipped_count||0)+' طلب');
+    set('finPreparingValue',money(x.preparing_value));set('finPreparingCount',Number(x.preparing_count||0)+' طلب');
+    set('finPendingValue',money(x.pending_value));set('finPendingCount',Number(x.pending_count||0)+' طلب');
+    set('finDeliveredCost',money(x.delivered_cost));set('finGrossProfit',money(x.delivered_gross_profit));
+    set('finExpenses',money(x.expenses_all_time));set('finMonthExpenses','هذا الشهر: '+money(x.expenses_this_month));
+    set('finNetProfit',money(x.net_profit_after_recorded_expenses));
+    const warnings=[];
+    if(Number(x.missing_cost_products||0)>0)warnings.push('هناك '+x.missing_cost_products+' منتج بدون سعر شراء مسجل؛ قيمة المخزون والربح قد تكون أقل دقة.');
+    if(Number(x.delivered_missing_cost_units||0)>0)warnings.push('هناك '+x.delivered_missing_cost_units+' قطعة في طلبات مسلّمة قديمة بدون تكلفة محفوظة؛ مجمل الربح وصافي الربح تقديريان وغير مكتملين.');
+    $('financeWarning').textContent=warnings.join(' ');$('financeWarning').classList.toggle('hidden',!warnings.length);
+    renderFinancialExpenses();
+  }
+  function renderFinancialExpenses(){
+    $('expensesTable').innerHTML=financialExpenses.length?'<table><thead><tr><th>التاريخ</th><th>التصنيف والوصف</th><th>المبلغ</th><th></th></tr></thead><tbody>'+
+      financialExpenses.map(e=>'<tr><td>'+esc(e.expense_date)+'</td><td><strong>'+esc(e.category)+'</strong><div class="muted">'+esc(e.description)+'</div></td><td>'+money(e.amount)+'</td><td><button class="mini red" data-delete-expense="'+esc(e.id)+'">حذف</button></td></tr>').join('')+
+      '</tbody></table>':'<div class="empty">لا توجد مصاريف مسجلة حتى الآن.</div>';
+  }
   function renderReports() {
     const owner=staff?.role==='owner',days=$('reportPeriod')?.value||'30',now=new Date();
     const cutoff=days==='all'?null:new Date(now.getTime()-Number(days)*86400000);
@@ -818,12 +889,16 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(dropdownButton)dropdownButton.closest('details')?.removeAttribute('open');
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
+      if(page==='finance'&&staff?.role!=='owner')return;
       if(page==='staff'&&staff?.role!=='owner')return;
       if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
+      if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
       return;
     }
+    const expenseDelete=e.target.closest('[data-delete-expense]');
+    if(expenseDelete){if(!confirm('هل تريد حذف المصروف من السجل؟'))return;try{await rpc('admin_delete_store_expense',{p_expense_id:Number(expenseDelete.dataset.deleteExpense)});notify('تم حذف المصروف.');await loadFinancialCenter();}catch(err){notify(err.message||'تعذر حذف المصروف.',true);}return;}
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
     const proofButton=e.target.closest('[data-payment-proof]');
     if(proofButton){
@@ -885,6 +960,17 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   }));
   $('reloadOrders').addEventListener('click',()=>loadOrders().catch(e=>notify(e.message,true)));
   $('refreshDashboard').addEventListener('click',async()=>{try{await loadOrders();if(isManager())await loadProducts();notify('تم تحديث البيانات.');}catch(e){notify(e.message,true);}});
+  $('refreshFinance').addEventListener('click',()=>loadFinancialCenter().then(()=>notify('تم تحديث المركز المالي.')).catch(e=>notify(e.message,true)));
+  $('expenseDate').value=new Date().toLocaleDateString('en-CA');
+  $('expenseForm').addEventListener('submit',async e=>{
+    e.preventDefault();$('saveExpenseBtn').disabled=true;$('expenseError').textContent='';
+    try{
+      await rpc('admin_add_store_expense',{p_expense_date:$('expenseDate').value,p_category:$('expenseCategory').value,p_description:$('expenseDescription').value.trim(),p_amount:Number($('expenseAmount').value)});
+      $('expenseForm').reset();$('expenseDate').value=new Date().toLocaleDateString('en-CA');
+      notify('تم تسجيل المصروف وتحديث الحسابات.');await loadFinancialCenter();
+    }catch(err){$('expenseError').textContent=err.message||'تعذر تسجيل المصروف.';}
+    finally{$('saveExpenseBtn').disabled=false;}
+  });
   $('addProductBtn').addEventListener('click',()=>openProduct());
   $('addCouponBtn').addEventListener('click',()=>openCoupon());
   $('addCategoryBtn').addEventListener('click',openCategory);
