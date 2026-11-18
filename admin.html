@@ -817,6 +817,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('couponsResultCount').textContent=`عرض ${list.length} من ${coupons.length} كوبون`;
     $('couponsTable').innerHTML=list.length?`<table><thead><tr><th>الكود</th><th>الخصم</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(x=>`<tr><td><strong>${esc(x.code)}</strong></td><td><strong>${Number(x.discount_percentage)}%</strong></td><td>${esc(x.created_at?new Date(x.created_at).toLocaleDateString('ar-EG'):'—')}</td><td><span class="pill ${x.is_active!==false?'green':'red'}">${x.is_active!==false?'نشط':'موقوف'}</span></td><td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-coupon="${esc(x.id)}">تعديل الكوبون</button><button type="button" data-toggle-coupon="${esc(x.id)}" data-active="${x.is_active!==false?'0':'1'}">${x.is_active!==false?'إيقاف الكوبون':'تفعيل الكوبون'}</button></div></details></td></tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد كوبونات مطابقة للفلاتر.</div>';
   }
+  function financialLocalDate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   async function loadFinancialCenter(){
     if(staff?.role!=='owner')return;
     $('expensesTable').innerHTML='<div class="empty">جاري تحميل المصاريف…</div>';
@@ -961,12 +962,12 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('reloadOrders').addEventListener('click',()=>loadOrders().catch(e=>notify(e.message,true)));
   $('refreshDashboard').addEventListener('click',async()=>{try{await loadOrders();if(isManager())await loadProducts();notify('تم تحديث البيانات.');}catch(e){notify(e.message,true);}});
   $('refreshFinance').addEventListener('click',()=>loadFinancialCenter().then(()=>notify('تم تحديث المركز المالي.')).catch(e=>notify(e.message,true)));
-  $('expenseDate').value=new Date().toLocaleDateString('en-CA');
+  $('expenseDate').value=financialLocalDate();
   $('expenseForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveExpenseBtn').disabled=true;$('expenseError').textContent='';
     try{
       await rpc('admin_add_store_expense',{p_expense_date:$('expenseDate').value,p_category:$('expenseCategory').value,p_description:$('expenseDescription').value.trim(),p_amount:Number($('expenseAmount').value)});
-      $('expenseForm').reset();$('expenseDate').value=new Date().toLocaleDateString('en-CA');
+      $('expenseForm').reset();$('expenseDate').value=financialLocalDate();
       notify('تم تسجيل المصروف وتحديث الحسابات.');await loadFinancialCenter();
     }catch(err){$('expenseError').textContent=err.message||'تعذر تسجيل المصروف.';}
     finally{$('saveExpenseBtn').disabled=false;}
