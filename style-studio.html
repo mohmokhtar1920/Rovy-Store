@@ -44,6 +44,14 @@ main{max-width:1240px;margin:0 auto;padding:28px 22px 70px}.studio-grid{display:
 footer{text-align:center;background:#171717;color:#aaa;padding:22px;font-size:11px}
 @media(max-width:900px){.studio-grid{grid-template-columns:1fr}.side{position:static;grid-row:1}.preview-canvas{min-height:340px}.preview-figure{transform:scale(.85)}}
 @media(max-width:600px){header{height:62px;padding:0 4%}.logo{font-size:22px}.head-actions a{padding:8px 10px;font-size:11px}.hero{padding:38px 6% 34px}.hero h1{font-size:36px}main{padding:16px 12px 45px}.builder-body{padding:14px}.filters{grid-template-columns:1fr 1fr}.filters .field:last-child{grid-column:1/-1}.slots{grid-template-columns:1fr}.slot{min-height:112px}.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:9px}.product img{height:135px}.preview-canvas{min-height:320px}.actions{grid-template-columns:1fr}.look-summary{padding:14px}.look-total{font-size:20px}}
+ 
+.ai-stylist{margin:0 0 22px;border:1px solid #dfd1c1;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#fff 0%,#fbf6ef 100%);box-shadow:0 14px 36px rgba(40,25,10,.06)}
+.ai-head{padding:22px 24px;background:linear-gradient(110deg,#211b17,#4a3525);color:#fff;display:flex;justify-content:space-between;gap:14px;align-items:center}
+.ai-head h2{margin:4px 0;font-size:21px;font-weight:900}.ai-head p{margin:0;color:#e2d5c8;font-size:12px;line-height:1.8}.ai-badge{border:1px solid #d9b995;color:#e8c9a8;padding:7px 11px;border-radius:30px;font-size:10px;font-weight:900;white-space:nowrap}
+.ai-body{padding:20px 22px}.ai-prompt{width:100%;min-height:76px;border:1px solid #e7ddd2;border-radius:13px;padding:12px 14px;font:inherit;font-size:13px;resize:vertical;background:#fff;outline:none}.ai-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.ai-controls label{font-size:11px;font-weight:800;display:block;margin-bottom:5px}.ai-controls select{width:100%;border:1px solid #e7ddd2;border-radius:10px;background:#fff;padding:10px 8px;font:inherit;font-size:12px}
+.ai-submit{width:100%;border:0;border-radius:12px;background:#b58a61;color:#fff;padding:13px;font:inherit;font-size:13px;font-weight:900}.ai-results{padding:0 22px 20px}.ai-message{background:#f3ece3;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.9;color:#5d4938;margin-bottom:12px}.ai-picks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.ai-pick{border:1px solid #e9e1d8;border-radius:12px;background:#fff;overflow:hidden;min-width:0}.ai-pick img{width:100%;height:112px;object-fit:contain;background:#f7f4ef}.ai-pick div{padding:9px}.ai-pick strong{display:block;font-size:11px;line-height:1.6;min-height:34px}.ai-pick small{color:#93643e;font-weight:900}.ai-pick button{width:100%;margin-top:7px;padding:8px;border:0;border-radius:8px;background:#211b17;color:#fff;font:inherit;font-size:10px;font-weight:800}.ai-footnote{font-size:10px;color:#8a7c6e;margin-top:12px;line-height:1.8}
+@media(max-width:600px){.ai-head{padding:18px;align-items:flex-start}.ai-head h2{font-size:18px}.ai-body{padding:14px}.ai-results{padding:0 14px 15px}.ai-controls{grid-template-columns:1fr 1fr}.ai-controls label:last-child{grid-column:1/-1}.ai-picks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -51,6 +59,19 @@ footer{text-align:center;background:#171717;color:#aaa;padding:22px;font-size:11
 <header><a class="logo" href="index.html">ROVY<span>.</span></a><div class="head-actions"><a href="index.html"><i class="fa-solid fa-arrow-right"></i> المتجر</a><a href="index.html#newArrivals">تسوق المنتجات</a></div></header>
 <section class="hero"><div class="hero-inner"><div class="eyebrow">STYLE IT. SAVE IT. SHARE IT.</div><h1>إطلالتك.. من اختيارك</h1><p>كوّن اللوك اللي شبهك من قطع ROVY المتاحة، جرّب أكثر من تنسيق، احفظ المفضل عندك أو شاركه مع أصحابك — وكل القطع في سلتك بضغطة واحدة.</p><div class="hero-tags"><span><i class="fa-solid fa-wand-magic-sparkles"></i> نسّق بنفسك</span><span><i class="fa-solid fa-box-open"></i> منتجات متاحة فقط</span><span><i class="fa-solid fa-share-nodes"></i> شارك إطلالتك</span></div></div></section>
 <main>
+<section class="ai-stylist" id="aiStylist">
+<div class="ai-head"><div><div class="eyebrow">ROVY PERSONAL STYLE ASSISTANT</div><h2>مش عارف تلبس إيه؟ سيب التنسيق علينا.</h2><p>احكيلنا رايح فين وميزانيتك كام، والمساعد يرشحلك من القطع المتاحة فعلًا في ROVY.</p></div><span class="ai-badge"><i class="fa-solid fa-sparkles"></i> SMART STYLIST</span></div>
+<div class="ai-body">
+<textarea id="stylistPrompt" class="ai-prompt" placeholder="مثلاً: عايز لوك كاجوال لخروجة بالليل، ألوان هادية، ومش عايز أتعدى 1500 جنيه..."></textarea>
+<div class="ai-controls">
+<div><label for="stylistOccasion">المناسبة</label><select id="stylistOccasion"><option value="everyday">خروجة يومية</option><option value="work">شغل / جامعة</option><option value="date">خروجة مميزة</option><option value="sport">رياضة وكاجوال</option><option value="evening">سهرة</option></select></div>
+<div><label for="stylistMood">الستايل</label><select id="stylistMood"><option value="casual">كاجوال</option><option value="smart">سمارت كاجوال</option><option value="sport">رياضي</option><option value="elegant">شيك / Elegant</option><option value="street">Streetwear</option></select></div>
+<div><label for="stylistBudget">الميزانية</label><select id="stylistBudget"><option value="0">مفتوحة</option><option value="500">حتى 500 جنيه</option><option value="1000">حتى 1,000 جنيه</option><option value="1500">حتى 1,500 جنيه</option><option value="2000">حتى 2,000 جنيه</option><option value="3000">حتى 3,000 جنيه</option><option value="5000">حتى 5,000 جنيه</option><option value="10000">حتى 10,000 جنيه</option></select></div>
+</div>
+<button class="ai-submit" id="runStylist"><i class="fa-solid fa-wand-magic-sparkles"></i> نسّقلي إطلالة</button>
+</div>
+<div class="ai-results" id="stylistResults" hidden></div>
+</section>
 <div class="studio-grid">
 <div>
 <section class="panel">
@@ -101,6 +122,44 @@ function stockFor(p){const vs=variantsByProduct[String(p.id)]||[];return vs.leng
 function variantOptions(p){return (variantsByProduct[String(p.id)]||[]).filter(v=>Number(v.stock)>0)}
 function loadCart(){try{const v=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
 function inferSlot(p){const s=((p.category||'')+' '+(p.name||'')+' '+(p.name_en||'')).toLowerCase();if(/shoe|sneaker|boot|heel|حذاء|كوتشي|جزمة/.test(s))return 'shoes';if(/bag|watch|accessor|necklace|bracelet|حقيبة|شنطة|ساعة|إكسسوار/.test(s))return 'accessory';if(/pant|jean|skirt|short|trouser|بنطلون|تنورة|شورت/.test(s))return 'bottom';return 'top'}
+
+function stylistScore(p,occasion,mood,prompt){
+ const text=((p.name||'')+' '+(p.name_en||'')+' '+(p.category||'')+' '+(p.description||'')).toLowerCase();
+ let score=1;const slot=inferSlot(p);
+ const words=prompt.toLowerCase();
+ if(/حذاء|كوتشي|جزمة|shoe|sneaker/.test(words)&&slot==='shoes')score+=8;
+ if(/فستان|dress/.test(words)&&/فستان|dress/.test(text))score+=10;
+ if(/بنطلون|jeans|pants/.test(words)&&slot==='bottom')score+=8;
+ if(/شنطة|ساعة|إكسسوار|bag|watch/.test(words)&&slot==='accessory')score+=8;
+ if(occasion==='sport'&&(/sport|رياضي|حذاء|كوتشي/.test(text)))score+=4;
+ if(occasion==='evening'&&(/dress|فستان|heel|سهرة/.test(text)))score+=4;
+ if(mood==='sport'&&(/sport|رياضي|حذاء|كوتشي/.test(text)))score+=3;
+ if(mood==='elegant'&&(/dress|فستان|elegant|شيك/.test(text)))score+=3;
+ if(mood==='street'&&(/street|sneaker|تيشيرت/.test(text)))score+=3;
+ if(/رجالي|men|male/.test(words)&&/men|رجالي/.test(text))score+=5;
+ if(/حريمي|نسائي|women|female/.test(words)&&/women|حريمي|نسائي|فستان/.test(text))score+=5;
+ const price=Number(p.price)||0;const budget=Number(document.getElementById('stylistBudget').value)||0;
+ if(budget&&price>budget)return -1;
+ if(budget&&price<=budget)score+=Math.max(0,3-price/budget);
+ return score;
+}
+function runStylist(){
+ const prompt=document.getElementById('stylistPrompt').value.trim();
+ const occasion=document.getElementById('stylistOccasion').value;
+ const mood=document.getElementById('stylistMood').value;
+ const budget=Number(document.getElementById('stylistBudget').value)||0;
+ const available=products.filter(p=>stockFor(p)>0).map(p=>({...p,_score:stylistScore(p,occasion,mood,prompt)})).filter(p=>p._score>=0).sort((a,b)=>b._score-a._score);
+ const results=document.getElementById('stylistResults');results.hidden=false;
+ if(!available.length){results.innerHTML='<div class="ai-message"><strong>لسه مش قادرين نكوّن إطلالة كاملة.</strong><br>مفيش منتجات متاحة حاليًا تناسب الميزانية والاختيارات دي. جرّب تزود الميزانية أو راجع المنتجات المتاحة.</div>';return}
+ const selected=[],usedSlots=new Set();
+ for(const p of available){const slot=inferSlot(p);if(usedSlots.has(slot))continue;selected.push(p);usedSlots.add(slot);if(selected.length===4)break}
+ const missing=['top','bottom','shoes','accessory'].filter(s=>!usedSlots.has(s)).map(slotLabel);
+ const total=selected.reduce((n,p)=>n+(Number(p.price)||0),0);
+ const message='رشحنا لك '+selected.length+' '+(selected.length===1?'قطعة متاحة':'قطع متاحة')+' بإجمالي '+money(total)+'. '+(missing.length?'لسه محتاجين نضيف: '+missing.join('، ')+'.':'كده اللوك مكتمل حسب القطع المتاحة.')+(budget&&total>budget?' ملحوظة: إجمالي الترشيحات أعلى من الميزانية المحددة.':'');
+ results.innerHTML='<div class="ai-message"><strong>اقتراح الستايلست ليك ✨</strong><br>'+safeText(message)+'</div><div class="ai-picks">'+selected.map(p=>'<article class="ai-pick"><img src="'+safeText(safeImage(p.image_url))+'" alt=""><div><strong>'+safeText(p.name||p.name_en||'منتج')+'</strong><small>'+money(p.price)+'</small><button type="button" data-stylist-product="'+Number(p.id)+'">ضيفها لإطلالتي</button></div></article>').join('')+'</div><div class="ai-footnote">الترشيحات مبنية على وصفك، المناسبة، الميزانية، وتصنيف المنتجات والمخزون الحالي. لا نعرض قطعة غير متاحة، ولا نعتبر الترشيح قياسًا فعليًا أو تنسيقًا بصريًا بالذكاء الاصطناعي التوليدي.</div>';
+ results.querySelectorAll('[data-stylist-product]').forEach(btn=>btn.addEventListener('click',()=>{const p=products.find(x=>Number(x.id)===Number(btn.dataset.stylistProduct));const vars=variantOptions(p);const hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;if(hasVariants&&!vars.length){toast('المقاسات المتاحة نفدت.');return}assignProduct(p,inferSlot(p),hasVariants?vars[0]:null);document.querySelector('.studio-grid').scrollIntoView({behavior:'smooth',block:'start'})}));
+}
+
 function renderProducts(){
  const q=document.getElementById('productSearch').value.trim().toLowerCase();
  const list=products.filter(p=>stockFor(p)>0&&(!q||((p.name||'')+' '+(p.name_en||'')+' '+(p.category||'')).toLowerCase().includes(q)));
@@ -163,6 +222,7 @@ async function init(){
  (vars||[]).forEach(v=>{const k=String(v.product_id);(variantsByProduct[k] ||= []).push(v)});
  renderProducts();await loadSharedLook();renderLook();
 }
+document.getElementById('runStylist').addEventListener('click',runStylist);
 document.getElementById('productSearch').addEventListener('input',renderProducts);
 document.getElementById('addAll').addEventListener('click',addLookToCart);
 document.getElementById('saveLook').addEventListener('click',saveCurrentLook);
