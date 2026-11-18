@@ -122,6 +122,17 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mohmokhtar1920.github.io/Rovy-Store/product.html">
     <link rel="canonical" href="https://mohmokhtar1920.github.io/Rovy-Store/product.html">
+    <script>
+    (() => {
+      const productId = new URLSearchParams(location.search).get('id');
+      if (!productId || !/^[1-9]\\d*$/.test(productId)) return;
+      const canonicalUrl = location.origin + location.pathname + '?id=' + encodeURIComponent(productId);
+      const canonical = document.querySelector('link[rel="canonical"]');
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (canonical) canonical.href = canonicalUrl;
+      if (ogUrl) ogUrl.content = canonicalUrl;
+    })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="assets/rovy-brand.css">
 </head>
