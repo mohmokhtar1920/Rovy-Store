@@ -60,7 +60,7 @@ footer{text-align:center;background:#171717;color:#aaa;padding:22px;font-size:11
 <section class="hero"><div class="hero-inner"><div class="eyebrow">STYLE IT. SAVE IT. SHARE IT.</div><h1>إطلالتك.. من اختيارك</h1><p>كوّن اللوك اللي شبهك من قطع ROVY المتاحة، جرّب أكثر من تنسيق، احفظ المفضل عندك أو شاركه مع أصحابك — وكل القطع في سلتك بضغطة واحدة.</p><div class="hero-tags"><span><i class="fa-solid fa-wand-magic-sparkles"></i> نسّق بنفسك</span><span><i class="fa-solid fa-box-open"></i> منتجات متاحة فقط</span><span><i class="fa-solid fa-share-nodes"></i> شارك إطلالتك</span></div></div></section>
 <main>
 <section class="ai-stylist" id="aiStylist">
-<div class="ai-head"><div><div class="eyebrow">ROVY PERSONAL STYLE ASSISTANT</div><h2>مش عارف تلبس إيه؟ سيب التنسيق علينا.</h2><p>احكيلنا رايح فين وميزانيتك كام، والمساعد يرشحلك من القطع المتاحة فعلًا في ROVY.</p></div><span class="ai-badge"><i class="fa-solid fa-sparkles"></i> SMART STYLIST</span></div>
+<div class="ai-head"><div><div class="eyebrow">ROVY PERSONAL STYLE ASSISTANT</div><h2>مش عارف تلبس إيه؟ خلّي الستايلست الذكي يساعدك تختار.</h2><p>اكتب وصفك بطريقتك، والذكاء الاصطناعي يقترحلك تنسيقات من منتجات ROVY المتاحة فعلًا.</p></div><span class="ai-badge"><i class="fa-solid fa-sparkles"></i> AI POWERED</span></div>
 <div class="ai-body">
 <textarea id="stylistPrompt" class="ai-prompt" placeholder="مثلاً: عايز لوك كاجوال لخروجة بالليل، ألوان هادية، ومش عايز أتعدى 1500 جنيه..."></textarea>
 <div class="ai-controls">
@@ -123,43 +123,51 @@ function variantOptions(p){return (variantsByProduct[String(p.id)]||[]).filter(v
 function loadCart(){try{const v=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
 function inferSlot(p){const s=((p.category||'')+' '+(p.name||'')+' '+(p.name_en||'')).toLowerCase();if(/shoe|sneaker|boot|heel|حذاء|كوتشي|جزمة/.test(s))return 'shoes';if(/bag|watch|accessor|necklace|bracelet|حقيبة|شنطة|ساعة|إكسسوار/.test(s))return 'accessory';if(/pant|jean|skirt|short|trouser|بنطلون|تنورة|شورت/.test(s))return 'bottom';return 'top'}
 
-function stylistScore(p,occasion,mood,prompt){
- const text=((p.name||'')+' '+(p.name_en||'')+' '+(p.category||'')+' '+(p.description||'')).toLowerCase();
- let score=1;const slot=inferSlot(p);
- const words=prompt.toLowerCase();
- if(/حذاء|كوتشي|جزمة|shoe|sneaker/.test(words)&&slot==='shoes')score+=8;
- if(/فستان|dress/.test(words)&&/فستان|dress/.test(text))score+=10;
- if(/بنطلون|jeans|pants/.test(words)&&slot==='bottom')score+=8;
- if(/شنطة|ساعة|إكسسوار|bag|watch/.test(words)&&slot==='accessory')score+=8;
- if(occasion==='sport'&&(/sport|رياضي|حذاء|كوتشي/.test(text)))score+=4;
- if(occasion==='evening'&&(/dress|فستان|heel|سهرة/.test(text)))score+=4;
- if(mood==='sport'&&(/sport|رياضي|حذاء|كوتشي/.test(text)))score+=3;
- if(mood==='elegant'&&(/dress|فستان|elegant|شيك/.test(text)))score+=3;
- if(mood==='street'&&(/street|sneaker|تيشيرت/.test(text)))score+=3;
- if(/رجالي|men|male/.test(words)&&/men|رجالي/.test(text))score+=5;
- if(/حريمي|نسائي|women|female/.test(words)&&/women|حريمي|نسائي|فستان/.test(text))score+=5;
- const price=Number(p.price)||0;const budget=Number(document.getElementById('stylistBudget').value)||0;
- if(budget&&price>budget)return -1;
- if(budget&&price<=budget)score+=Math.max(0,3-price/budget);
- return score;
-}
-function runStylist(){
+async function runStylist(){
  const prompt=document.getElementById('stylistPrompt').value.trim();
  const occasion=document.getElementById('stylistOccasion').value;
  const mood=document.getElementById('stylistMood').value;
  const budget=Number(document.getElementById('stylistBudget').value)||0;
- const available=products.filter(p=>stockFor(p)>0).map(p=>({...p,_score:stylistScore(p,occasion,mood,prompt)})).filter(p=>p._score>=0).sort((a,b)=>b._score-a._score);
- const results=document.getElementById('stylistResults');results.hidden=false;
- if(!available.length){results.innerHTML='<div class="ai-message"><strong>لسه مش قادرين نكوّن إطلالة كاملة.</strong><br>مفيش منتجات متاحة حاليًا تناسب الميزانية والاختيارات دي. جرّب تزود الميزانية أو راجع المنتجات المتاحة.</div>';return}
- const selected=[],usedSlots=new Set();
- for(const p of available){const slot=inferSlot(p);if(usedSlots.has(slot))continue;selected.push(p);usedSlots.add(slot);if(selected.length===4)break}
- const missing=['top','bottom','shoes','accessory'].filter(s=>!usedSlots.has(s)).map(slotLabel);
- const total=selected.reduce((n,p)=>n+(Number(p.price)||0),0);
- const message='رشحنا لك '+selected.length+' '+(selected.length===1?'قطعة متاحة':'قطع متاحة')+' بإجمالي '+money(total)+'. '+(missing.length?'لسه محتاجين نضيف: '+missing.join('، ')+'.':'كده اللوك مكتمل حسب القطع المتاحة.')+(budget&&total>budget?' ملحوظة: إجمالي الترشيحات أعلى من الميزانية المحددة.':'');
- results.innerHTML='<div class="ai-message"><strong>اقتراح الستايلست ليك ✨</strong><br>'+safeText(message)+'</div><div class="ai-picks">'+selected.map(p=>'<article class="ai-pick"><img src="'+safeText(safeImage(p.image_url))+'" alt=""><div><strong>'+safeText(p.name||p.name_en||'منتج')+'</strong><small>'+money(p.price)+'</small><button type="button" data-stylist-product="'+Number(p.id)+'">ضيفها لإطلالتي</button></div></article>').join('')+'</div><div class="ai-footnote">الترشيحات مبنية على وصفك، المناسبة، الميزانية، وتصنيف المنتجات والمخزون الحالي. لا نعرض قطعة غير متاحة، ولا نعتبر الترشيح قياسًا فعليًا أو تنسيقًا بصريًا بالذكاء الاصطناعي التوليدي.</div>';
- results.querySelectorAll('[data-stylist-product]').forEach(btn=>btn.addEventListener('click',()=>{const p=products.find(x=>Number(x.id)===Number(btn.dataset.stylistProduct));const vars=variantOptions(p);const hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;if(hasVariants&&!vars.length){toast('المقاسات المتاحة نفدت.');return}assignProduct(p,inferSlot(p),hasVariants?vars[0]:null);document.querySelector('.studio-grid').scrollIntoView({behavior:'smooth',block:'start'})}));
+ const results=document.getElementById('stylistResults');
+ const button=document.getElementById('runStylist');
+ if(prompt.length<8){toast('احكيلنا تفاصيل أكتر عن اللوك اللي في بالك.');document.getElementById('stylistPrompt').focus();return}
+ if(prompt.length>700){toast('اختصر وصفك شوية (700 حرف كحد أقصى).');return}
+ button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> بنفكر في أنسب تنسيق...';
+ results.hidden=false;results.innerHTML='<div class="ai-message">الستايلست بيراجع القطع المتاحة وبيجهزلك اقتراحات مناسبة ✨</div>';
+ try{
+  const {data,error}=await db.functions.invoke('rovy-ai-stylist',{body:{prompt,occasion,mood,budget}});
+  if(error)throw error;
+  if(!data||!Array.isArray(data.looks))throw new Error('تعذر قراءة اقتراحات الستايلست.');
+  renderStylistLooks(data);
+ }catch(error){
+  console.error('ROVY AI Stylist:',error);
+  const msg=String(error?.message||'');
+  results.innerHTML='<div class="ai-message"><strong>مقدرناش نوصل للستايلست دلوقتي.</strong><br>'+safeText(msg.includes('OPENAI_API_KEY')?'خدمة الستايلست محتاجة تفعيل مفتاح الذكاء الاصطناعي في إعدادات الخادم.':'حصلت مشكلة مؤقتة في الاتصال. جرّب تاني بعد شوية.')+'</div>';
+ }finally{
+  button.disabled=false;button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> نسّقلي إطلالة';
+ }
 }
-
+function renderStylistLooks(data){
+ const results=document.getElementById('stylistResults');
+ const budget=Number(document.getElementById('stylistBudget').value)||0;
+ const looks=(data.looks||[]).map((item,index)=>{
+  const chosen=(item.product_ids||[]).map(id=>products.find(p=>String(p.id)===String(id))).filter(Boolean);
+  const unique=[];const used=new Set();let total=0;
+  for(const p of chosen){const slot=inferSlot(p);if(used.has(slot)||stockFor(p)<=0)continue;const vars=variantOptions(p);const hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;if(hasVariants&&!vars.length)continue;const price=Number(p.price)||0;if(budget&&total+price>budget)continue;used.add(slot);total+=price;unique.push(p)}
+  return {...item,_products:unique,_total:total,_index:index};
+ }).filter(x=>x._products.length);
+ if(!looks.length){
+  results.innerHTML='<div class="ai-message"><strong>لسه المخزون مش مساعدنا نكوّن إطلالة كاملة.</strong><br>المنتجات المتاحة حاليًا محدودة أو مش مناسبة لاختياراتك. جرّب تغيّر الميزانية أو راجعنا قريبًا مع إضافة قطع جديدة.</div>';
+  return;
+ }
+ results.innerHTML='<div class="ai-message"><strong>اقتراحات ROVY AI Stylist ✨</strong><br>'+safeText(data.intro||'حللنا وصفك واخترنا قطعًا من المنتجات المتاحة حاليًا.')+'</div><div class="ai-picks">'+looks.map((item,i)=>'<article class="ai-pick"><div class="ai-look-title">'+safeText(item.title||('إطلالة '+(i+1)))+'</div><div class="ai-look-description">'+safeText(item.summary||'تنسيق مقترح حسب اختياراتك')+'</div><div class="ai-look-products">'+item._products.map(p=>'<div class="ai-mini-product"><img src="'+safeText(safeImage(p.image_url))+'" alt=""><span>'+safeText(p.name||p.name_en||'منتج')+'</span><b>'+money(p.price)+'</b></div>').join('')+'</div><div class="ai-look-total">الإجمالي: '+money(item._total)+'</div><p class="ai-look-reason">'+safeText(item.reason||'')+'</p><button type="button" data-ai-look="'+i+'">كوّن الإطلالة دي</button></article>').join('')+'</div>'+(data.tips?'<div class="ai-message">'+safeText(data.tips)+'</div>':'')+'<div class="ai-footnote">الاقتراحات مولّدة بالذكاء الاصطناعي، لكن المنتجات والأسعار والمقاسات المعروضة متحقّق منها من كتالوج ومخزون ROVY وقت الطلب. لا نعرض قطعة غير متاحة، وقد يتغير المخزون قبل إتمام الشراء.</div>';
+ results.querySelectorAll('[data-ai-look]').forEach(btn=>btn.addEventListener('click',()=>{
+  const item=looks[Number(btn.dataset.aiLook)];if(!item)return;
+  look={};
+  item._products.forEach(p=>{const vars=variantOptions(p),hasVariants=(variantsByProduct[String(p.id)]||[]).length>0;assignProduct(p,inferSlot(p),hasVariants?vars[0]:null)});
+  document.querySelector('.studio-grid').scrollIntoView({behavior:'smooth',block:'start'});
+ }));
+}
 function renderProducts(){
  const q=document.getElementById('productSearch').value.trim().toLowerCase();
  const list=products.filter(p=>stockFor(p)>0&&(!q||((p.name||'')+' '+(p.name_en||'')+' '+(p.category||'')).toLowerCase().includes(q)));
