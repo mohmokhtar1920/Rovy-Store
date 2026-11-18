@@ -445,7 +445,7 @@ main{padding:18px 16px}
     return [];
   }
   function statusActions(o) {
-    const next=nextStatuses(o.status,staff.role).filter(s=>!(s==='confirmed' && o.shipping_payment_status!=='approved'));
+    const next=nextStatuses(o.status,staff.role).filter(s=>!(s==='confirmed' && Number(o.shipping_fee||0)>0 && o.shipping_payment_status!=='approved'));
     const statusText={unpaid:'لم يتم دفع الشحن',pending_review:'إيصال الشحن قيد المراجعة',approved:'تم اعتماد دفع الشحن',rejected:'إيصال الشحن مرفوض'};
     const paymentLabel=o.shipping_payment_status?'<div class="muted" style="margin:5px 0">'+esc(statusText[o.shipping_payment_status]||o.shipping_payment_status)+'</div>':'';
     const proof=o.shipping_payment_proof_path?`<button class="mini" data-payment-proof="${esc(o.id)}">عرض إيصال الشحن</button>`:'';
