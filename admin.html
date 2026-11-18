@@ -1143,6 +1143,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const range=Number($('analyticsRange')?.value||30);
     const from=$('analyticsFrom')?.value||new Date(Date.now()-(range-1)*86400000).toISOString().slice(0,10);
     const to=$('analyticsTo')?.value||new Date().toISOString().slice(0,10);
+    if($('analyticsFrom')&&!$('analyticsFrom').value)$('analyticsFrom').value=from;
+    if($('analyticsTo')&&!$('analyticsTo').value)$('analyticsTo').value=to;
     $('analyticsTopProducts').innerHTML='<div class="empty">جاري تحميل التحليلات…</div>';
     const data=await rpc('admin_store_analytics_summary',{p_from:from,p_to:to});
     analyticsData=data||{};
