@@ -445,9 +445,9 @@ main{padding:18px 16px}
     return [];
   }
   function statusActions(o) {
-    const next=nextStatuses(o.status,staff.role).filter(s=>!(s==='confirmed' && Number(o.shipping_fee||0)>0 && o.shipping_payment_status!=='approved'));
+    const next=nextStatuses(o.status,staff.role).filter(s=>!(s==='confirmed' && o.shipping_payment_required!==false && Number(o.shipping_fee||0)>0 && o.shipping_payment_status!=='approved'));
     const statusText={unpaid:'لم يتم دفع الشحن',pending_review:'إيصال الشحن قيد المراجعة',approved:'تم اعتماد دفع الشحن',rejected:'إيصال الشحن مرفوض'};
-    const paymentLabel=o.shipping_payment_status?'<div class="muted" style="margin:5px 0">'+esc(statusText[o.shipping_payment_status]||o.shipping_payment_status)+'</div>':'';
+    const paymentLabel=o.shipping_payment_required===false?'<div class="muted" style="margin:5px 0">لا يتطلب دفعًا مسبقًا للشحن</div>':(o.shipping_payment_status?'<div class="muted" style="margin:5px 0">'+esc(statusText[o.shipping_payment_status]||o.shipping_payment_status)+'</div>':'');
     const proof=o.shipping_payment_proof_path?`<button class="mini" data-payment-proof="${esc(o.id)}">عرض إيصال الشحن</button>`:'';
     const review=o.shipping_payment_status==='pending_review' && ['owner','manager','customer_service'].includes(staff.role)
       ? `<button class="mini gold" data-payment-review="approve" data-id="${esc(o.id)}">اعتماد الإيصال</button><button class="mini red" data-payment-review="reject" data-id="${esc(o.id)}">رفض الإيصال</button>`:'';
