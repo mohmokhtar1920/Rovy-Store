@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+  const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
   const KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
   const STORE_KEY='sb-bkjwfmjxmxgxgaxwrnsh-auth-token';
   const VISITOR_KEY='rovyAnalyticsVisitor';
@@ -11,7 +11,7 @@
   try{
     visitorId=getId(localStorage,VISITOR_KEY);
     sessionId=getId(sessionStorage,SESSION_KEY);
-    if(window.supabase?.createClient)client=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORE_KEY}});
+    if(window.supabase?.createClient)client=window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:STORE_KEY}});
   }catch(e){return;}
   function sourceName(){
     const saved=sessionStorage.getItem('rovyAnalyticsSessionSource');
