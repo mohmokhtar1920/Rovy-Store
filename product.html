@@ -936,9 +936,11 @@
             if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
             tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
             document.getElementById('tryonLocal').srcObject=null;document.getElementById('tryonOutput').srcObject=null;document.querySelector('.tryon-stage')?.classList.remove('is-live');tryonActive=false;
-            const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=false;if(stop)stop.disabled=true;
+            const start=document.getElementById('tryonStart'),stop=document.getElementById('tryonStop');if(start)start.disabled=tryonStarting;if(stop)stop.disabled=true;
             const status=document.getElementById('tryonStatus');if(status)status.textContent='تم إيقاف الكاميرا.';
-            tryonStarting=false;
+            // Keep the start lock until the pending connect() promise settles.
+            // Clearing it here allows a second SDK connect() to race the first one,
+            // which can surface as "Stale connect attempt".
             const switchButton=document.getElementById('tryonSwitchCamera'),captureButton=document.getElementById('tryonCapture');if(switchButton)switchButton.disabled=true;if(captureButton)captureButton.disabled=true;
             const picker=document.getElementById('tryonProductPicker');if(picker)picker.style.display='none';
             const choose=document.getElementById('tryonChooseGarment');if(choose){choose.disabled=false;choose.textContent=english?'Change item':'تغيير المنتج';}
