@@ -125,7 +125,7 @@ function slotLabel(slot){return ({top:'القطعة الأساسية',bottom:'ا
 function stockFor(p){const vs=variantsByProduct[String(p.id)]||[];return vs.length?vs.reduce((n,v)=>n+Math.max(0,Number(v.stock)||0),0):Math.max(0,Number(p.stock)||0)}
 function variantOptions(p){return (variantsByProduct[String(p.id)]||[]).filter(v=>Number(v.stock)>0)}
 function loadCart(){try{const v=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(v)?v:[]}catch{return []}}
-function inferSlot(p){const s=((p.category||'')+' '+(p.name||'')+' '+(p.name_en||'')).toLowerCase();if(/shoe|sneaker|boot|heel|حذاء|كوتشي|جزمة/.test(s))return 'shoes';if(/bag|watch|accessor|necklace|bracelet|حقيبة|شنطة|ساعة|إكسسوار/.test(s))return 'accessory';if(/pant|jean|skirt|short|trouser|بنطلون|تنورة|شورت/.test(s))return 'bottom';return 'top'}
+function inferSlot(p){const s=((p.category||'')+' '+(p.name||'')+' '+(p.name_en||'')+' '+(p.description||'')+' '+(p.description_en||'')).toLowerCase();if(/shoe|sneaker|boot|heel|حذاء|كوتشي|جزمة/.test(s))return 'shoes';if(/bag|watch|accessor|necklace|bracelet|حقيبة|شنطة|ساعة|إكسسوار/.test(s))return 'accessory';if(/pant|jean|skirt|short|trouser|بنطلون|تنورة|شورت/.test(s))return 'bottom';return 'top'}
 
 async function runStylist(){
  const prompt=document.getElementById('stylistPrompt').value.trim();
