@@ -518,6 +518,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const data=await rpc('admin_list_products');
     products=Array.isArray(data)?data:[];
     renderProducts(); $('statProducts').textContent=products.length;
+    if(typeof renderDashboard==='function')renderDashboard();
   }
   async function loadCategories() {
     const data=await rpc('admin_list_categories');
