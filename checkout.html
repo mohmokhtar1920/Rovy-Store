@@ -530,13 +530,10 @@
                 );
             }
 
-            document.getElementById('successOrderId').textContent =
-                '#' + rpcData.order_id;
-
             localStorage.removeItem('rovyCart');
-
-            document.getElementById('checkoutSection').style.display = 'none';
-            document.getElementById('successSection').style.display = 'flex';
+            localStorage.setItem('rovyPendingPaymentOrder', String(rpcData.order_id));
+            window.location.href = 'payment.html?order=' + encodeURIComponent(rpcData.order_id);
+            return;
 
         } catch (error) {
             console.error('Checkout error:', error);
