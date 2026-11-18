@@ -195,7 +195,7 @@ $('authForm').addEventListener('submit',async e=>{
    const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:redirectTo}});
    if(error)throw error;
    localStorage.setItem('rovyPendingGender',$('signupGender').value||'');
-    if(data.session){try{await saveCustomerGender(data.user.id,$('signupGender').value);}catch(e){console.warn(e);}setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
+    if(data.session){try{await saveCustomerGender(data.user.id,$('signupGender').value);}catch(e){console.warn(e);}localStorage.removeItem('rovyPendingGender');setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
    else {
      pendingSignupEmail=email;
      localStorage.setItem(PENDING_EMAIL_KEY,email);
@@ -223,6 +223,7 @@ $('verifyOtpBtn').addEventListener('click',async()=>{
   try{
     const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingSignupEmail,token,type:'signup'});
     if(error)throw error;
+    if(data.session){try{await saveCustomerGender(data.user.id,localStorage.getItem('rovyPendingGender')||'');}catch(e){console.warn(e);}localStorage.removeItem('rovyPendingGender');}
     clearPendingSignup();
     if(data.session)redirectAfterAuth();
     else{$('otpPanel').style.display='none';$('authForm').style.display='block';setMode('login');setNotice(english?'Email confirmed. Please sign in to continue.':'تم تأكيد البريد الإلكتروني. سجّل الدخول للمتابعة.','success');}
