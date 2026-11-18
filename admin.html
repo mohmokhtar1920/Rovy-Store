@@ -115,6 +115,101 @@ main{padding:18px 16px}
 .dropdown-menu button.danger-item{color:var(--red)}
 .page-action .dropdown-menu{left:0;right:auto}
 @media(max-width:900px){.action-dropdown{flex-shrink:0}.page-action{margin-inline-start:auto}}
+
+/* ===== ROVY Admin refresh: Nerea-inspired layout (visual layer only) ===== */
+:root{
+ --bg:#f3f5f8;--panel:#fff;--ink:#172335;--muted:#7a8798;
+ --navy:#101d31;--gold:#d8b45b;--line:#e6ebf1;
+ --green:#16845b;--red:#c43d4b;--blue:#3268b2;
+ --shadow:0 8px 28px rgba(16,29,49,.055);
+}
+body{background:#f3f5f8}
+.topbar{
+ position:sticky;top:0;z-index:8;height:78px;padding:0 clamp(16px,3vw,38px);
+ background:linear-gradient(115deg,#101d31 0%,#1c3550 65%,#25445d 100%);
+ box-shadow:0 5px 22px rgba(8,20,36,.15);border-bottom:1px solid rgba(216,180,91,.42)
+}
+.topbar .brand{font-size:25px;letter-spacing:1.5px}
+.topbar .brand span{color:#e3c477}
+.userbox{gap:14px}
+.userbox .usertext{line-height:1.5}
+.userbox .usertext strong{font-size:14px}
+.userbox .usertext small{color:#c3cfdb}
+.userbox .btn.light{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.17)}
+.layout{grid-template-columns:250px minmax(0,1fr);min-height:calc(100vh - 78px)}
+aside{
+ position:sticky;top:78px;align-self:start;height:calc(100vh - 78px);overflow-y:auto;
+ padding:25px 15px;background:linear-gradient(180deg,#14243a,#1a3048);
+ border-left:1px solid rgba(255,255,255,.06)
+}
+aside:before{content:"إدارة المتجر";display:block;color:#93a4b8;font-size:11px;font-weight:800;letter-spacing:.7px;padding:0 14px 14px}
+.navbtn{position:relative;color:#cbd5e1;border:1px solid transparent!important;border-radius:11px!important;margin:5px 0!important;height:49px!important;min-height:49px!important;max-height:49px!important;padding:12px 15px!important}
+.navbtn:hover{background:rgba(255,255,255,.07);color:#fff}
+.navbtn.active,.navbtn.active:active{
+ background:linear-gradient(90deg,rgba(216,180,91,.16),rgba(216,180,91,.07))!important;
+ color:#fff!important;box-shadow:inset -3px 0 0 #e0bd68!important;border:1px solid rgba(216,180,91,.12)!important
+}
+main{padding:clamp(20px,3vw,36px);background:#f3f5f8}
+.pagehead{margin-bottom:22px}
+.pagehead h1{font-size:25px;font-weight:900;color:#142238;letter-spacing:-.3px}
+.pagehead .muted{margin-top:4px}
+.stats{gap:16px;margin-bottom:22px}
+.stat,.panel{
+ border:1px solid #e8edf3;border-radius:17px;background:#fff;
+ box-shadow:var(--shadow);transition:transform .18s ease,box-shadow .18s ease
+}
+.stat{position:relative;overflow:hidden;padding:20px 20px 18px;min-height:112px}
+.stat:before{content:"";position:absolute;right:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#e4c775,#c9a34a)}
+.stat small{font-size:12px;font-weight:700;color:#7c8999}
+.stat strong{font-size:28px;color:#142238;margin-top:8px}
+.panel{padding:21px}
+.panel h3{font-size:17px;font-weight:900;color:#1b2b40;margin-bottom:17px}
+.toolbar{gap:10px;margin-bottom:16px}
+.toolbar input,.toolbar select,.field input,.field select,.field textarea{
+ border:1px solid #e0e6ed;border-radius:11px;min-height:44px;transition:border-color .15s,box-shadow .15s
+}
+.toolbar input:focus,.toolbar select:focus,.field input:focus,.field select:focus,.field textarea:focus{
+ border-color:#c9a34a;box-shadow:0 0 0 3px rgba(216,180,91,.13)
+}
+.btn{border-radius:11px;min-height:42px;box-shadow:0 3px 9px rgba(16,29,49,.08);transition:transform .15s,filter .15s}
+.btn:hover{filter:brightness(1.04);transform:translateY(-1px)}
+.btn.gold{background:linear-gradient(135deg,#e6c875,#cba64f);color:#1a2636}
+.btn.light{background:#eef2f6;color:#26364a;box-shadow:none}
+.btn.danger{box-shadow:none}
+table{border-collapse:separate;border-spacing:0;min-width:650px}
+th{background:#f5f7fa;color:#68778a;font-size:12px;white-space:nowrap}
+th:first-child{border-radius:0 10px 0 0}th:last-child{border-radius:10px 0 0 0}
+td{color:#344256;background:#fff}
+tbody tr:hover td{background:#fbfcfe}
+td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
+.pill{font-size:11px}
+.notice{border:1px solid #f0dfad;border-radius:12px}
+.empty{padding:38px 18px}
+.modal{border-radius:20px;box-shadow:0 24px 80px rgba(5,15,28,.28)}
+.login-wrap{background:radial-gradient(circle at 15% 15%,#314e69 0,#1c3550 32%,#101d31 78%)}
+.login-card{border:1px solid rgba(255,255,255,.45);border-radius:24px;box-shadow:0 25px 90px rgba(0,0,0,.28);padding:34px}
+.login-card .brand{font-size:31px}
+@media(max-width:900px){
+ .topbar{height:70px;position:sticky}
+ .layout{display:block;min-height:0}
+ aside{position:sticky;top:70px;height:auto;max-height:none;padding:10px 12px;z-index:7}
+ aside:before{display:none}
+ .navbtn{height:44px!important;min-height:44px!important;max-height:44px!important;padding:10px 13px!important}
+ main{padding:20px 15px}
+}
+@media(max-width:520px){
+ .topbar{height:66px}
+ .topbar .brand{font-size:21px}
+ .userbox .btn{min-height:37px;padding:7px 11px}
+ .stats{gap:9px}
+ .stat{min-height:98px;padding:14px}
+ .stat strong{font-size:23px}
+ .pagehead h1{font-size:21px}
+ .panel{padding:14px;border-radius:14px}
+ .login-card{padding:25px 20px}
+}
+@media(prefers-reduced-motion:reduce){.stat,.panel,.btn{transition:none}}
+
 </style>
 <meta name="theme-color" content="#171717"><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="description" content="لوحة إدارة ROVY STORE لإدارة الطلبات والمنتجات والمخزون والشحن."><meta name="theme-color" content="#171717"></head>
 <body>
