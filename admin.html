@@ -371,6 +371,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
           <div class="stat"><small>هامش الربح</small><strong id="reportMargin">—</strong></div>
           <div class="stat"><small>بيانات تكلفة غير مكتملة</small><strong id="reportMissingCost">—</strong></div>
         </div>
+        <div id="reportCostNote" class="notice owner-only hidden" aria-live="polite"></div>
         <div class="panel"><h3>قيمة المبيعات خلال آخر 6 أشهر (بدون الشحن)</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div>
         <div class="panel" style="margin-top:16px"><h3>أكثر المنتجات مبيعًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
       </section>
@@ -794,8 +795,10 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       const profit=revenue-cost;
       $('reportCost').textContent=money(cost);
       $('reportProfit').textContent=missing?money(profit)+'*':money(profit);
-      $('reportMargin').textContent=revenue>0?(profit/revenue*100).toFixed(1)+'%':'0%';
+      $('reportMargin').textContent=(revenue>0?(profit/revenue*100).toFixed(1):'0')+'%'+(missing?'*':'');
       $('reportMissingCost').textContent=missing+' قطعة';
+      $('reportCostNote').textContent=missing?'* الربح والهامش تقديريان وغير مكتملين: توجد قطع في طلبات قديمة لم يكن سعر الشراء محفوظًا وقت البيع. سيتم حفظ تكلفة كل قطعة تلقائيًا في الطلبات الجديدة.':'';
+      $('reportCostNote').classList.toggle('hidden',!missing);
     }
     $('reportScope').textContent=days==='all'?'كل الطلبات المحملة':`آخر ${days} يوم`;
     const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -803,7 +806,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const months=[];for(let k=5;k>=0;k--){const d=new Date(now.getFullYear(),now.getMonth()-k,1);const monthOrders=allNonCancelled.filter(o=>{if(!o.created_at)return false;const x=new Date(o.created_at);return x.getFullYear()===d.getFullYear()&&x.getMonth()===d.getMonth();});months.push({label:d.toLocaleDateString('ar-EG',{month:'short'}),value:monthOrders.reduce((sum,o)=>sum+revenueOf(o),0)});}
     const max=Math.max(1,...months.map(m=>m.value));
     $('monthlyOrdersChart').innerHTML='<div class="chart-bars">'+months.map(m=>'<div class="chart-col"><strong>'+esc(m.value.toLocaleString('ar-EG',{maximumFractionDigits:0}))+'</strong><div class="chart-track"><i style="height:'+Math.max(4,m.value/max*100)+'%"></i></div><small>'+esc(m.label)+'</small></div>').join('')+'</div>';
-    if(owner&&missing) $('topProducts').insertAdjacentHTML('beforebegin','<div class="notice">* الربح تقديري وغير مكتمل: توجد قطع في طلبات قديمة لم يكن سعر الشراء محفوظًا وقت البيع. الأسعار الجديدة ستُحفظ تلقائيًا مع كل طلب.</div>');
+
   }
   async function changeOrder(id,status) {
     const notes=prompt('ملاحظات على تغيير الحالة (اختياري):') ?? '';
