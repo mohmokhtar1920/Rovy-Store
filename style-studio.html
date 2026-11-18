@@ -145,8 +145,9 @@ async function runStylist(){
   renderStylistLooks(data);
  }catch(error){
   console.error('ROVY AI Stylist:',error);
-  const msg=String(error?.message||'');
-  results.innerHTML='<div class="ai-message"><strong>مقدرناش نوصل للستايلست دلوقتي.</strong><br>'+safeText(msg.includes('OPENAI_API_KEY')?'خدمة الستايلست محتاجة تفعيل مفتاح الذكاء الاصطناعي في إعدادات الخادم.':'حصلت مشكلة مؤقتة في الاتصال. جرّب تاني بعد شوية.')+'</div>';
+  let detail='';try{if(error?.context?.json){const payload=await error.context.json();detail=String(payload?.error||'')}}catch{}
+  const msg=detail+' '+String(error?.message||'');
+  results.innerHTML='<div class="ai-message"><strong>مقدرناش نوصل للستايلست دلوقتي.</strong><br>'+safeText(msg.includes('OPENAI_API_KEY')?'خدمة الستايلست محتاجة تفعيل مفتاح الذكاء الاصطناعي في إعدادات الخادم.':(detail||'حصلت مشكلة مؤقتة في الاتصال. جرّب تاني بعد شوية.'))+'</div>';
  }finally{
   button.disabled=false;button.innerHTML='<i class="fa-solid fa-wand-magic-sparkles"></i> نسّقلي إطلالة';
  }
