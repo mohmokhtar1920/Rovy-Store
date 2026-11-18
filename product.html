@@ -125,7 +125,7 @@
     <script>
     (() => {
       const productId = new URLSearchParams(location.search).get('id');
-      if (!productId || !/^[1-9]\\d*$/.test(productId)) return;
+      if (!productId || !/^[1-9]\d*$/.test(productId)) return;
       const canonicalUrl = location.origin + location.pathname + '?id=' + encodeURIComponent(productId);
       const canonical = document.querySelector('link[rel="canonical"]');
       const ogUrl = document.querySelector('meta[property="og:url"]');
