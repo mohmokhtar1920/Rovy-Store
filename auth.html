@@ -50,7 +50,8 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <p class="subtitle">سجّل دخولك أو أنشئ حساباً لمتابعة طلباتك وإتمام الشراء.</p>
 <div class="tabs" id="authTabs"><button type="button" class="active" id="loginTab">تسجيل الدخول</button><button type="button" id="signupTab">إنشاء حساب</button></div>
 <form id="authForm">
-<div class="field" id="nameField" style="display:none"><label for="fullName">الاسم بالكامل</label><input id="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك"></div>\n<div class="field" id="signupGenderField" style="display:none"><label for="signupGender">النوع (اختياري)</label><select id="signupGender"><option value="">أفضل عدم التحديد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select></div>
+<div class="field" id="nameField" style="display:none"><label for="fullName">الاسم بالكامل</label><input id="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك"></div>
+<div class="field" id="signupGenderField" style="display:none"><label for="signupGender">النوع (اختياري)</label><select id="signupGender"><option value="">أفضل عدم التحديد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select></div>
 <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" required autocomplete="email" placeholder="name@example.com" dir="ltr"></div>
 <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" required autocomplete="current-password" placeholder="8 أحرف على الأقل" dir="ltr"></div>
 <button class="submit" id="submitBtn" type="submit">تسجيل الدخول</button>
@@ -146,25 +147,29 @@ function setMode(next){
  mode=next;
  $('loginTab').classList.toggle('active',mode==='login');
  $('signupTab').classList.toggle('active',mode==='signup');
- $('nameField').style.display=mode==='signup'?'block':'none';\n $('signupGenderField').style.display=mode==='signup'?'block':'none';
+ $('nameField').style.display=mode==='signup'?'block':'none';
+ $('signupGenderField').style.display=mode==='signup'?'block':'none';
  $('password').autocomplete=mode==='signup'?'new-password':'current-password';
  $('password').placeholder=mode==='signup'?(english?'At least 8 characters':'8 أحرف على الأقل'):(english?'Enter your password':'اكتب كلمة المرور');
  $('submitBtn').textContent=mode==='signup'?(english?'Create Account':'إنشاء حساب جديد'):(english?'Sign In':'تسجيل الدخول');
  $('forgotPasswordBtn').style.display=mode==='login'?'block':'none';
  $('notice').className='notice';$('notice').textContent='';
 }
-function showAccount(user){
+async function showAccount(user){
  $('authCard').style.display='none';$('accountPanel').style.display='block';
+ try{const {data}=await supabaseClient.from('customer_profiles').select('gender').eq('user_id',user.id).maybeSingle();$('accountGender').value=data?.gender||'';}catch(e){}
  $('accountName').textContent=user.user_metadata?.full_name||(english?'Welcome':'مرحباً بك');
  $('accountEmail').textContent=user.email||'';
  $('continueLink').href=nextPage;
 }
-function clearPendingSignup(){sessionStorage.removeItem(PENDING_EMAIL_KEY);localStorage.removeItem(PENDING_EMAIL_KEY);pendingSignupEmail='';}\nasync function saveCustomerGender(userId,gender){if(!userId)return;const value=['male','female','prefer_not_to_say'].includes(gender)?gender:null;const {error}=await supabaseClient.from('customer_profiles').upsert({user_id:userId,gender:value,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;}
+function clearPendingSignup(){sessionStorage.removeItem(PENDING_EMAIL_KEY);localStorage.removeItem(PENDING_EMAIL_KEY);pendingSignupEmail='';}
+async function saveCustomerGender(userId,gender){if(!userId)return;const value=['male','female','prefer_not_to_say'].includes(gender)?gender:null;const {error}=await supabaseClient.from('customer_profiles').upsert({user_id:userId,gender:value,updated_at:new Date().toISOString()},{onConflict:'user_id'});if(error)throw error;}
 function redirectAfterAuth(){clearPendingSignup();localStorage.removeItem('rovyAuthNext');location.replace(nextPage);}
 async function checkSession(){
  const {data,error}=await supabaseClient.auth.getSession();
  if(error){setNotice(english?'Could not verify your session. Refresh the page and try again.':'تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
  if(data.session){
+   if(localStorage.getItem('rovyPendingGender')!==null){try{await saveCustomerGender(data.session.user.id,localStorage.getItem('rovyPendingGender'));}catch(e){}localStorage.removeItem('rovyPendingGender');}
    clearPendingSignup();
    if(nextPage==='checkout.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
    else showAccount(data.session.user);
@@ -189,7 +194,8 @@ $('authForm').addEventListener('submit',async e=>{
    const redirectTo=location.origin+location.pathname+'?next='+encodeURIComponent(nextPage);
    const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:fullName},emailRedirectTo:redirectTo}});
    if(error)throw error;
-   localStorage.setItem('rovyPendingGender',$('signupGender').value||'');\n    if(data.session){try{await saveCustomerGender(data.user.id,$('signupGender').value);}catch(e){console.warn(e);}setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
+   localStorage.setItem('rovyPendingGender',$('signupGender').value||'');
+    if(data.session){try{await saveCustomerGender(data.user.id,$('signupGender').value);}catch(e){console.warn(e);}setNotice('تم إنشاء حسابك بنجاح. جاري تحويلك...', 'success');setTimeout(redirectAfterAuth,700);}
    else {
      pendingSignupEmail=email;
      localStorage.setItem(PENDING_EMAIL_KEY,email);
@@ -265,7 +271,9 @@ $('saveNewPasswordBtn').addEventListener('click',async()=>{
  }catch(err){setNotice(err.message|| (english?'Could not update your password. Request a new reset link.':'تعذر تغيير كلمة المرور. اطلب رابط استرجاع جديداً.'));}
  finally{btn.disabled=false;}
 });
-$('saveGenderBtn').addEventListener('click',async()=>{try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user)throw new Error('سجّل الدخول أولاً.');await saveCustomerGender(user.id,$('accountGender').value);setNotice('تم حفظ اختيارك بنجاح.','success');}catch(e){setNotice(e.message||'تعذر حفظ الاختيار.');}});\n$('signOutBtn').addEventListener('click',async()=>{
+$('saveGenderBtn').addEventListener('click',async()=>{try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user)throw new Error('سجّل الدخول أولاً.');await saveCustomerGender(user.id,$('accountGender').value);setNotice('تم حفظ اختيارك بنجاح.','success');}catch(e){setNotice(e.message||'تعذر حفظ الاختيار.');}});
+$('saveGenderBtn').addEventListener('click',async()=>{try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user)throw new Error('سجّل الدخول أولاً.');await saveCustomerGender(user.id,$('accountGender').value);setNotice('تم حفظ اختيارك بنجاح.','success');}catch(e){setNotice(e.message||'تعذر حفظ الاختيار.');}});
+$('signOutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
  if(error){setNotice(english?'Could not sign out. Please try again.':'تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
  location.replace('index.html');
@@ -281,5 +289,7 @@ supabaseClient.auth.onAuthStateChange((event,session)=>{
 applyAuthLanguage();
 checkSession();
 </script>
-\n<script src="assets/analytics.js"></script>\n</body>
+
+<script src="assets/analytics.js"></script>
+</body>
 </html>
