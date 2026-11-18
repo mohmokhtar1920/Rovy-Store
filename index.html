@@ -269,6 +269,7 @@
         let productVariantStock = {};
         let activeCategories = [];
         let currentCategory = 'All';
+        let currentSearchTerm = '';
         let cart = loadCartSafely();
         let english = localStorage.getItem('rovyLanguage') === 'en';
 
@@ -426,7 +427,36 @@
             document.getElementById('categories').style.display = activeCategories.length ? 'block' : 'none';
             translateCategoryCards();
         }
+        function normalizeSearchText(value) {
+            return String(value ?? '')
+                .toLocaleLowerCase()
+                .replace(/[\u064B-\u065F\u0670\u0640]/g, '')
+                .replace(/[أإآ]/g, 'ا')
+                .replace(/ى/g, 'ي')
+                .trim();
+        }
+
         function renderHomeSections() {
+            if (currentSearchTerm) {
+                document.getElementById('categories').style.display = 'none';
+                document.getElementById('bestSellers').style.display = 'none';
+                const grid = document.getElementById('newProductsGrid');
+                const query = normalizeSearchText(currentSearchTerm);
+                const matches = allProducts.filter(product => {
+                    const searchable = [product.name, product.name_en, product.description, product.description_en, product.category]
+                        .map(normalizeSearchText).join(' ');
+                    return searchable.includes(query);
+                });
+                document.getElementById('newTitle').textContent = english
+                    ? `Search results (${matches.length})`
+                    : `نتائج البحث (${matches.length})`;
+                grid.innerHTML = matches.length
+                    ? matches.map(createProductCard).join('')
+                    : `<p style="grid-column:1/-1;text-align:center;color:#777;padding:24px">${english ? 'No products match your search.' : 'مفيش منتجات مطابقة لبحثك.'}</p>`;
+                translateVisibleProductCards();
+                return;
+            }
+
             if (currentCategory === 'All') {
                 document.getElementById('categories').style.display = activeCategories.length > 0 ? 'block' : 'none';
                 
@@ -491,6 +521,9 @@
         }
 
         function filterCategory(cat) {
+            currentSearchTerm = '';
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
             currentCategory = cat;
             renderHomeSections();
         }
@@ -550,7 +583,10 @@
         function removeFromCart(cartItemKey) { const key=String(cartItemKey??'');const removed=cart.find(item=>String(item.cartItemId||String(item.id)+'-no-variant')===key);if(removed)window.rovyAnalytics?.track('remove_from_cart',{product_id:Number(removed.id)});cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==key);updateCart(); }
         function toggleCart() { document.getElementById('cartSidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
         function checkout() { if (cart.length === 0) { showToast(english ? 'Add at least one product before checkout.' : 'أضف منتجاً واحداً على الأقل قبل الانتقال لإتمام الطلب.', 'info', english ? 'Your cart is empty' : 'سلتك فارغة'); return; } window.location.href = 'checkout.html'; }
-        function searchProducts() { const query = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.product-card').forEach(card => { const title = card.querySelector('.product-title').innerText.toLowerCase(); card.style.display = title.includes(query) ? 'block' : 'none'; }); }
+        function searchProducts() {
+            currentSearchTerm = document.getElementById('searchInput').value.trim();
+            renderHomeSections();
+        }
 
         if (english) {
             english = false;
