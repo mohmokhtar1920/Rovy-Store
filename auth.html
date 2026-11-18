@@ -96,7 +96,9 @@ let pendingSignupEmail=localStorage.getItem(PENDING_EMAIL_KEY)||sessionStorage.g
 if(pendingSignupEmail)localStorage.setItem(PENDING_EMAIL_KEY,pendingSignupEmail);
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
-const nextPage=requestedNext==='checkout.html'?'checkout.html':'index.html';
+const nextPage=requestedNext==='checkout.html'
+ ? 'checkout.html'
+ : (/^payment\\.html\\?order=\\d+$/.test(requestedNext) ? requestedNext : 'index.html');
 
 function setNotice(message,type='error'){const n=$('notice');n.className='notice '+type;n.textContent=message;}
 
@@ -164,7 +166,7 @@ async function checkSession(){
  if(error){setNotice(english?'Could not verify your session. Refresh the page and try again.':'تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.');return;}
  if(data.session){
    clearPendingSignup();
-   if(nextPage==='checkout.html') redirectAfterAuth();
+   if(nextPage==='checkout.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
    else showAccount(data.session.user);
  }else if(pendingSignupEmail){
    $('authForm').style.display='none';
