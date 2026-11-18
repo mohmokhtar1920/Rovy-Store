@@ -34,7 +34,7 @@
       const {error}=await client.rpc('track_store_event',{
         p_visitor_id:visitorId,p_session_id:sessionId,p_event_type:type,
         p_product_id:Number.isSafeInteger(Number(opts.product_id))&&Number(opts.product_id)>0?Number(opts.product_id):null,
-        p_page_path:location.pathname+location.search,
+        p_page_path:location.pathname,
         p_source:sourceName(),
         p_referrer_host:(()=>{try{return document.referrer?new URL(document.referrer).hostname:'';}catch(e){return '';}})(),
         p_metadata:opts.metadata||{}
