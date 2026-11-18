@@ -81,6 +81,19 @@
             .hero-content h1 { font-size: 32px; }
             .hero { padding: 30px; }
             .cart-sidebar { width: 100%; right: -100%; }
+            .cart-sidebar.open {
+                top: 12px;
+                bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+                height: auto;
+                max-height: none;
+                border-radius: 18px 18px 0 0;
+                overflow: hidden;
+            }
+            .cart-header { flex: 0 0 auto; }
+            .cart-items { min-height: 0; overscroll-behavior: contain; }
+            .cart-footer { flex: 0 0 auto; padding: 14px 18px calc(16px + env(safe-area-inset-bottom, 0px)); }
+            .checkout-btn { min-height: 54px; }
+            body:has(.cart-sidebar.open) .whatsapp-float { display: none; }
             .categories { grid-template-columns: repeat(2, 1fr); }
             .header-icons { gap: 10px; margin-inline-start: auto; }
         }
