@@ -59,7 +59,22 @@ main{padding:25px;min-width:0}.pagehead{display:flex;align-items:center;justify-
 .empty{text-align:center;color:var(--muted);padding:30px}.notice{padding:12px 14px;border-radius:10px;background:#fff8e6;color:#745b20;font-size:13px;margin-bottom:15px;line-height:1.8}
 .modal-back{position:fixed;inset:0;background:#07111dcc;display:grid;place-items:center;padding:16px;z-index:10}.modal{width:min(560px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:22px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h2{font-size:19px;margin:0}.close{background:#eef1f5;border-radius:9px;padding:6px 11px}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.formgrid .full{grid-column:1/-1}.modal-actions{display:flex;gap:8px;justify-content:flex-start;margin-top:18px}
 .toast{position:fixed;bottom:20px;left:20px;background:#172538;color:#fff;padding:12px 18px;border-radius:10px;z-index:20;box-shadow:0 8px 30px #0003;max-width:min(420px,calc(100vw - 40px))}
-@media(max-width:900px){.layout{grid-template-columns:1fr}aside{display:flex;overflow:auto;padding:8px;gap:5px}.navbtn{white-space:nowrap;width:auto;margin:0}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:16px}}
+@media(max-width:900px){
+.layout{display:block;min-height:0}
+aside{
+ display:flex;align-items:center;align-self:start;gap:6px;
+ width:100%;height:auto;min-height:0;max-height:none;
+ padding:10px 12px;margin:0;
+ overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;
+ background:linear-gradient(135deg,#172538 0%,#20344d 100%);
+ border-bottom:3px solid var(--gold);
+ scrollbar-width:none;
+}
+aside::-webkit-scrollbar{display:none}
+.navbtn{flex:0 0 auto;white-space:nowrap;width:auto;margin:0}
+.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+main{padding:18px 16px}
+}
 @media(max-width:520px){.topbar{padding:0 14px}.userbox{gap:6px}.userbox .usertext{display:none}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.formgrid{grid-template-columns:1fr}.formgrid .full{grid-column:auto}}
 .password-wrap{position:relative}
 .password-wrap input{padding-left:48px}
