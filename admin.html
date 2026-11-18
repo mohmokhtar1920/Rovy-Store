@@ -208,6 +208,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
  .panel{padding:14px;border-radius:14px}
  .login-card{padding:25px 20px}
 }
+.monthly-chart{padding:10px 4px 0;min-height:210px}.chart-bars{height:190px;display:flex;align-items:end;justify-content:space-around;gap:12px}.chart-col{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:7px}.chart-col strong{font-size:12px;color:#526071}.chart-track{height:145px;width:min(42px,70%);display:flex;align-items:end;background:#f0f3f7;border-radius:9px 9px 4px 4px;overflow:hidden}.chart-track i{display:block;width:100%;background:linear-gradient(180deg,#e6c875,#c6a04b);border-radius:8px 8px 3px 3px}.chart-col small{font-size:11px;color:#7a8798}
 @media(prefers-reduced-motion:reduce){.stat,.panel,.btn{transition:none}}
 
 </style>
@@ -241,6 +242,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     <aside>
       <button class="navbtn active" data-page="dashboard">▦ الرئيسية</button>
       <button class="navbtn" data-page="orders">▤ الطلبات</button>
+      <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
       <button class="navbtn manager-only" data-page="products">◇ المنتجات</button>
       <button class="navbtn manager-only" data-page="categories">▣ الأقسام</button>
       <button class="navbtn manager-only" data-page="shipping">🚚 الشحن والمحافظات</button>
@@ -265,6 +267,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div class="panel"><div id="ordersTable" class="table-wrap"><div class="empty">جاري تحميل الطلبات…</div></div></div>
       </section>
 
+      <section id="page-payments" class="page hidden payment-review-only"><div class="pagehead"><div><h1>مراجعة مدفوعات الشحن</h1><div class="muted">راجع إيصالات التحويل واعتمدها أو ارفضها قبل تأكيد الطلب</div></div><button class="btn light" id="reloadPayments">تحديث المدفوعات</button></div><div class="stats"><div class="stat"><small>بانتظار المراجعة</small><strong id="paymentPendingCount">0</strong></div><div class="stat"><small>تم اعتمادها</small><strong id="paymentApprovedCount">0</strong></div><div class="stat"><small>مرفوضة</small><strong id="paymentRejectedCount">0</strong></div></div><div class="toolbar"><input id="paymentSearch" placeholder="بحث برقم الطلب أو اسم العميل أو الهاتف"><select id="paymentFilter"><option value="">كل حالات الدفع</option><option value="pending_review">بانتظار المراجعة</option><option value="approved">معتمد</option><option value="rejected">مرفوض</option><option value="unpaid">غير مدفوع</option></select></div><div class="panel"><div id="paymentsTable" class="table-wrap"><div class="empty">جاري تحميل المدفوعات…</div></div></div></section>
       <section id="page-products" class="page hidden">
         <div class="pagehead"><div><h1>المنتجات</h1><div class="muted">إضافة وتعديل المنتجات والتحكم في ظهورها</div></div><details class="action-dropdown page-action"><summary class="btn gold">＋ إضافة منتج ▾</summary><div class="dropdown-menu"><button type="button" id="addProductBtn">إضافة منتج جديد</button></div></details></div>
         <div class="notice">ارفع حتى 20 صورة لكل منتج من جهازك، وحدد الصورة الرئيسية التي ستظهر في واجهة المتجر.</div>
@@ -294,7 +297,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
           <div class="stat"><small>طلبات ملغاة</small><strong id="reportCancelled">0</strong></div>
           <div class="stat"><small>إجمالي القطع المطلوبة</small><strong id="reportItems">0</strong></div>
         </div>
-        <div class="panel"><h3>أكثر المنتجات طلبًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
+        <div class="panel"><h3>حركة الطلبات خلال آخر 6 أشهر</h3><div id="monthlyOrdersChart" class="monthly-chart"></div></div><div class="panel" style="margin-top:16px"><h3>أكثر المنتجات طلبًا</h3><div id="topProducts"><div class="empty">لا توجد بيانات كافية بعد.</div></div></div>
       </section>
     </main>
   </div>
@@ -421,6 +424,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('staffName').textContent=staff.full_name || 'موظف';
     $('staffRole').textContent=roleNames[staff.role] || staff.role;
     document.querySelectorAll('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
+    document.querySelectorAll('.payment-review-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
   }
   let enteringApp=false;
   async function enterApp() {
@@ -469,7 +473,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         orders=orders.map(o=>({...o,...(byId.get(String(o.id))||{})}));
       }catch(paymentError){console.warn('Could not load shipping payment review data:',paymentError);}
     }
-    renderOrders(); renderDashboard(); renderReports();
+    renderOrders(); renderDashboard(); renderReports(); renderPayments();
   }
   async function loadProducts() {
     const data=await rpc('admin_list_products');
@@ -555,6 +559,31 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const rows=orders.filter(o=>[o.id,o.customer_name,o.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
     $('ordersTable').innerHTML=rows.length?`<table><thead><tr><th>الطلب</th><th>العميل</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>${rows.map(o=>orderRow(o)).join('')}</tbody></table>`:'<div class="empty">لا توجد طلبات مطابقة.</div>';
   }
+  function renderPayments(){
+    if(!['owner','manager','customer_service'].includes(staff?.role))return;
+    const pending=orders.filter(o=>o.shipping_payment_status==='pending_review');
+    const approved=orders.filter(o=>o.shipping_payment_status==='approved');
+    const rejected=orders.filter(o=>o.shipping_payment_status==='rejected');
+    $('paymentPendingCount').textContent=pending.length;
+    $('paymentApprovedCount').textContent=approved.length;
+    $('paymentRejectedCount').textContent=rejected.length;
+    const q=$('paymentSearch').value.trim().toLowerCase(), filter=$('paymentFilter').value;
+    const labels={unpaid:'غير مدفوع',pending_review:'بانتظار المراجعة',approved:'معتمد',rejected:'مرفوض'};
+    const list=orders.filter(o=>{
+      const st=o.shipping_payment_status||'unpaid';
+      return o.shipping_payment_required!==false && (!filter || st===filter) &&
+        [o.id,o.customer_name,o.customer_phone].some(v=>String(v??'').toLowerCase().includes(q));
+    });
+    $('paymentsTable').innerHTML=list.length?'<table><thead><tr><th>الطلب</th><th>العميل</th><th>مبلغ الشحن</th><th>طريقة التحويل</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>'+
+      list.map(o=>{
+        const st=o.shipping_payment_status||'unpaid';
+        const cls=st==='approved'?'green':st==='rejected'?'red':st==='pending_review'?'blue':'';
+        const method=o.shipping_payment_method==='vodafone_cash'?'Vodafone Cash':o.shipping_payment_method==='instapay'?'InstaPay':'—';
+        const proof=o.shipping_payment_proof_path?'<button class="mini" data-payment-proof="'+esc(o.id)+'">عرض الإيصال</button>':'—';
+        const review=st==='pending_review'?'<button class="mini gold" data-payment-review="approve" data-id="'+esc(o.id)+'">اعتماد</button> <button class="mini red" data-payment-review="reject" data-id="'+esc(o.id)+'">رفض</button>':'—';
+        return '<tr><td><strong>#'+esc(o.id)+'</strong><div class="muted">'+esc(o.created_at?new Date(o.created_at).toLocaleDateString('ar-EG'):'')+'</div></td><td>'+esc(o.customer_name)+'<div class="muted">'+esc(o.customer_phone)+'</div></td><td>'+money(o.shipping_fee||0)+'</td><td>'+esc(method)+'</td><td><span class="pill '+cls+'">'+(labels[st]||esc(st))+'</span></td><td><div class="actions">'+proof+review+'</div></td></tr>';
+      }).join('')+'</tbody></table>':'<div class="empty">لا توجد مدفوعات مطابقة للفلاتر الحالية.</div>';
+  }
   function renderDashboard() {
     $('statOrders').textContent=orders.length;
     $('statPending').textContent=orders.filter(o=>o.status==='pending').length;
@@ -587,6 +616,9 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     reportableOrders.forEach(o=>itemsFor(o).forEach(i=>{const q=Number(i.quantity||0);pieces+=q;const n=i.product_name||i.name||'منتج';counts[n]=(counts[n]||0)+q;}));
     $('reportItems').textContent=pieces;
     const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const months=[];const now=new Date();for(let k=5;k>=0;k--){const d=new Date(now.getFullYear(),now.getMonth()-k,1);const n=orders.filter(o=>{if(!o.created_at)return false;const x=new Date(o.created_at);return x.getFullYear()===d.getFullYear()&&x.getMonth()===d.getMonth();}).length;months.push({label:d.toLocaleDateString('ar-EG',{month:'short'}),count:n});}
+    const max=Math.max(1,...months.map(m=>m.count));
+    $('monthlyOrdersChart').innerHTML='<div class="chart-bars">'+months.map(m=>'<div class="chart-col"><strong>'+m.count+'</strong><div class="chart-track"><i style="height:'+Math.max(4,m.count/max*100)+'%"></i></div><small>'+esc(m.label)+'</small></div>').join('')+'</div>';
     $('topProducts').innerHTML=top.length?top.map(([n,q])=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 2px"><strong>${esc(n)}</strong><span>${q} قطعة</span></div>`).join(''):'<div class="empty">لا توجد بيانات كافية بعد.</div>';
   }
   async function changeOrder(id,status) {
@@ -599,6 +631,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(dropdownButton)dropdownButton.closest('details')?.removeAttribute('open');
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
+      if(page==='payments'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b===nav));
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       return;
@@ -643,6 +676,9 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('closeOrderImage').addEventListener('click',()=>{$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('orderImageViewer').classList.contains('hidden')){$('orderImageViewer').classList.add('hidden');$('orderImageLarge').src='';}});
   $('orderSearch').addEventListener('input',renderOrders);
+  $('paymentSearch').addEventListener('input',renderPayments);
+  $('paymentFilter').addEventListener('change',renderPayments);
+  $('reloadPayments').addEventListener('click',()=>loadOrders().then(()=>notify('تم تحديث بيانات المدفوعات.')).catch(e=>notify(e.message,true)));
   $('productSearch').addEventListener('input',renderProducts);
   $('orderFilter').addEventListener('change',()=>loadOrders().catch(e=>notify(e.message,true)));
   $('reloadOrders').addEventListener('click',()=>loadOrders().catch(e=>notify(e.message,true)));
