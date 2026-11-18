@@ -410,7 +410,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div class="finance-grid">
           <div class="finance-card"><small>تكلفة البضاعة المباعة</small><strong id="finDeliveredCost">—</strong><span>للطلبات المسلّمة فقط</span></div>
           <div class="finance-card positive"><small>مجمل الربح المحقق</small><strong id="finGrossProfit">—</strong><span>قبل المصاريف التشغيلية</span></div>
-          <div class="finance-card"><small>إجمالي المصاريف المسجلة</small><strong id="finExpenses">—</strong><span id="finMonthExpenses">—</span></div>
+          <div class="finance-card"><small>إجمالي المصاريف</small><strong id="finExpenses">—</strong><span id="finMonthExpenses">—</span></div>
+          <div class="finance-card"><small>أجور شركات الشحن المسلّمة</small><strong id="finCarrierFees">—</strong><span>تُخصم تلقائيًا من صافي الربح</span></div>
           <div class="finance-card highlight"><small>صافي الربح بعد المصاريف المسجلة</small><strong id="finNetProfit">—</strong><span>من بداية السجلات المتاحة</span></div>
         </div>
         <div id="financeWarning" class="notice hidden" aria-live="polite"></div>
@@ -883,7 +884,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     set('finPreparingValue',money(x.preparing_value));set('finPreparingCount',Number(x.preparing_count||0)+' طلب');
     set('finPendingValue',money(x.pending_value));set('finPendingCount',Number(x.pending_count||0)+' طلب');
     set('finDeliveredCost',money(x.delivered_cost));set('finGrossProfit',money(x.delivered_gross_profit));
-    set('finExpenses',money(x.expenses_all_time));set('finMonthExpenses','هذا الشهر: '+money(x.expenses_this_month));
+    set('finExpenses',money(x.expenses_all_time));set('finMonthExpenses','هذا الشهر: '+money(x.expenses_this_month));set('finCarrierFees',money(x.shipping_company_fees_all_time));
     set('finNetProfit',money(x.net_profit_after_recorded_expenses));
     const warnings=[];
     if(Number(x.missing_cost_products||0)>0)warnings.push('هناك '+x.missing_cost_products+' منتج بدون سعر شراء مسجل؛ قيمة المخزون والربح قد تكون أقل دقة.');
