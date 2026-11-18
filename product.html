@@ -247,7 +247,7 @@
 
     <a href="https://wa.me/201012853009" class="whatsapp-float" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp"></i></a>
 
-    <script type="module">import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk@0.2.7'; window.DecartSDK={createDecartClient,models};</script>
+    <script type="module">import { createDecartClient, models } from 'https://esm.sh/@decartai/sdk@0.2.14'; window.DecartSDK={createDecartClient,models};</script>
     <script>
 
         let siteToastTimer;
@@ -827,7 +827,7 @@
                 const model=window.DecartSDK.models.realtime('lucy-vton-3.6');
                 status.textContent='جارٍ فتح الكاميرا وتجهيز الاتصال معاً…';
                 const facingConstraint=options.strictFacing?{exact:tryonFacingMode}:{ideal:tryonFacingMode};
-                tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:{ideal:480,max:640},height:{ideal:360,max:480},frameRate:{ideal:20,max:24}}});
+                tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:{ideal:model.width},height:{ideal:model.height},frameRate:{ideal:model.fps}}});
                 ensureTryOnNotCancelled();
                 const actualFacing=tryonCameraStream.getVideoTracks()[0]?.getSettings?.().facingMode;
                 if(options.strictFacing&&actualFacing&&actualFacing!==tryonFacingMode)throw new Error('CAMERA_FACING_MISMATCH');
