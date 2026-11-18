@@ -547,7 +547,7 @@
             document.getElementById('productCartTotalLabel').textContent=english?'Total:':'الإجمالي:';
             document.querySelector('.product-checkout-btn').textContent=english?'Proceed to Checkout':'إتمام الطلب';
         }
-        function removeProductCartItem(key){const k=String(key??'');cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==k);updateProductCart();}
+        function removeProductCartItem(key){const k=String(key??'');const removed=cart.find(item=>String(item.cartItemId||String(item.id)+'-no-variant')===k);if(removed)window.rovyAnalytics?.track('remove_from_cart',{product_id:Number(removed.id)});cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==k);updateProductCart();}
         function toggleCart(force){
             const drawer=document.getElementById('productCartDrawer'),overlay=document.getElementById('productCartOverlay');
             const open=typeof force==='boolean'?force:!drawer.classList.contains('open');
@@ -557,7 +557,7 @@
         }
         function checkoutFromProduct(){
             if(!cart.length){showToast(english?'Add at least one product before checkout.':'أضف منتجاً واحداً على الأقل قبل إتمام الطلب.','info',english?'Your cart is empty':'سلتك فارغة');return;}
-            window.location.href='checkout.html';
+            window.rovyAnalytics?.track('begin_checkout');window.location.href='checkout.html';
         }
 
         async function loadReviews() {
@@ -937,5 +937,5 @@
         updateProductCart();
         loadProduct();
     </script>
-</body>
+\n<script src="assets/analytics.js"></script>\n</body>
 </html>
