@@ -530,6 +530,7 @@
                 );
             }
 
+            await window.rovyAnalytics?.track('order_created',{metadata:{order_id:Number(rpcData.order_id)}});
             localStorage.removeItem('rovyCart');
             localStorage.setItem('rovyPendingPaymentOrder', String(rpcData.order_id));
             window.location.href = 'payment.html?order=' + encodeURIComponent(rpcData.order_id);
