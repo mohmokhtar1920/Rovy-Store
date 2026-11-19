@@ -274,7 +274,6 @@ $('saveNewPasswordBtn').addEventListener('click',async()=>{
  finally{btn.disabled=false;}
 });
 $('saveGenderBtn').addEventListener('click',async()=>{try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user)throw new Error('سجّل الدخول أولاً.');await saveCustomerGender(user.id,$('accountGender').value);setNotice('تم حفظ اختيارك بنجاح.','success');}catch(e){setNotice(e.message||'تعذر حفظ الاختيار.');}});
-$('saveGenderBtn').addEventListener('click',async()=>{try{const {data:{user}}=await supabaseClient.auth.getUser();if(!user)throw new Error('سجّل الدخول أولاً.');await saveCustomerGender(user.id,$('accountGender').value);setNotice('تم حفظ اختيارك بنجاح.','success');}catch(e){setNotice(e.message||'تعذر حفظ الاختيار.');}});
 $('signOutBtn').addEventListener('click',async()=>{
  const {error}=await supabaseClient.auth.signOut();
  if(error){setNotice(english?'Could not sign out. Please try again.':'تعذر تسجيل الخروج. حاول مرة أخرى.');return;}
