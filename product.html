@@ -402,7 +402,7 @@
             const numericProductId=Number(productId);
             const container=document.getElementById('productContainer');
             if(!productId||!Number.isSafeInteger(numericProductId)||numericProductId<=0){container.innerHTML='<p role="alert">المنتج المطلوب غير موجود. ارجع إلى المتجر واختر منتجاً آخر.</p>';return;}
-            const { data: product,error:productError } = await supabaseClient.from('products').select('*').eq('id', numericProductId).single();
+            const { data: product,error:productError } = await supabaseClient.from('products').select('*').eq('id', numericProductId).eq('is_active', true).single();
             if(productError||!product){container.innerHTML='<p role="alert">تعذر العثور على المنتج أو أنه لم يعد متاحاً.</p>';return;}
             currentProduct = product;
 
@@ -416,7 +416,7 @@
         }
 
         async function loadRelatedProducts() {
-            const { data } = await supabaseClient.from('products').select('*').eq('category', currentProduct.category).neq('id', currentProduct.id).limit(4);
+            const { data } = await supabaseClient.from('products').select('*').eq('is_active', true).eq('category', currentProduct.category).neq('id', currentProduct.id).limit(4);
             if(data && data.length > 0) {
                 document.getElementById('relatedSection').style.display = 'block';
                 const grid = document.getElementById('relatedGrid');
