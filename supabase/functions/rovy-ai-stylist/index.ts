@@ -89,8 +89,8 @@ Deno.serve(async (req: Request) => {
   const mood = typeof body.mood === "string" ? body.mood : "casual";
   const selectedBudget = Number(body.budget) || 0;
   const normalizedPrompt = prompt.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
-  const promptBudgetMatch = normalizedPrompt.match(/(?:ميزاني(?:ة|تي)|budget|متعداش|متعدّاش|تجاوز|حد\\s*أقصى|حد\\s*اقصى|حتى|لحد)[^0-9]{0,18}([0-9][0-9,٬]*)/i)
-    || normalizedPrompt.match(/([0-9][0-9,٬]*)\\s*(?:جنيه|ج\\b|egp)/i);
+  const promptBudgetMatch = normalizedPrompt.match(/(?:ميزاني(?:ة|تي)|budget|متعداش|متعدّاش|تجاوز|حد[ ]*أقصى|حد[ ]*اقصى|حتى|لحد)[^0-9]{0,18}([0-9][0-9,٬]*)/i)
+    || normalizedPrompt.match(/([0-9][0-9,٬]*)[ ]*(?:جنيه|ج|egp)/i);
   const promptBudget = promptBudgetMatch ? Number(promptBudgetMatch[1].replace(/[,٬]/g, '')) || 0 : 0;
   const budget = selectedBudget && promptBudget ? Math.min(selectedBudget, promptBudget) : (selectedBudget || promptBudget);
   if (prompt.length < 8 || prompt.length > 700) return json({ error: "اكتب وصفًا من 8 إلى 700 حرف." }, 400);
