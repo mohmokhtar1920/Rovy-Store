@@ -65,8 +65,8 @@ Deno.serve(async (req: Request) => {
   const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown").split(",")[0].trim();
   if (!takeRate(ip)) return json({ error: "طلبات كتير في وقت قصير. استنى دقيقة وجرب تاني." }, 429);
 
-  const openAiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!openAiKey) return json({ error: "OPENAI_API_KEY is not configured" }, 503);
+  const groqKey = Deno.env.get("GROQ_API_KEY");
+  if (!groqKey) return json({ error: "GROQ_API_KEY is not configured" }, 503);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ||
@@ -164,22 +164,25 @@ Deno.serve(async (req: Request) => {
   ].join(" ");
 
   const requestBody = {
-    model: "gpt-6-luna",
-    instructions,
-    input: [{
-      role: "user",
-      content: JSON.stringify({
-        customer_request: prompt,
-        occasion,
-        style: mood,
-        max_budget_egp: budget || "open",
-        live_catalog: catalog,
-      }),
-    }],
-    max_output_tokens: 1200,
-    text: {
-      format: {
-        type: "json_schema",
+    model: "openai/gpt-oss-20b",
+    messages: [
+      { role: "system", content: instructions },
+      {
+        role: "user",
+        content: JSON.stringify({
+          customer_request: prompt,
+          occasion,
+          style: mood,
+          max_budget_egp: budget || "open",
+          live_catalog: catalog,
+        }),
+      },
+    ],
+    max_completion_tokens: 1200,
+    reasoning_effort: "low",
+    response_format: {
+      type: "json_schema",
+      json_schema: {
         name: "rovy_style_recommendations",
         strict: true,
         schema,
@@ -189,23 +192,25 @@ Deno.serve(async (req: Request) => {
 
   let aiResponse: Response;
   try {
-    aiResponse = await fetch("https://api.openai.com/v1/responses", {
+    aiResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${openAiKey}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
       body: JSON.stringify(requestBody),
       signal: AbortSignal.timeout(25000),
     });
   } catch (error) {
-    console.error("OpenAI request failed", error);
+    console.error("Groq request failed", error);
     return json({ error: "AI service timed out" }, 504);
   }
   if (!aiResponse.ok) {
     const errorText = await aiResponse.text();
-    console.error("OpenAI API error", aiResponse.status, errorText.slice(0, 1000));
+    console.error("Groq API error", aiResponse.status, errorText.slice(0, 1000));
     return json({ error: "تعذر على الستايلست تجهيز الاقتراحات حاليًا." }, 502);
   }
-  const aiData = await aiResponse.json() as Record<string, unknown>;
-  const outputText = extractOutputText(aiData);
+  const aiData = await aiResponse.json() as Record<string, any>;
+  const outputText = typeof aiData.choices?.[0]?.message?.content === "string"
+    ? aiData.choices[0].message.content
+    : "";
   if (!outputText) return json({ error: "AI returned no recommendation" }, 502);
 
   let recommendation: Record<string, unknown>;
