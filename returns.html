@@ -32,6 +32,28 @@ textarea{min-height:90px;resize:vertical}.row{display:grid;grid-template-columns
 .empty{padding:20px;text-align:center;color:#777}.notice{margin:12px 0;font-size:13px;color:#6b625a}
 .exchange-builder{margin-top:12px;padding:14px;border:1px solid #e7d7c6;border-radius:12px;background:#fffcf8}.exchange-preview{margin-top:10px;padding:10px;border-radius:9px;background:#f3f0ea;font-size:13px;line-height:1.9}.exchange-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.exchange-builder select{margin-bottom:6px}.hidden{display:none!important}.exchange-line>*{min-width:0}.exchange-line select{min-width:0}
 @media(max-width:650px){.exchange-line{grid-template-columns:minmax(0,1fr) 78px!important}.exchange-line [data-ex-remove]{grid-column:1/-1;width:100%}.exchange-line label{font-size:13px}.exchange-builder{padding:10px}.exchange-actions .btn{width:100%}.row{grid-template-columns:1fr}.hero{padding:22px}.hero h1{font-size:23px}.item{grid-template-columns:22px 1fr 76px}}
+
+/* ROVY branded dialogs */
+.rovy-dialog-backdrop{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;background:rgba(12,11,10,.62);backdrop-filter:blur(7px);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}
+.rovy-dialog-backdrop.is-open{opacity:1;visibility:visible}
+.rovy-dialog{width:min(100%,440px);background:#fffdfa;border:1px solid #e8dccf;border-radius:24px;box-shadow:0 28px 90px #0005;overflow:hidden;transform:translateY(14px) scale(.98);transition:transform .22s ease;font-family:Cairo,sans-serif;text-align:center}
+.rovy-dialog-backdrop.is-open .rovy-dialog{transform:translateY(0) scale(1)}
+.rovy-dialog-top{height:7px;background:linear-gradient(90deg,#8d6545,#d2b08c,#8d6545)}
+.rovy-dialog-body{padding:28px 26px 22px}
+.rovy-dialog-icon{width:62px;height:62px;margin:0 auto 15px;border-radius:50%;display:grid;place-items:center;background:#f4ece3;color:#9a704e;font-size:27px;font-weight:900;border:1px solid #e8d8c7}
+.rovy-dialog-icon.success{background:#edf5ef;color:#397452;border-color:#d5e8da}
+.rovy-dialog-icon.error{background:#fbefed;color:#a34f42;border-color:#f0d8d3}
+.rovy-dialog-kicker{font-size:10px;letter-spacing:2.5px;color:#a17b59;font-weight:800}
+.rovy-dialog h3{font-size:22px;margin:5px 0 9px;color:#191715;font-weight:900}
+.rovy-dialog-message{font-size:14px;line-height:1.9;color:#6d655e;white-space:pre-line}
+.rovy-dialog-input{width:100%;margin-top:16px;padding:13px 14px;border:1px solid #dfd3c7;border-radius:12px;font:inherit;outline:none}
+.rovy-dialog-input:focus{border-color:#b58a61;box-shadow:0 0 0 3px #b58a6122}
+.rovy-dialog-actions{display:flex;gap:10px;margin-top:22px}
+.rovy-dialog-actions button{flex:1;border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:800;cursor:pointer}
+.rovy-dialog-primary{background:linear-gradient(135deg,#b58a61,#8f6748);color:#fff;box-shadow:0 5px 14px #8f674833}
+.rovy-dialog-secondary{background:#f2eee9;color:#65584d}
+@media(max-width:480px){.rovy-dialog-body{padding:24px 19px 19px}.rovy-dialog h3{font-size:20px}.rovy-dialog-actions button{padding:11px 8px;font-size:13px}}
+
 </style>
 </head>
 <body>
@@ -52,6 +74,19 @@ textarea{min-height:90px;resize:vertical}.row{display:grid;grid-template-columns
  </section>
  <section class="card"><h2>طلباتي السابقة</h2><div id="returnHistory"><div class="empty">جاري تحميل السجل…</div></div></section>
 </main>
+
+<div class="rovy-dialog-backdrop" id="rovyDialogBackdrop" aria-hidden="true">
+ <section class="rovy-dialog" role="dialog" aria-modal="true" aria-labelledby="rovyDialogTitle">
+  <div class="rovy-dialog-top"></div><div class="rovy-dialog-body">
+   <div class="rovy-dialog-icon" id="rovyDialogIcon">?</div>
+   <div class="rovy-dialog-kicker">ROVY CARE · CUSTOMER EXPERIENCE</div>
+   <h3 id="rovyDialogTitle">تأكيد</h3><div class="rovy-dialog-message" id="rovyDialogMessage"></div>
+   <input class="rovy-dialog-input hidden" id="rovyDialogInput" type="text" autocomplete="off">
+   <div class="rovy-dialog-actions"><button class="rovy-dialog-secondary" id="rovyDialogCancel" type="button">إلغاء</button><button class="rovy-dialog-primary" id="rovyDialogOk" type="button">متابعة</button></div>
+  </div>
+ </section>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
@@ -64,6 +99,32 @@ let exchangeVariants=[];
 const statusNames={submitted:'طلب جديد - بانتظار المراجعة',approved:'تمت الموافقة - أرسل المرتجع وسجل رقم التتبع',rejected:'تم رفض الطلب',in_transit:'المرتجع في طريقه للمتجر',received:'استلمنا المرتجع - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'تم اعتماد الاسترداد - بانتظار التحويل',refunded:'تم استرداد المبلغ',exchange_pending:'تم الفحص - جاري تجهيز البديل',exchanged:'تم إنشاء البديل - بانتظار التسليم'};
 const reasons={wrong_size:'المقاس لا يناسبني',wrong_size_sent:'تم إرسال مقاس مختلف عن المطلوب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let rovyDialogResolver=null;
+function rovyDialog({kind='notice',title='تنبيه',message='',okText='حسنًا',cancelText='إلغاء',inputValue='',placeholder=''}={}){
+ const back=$('rovyDialogBackdrop'),icon=$('rovyDialogIcon'),input=$('rovyDialogInput'),cancel=$('rovyDialogCancel'),ok=$('rovyDialogOk');
+ icon.className='rovy-dialog-icon'+(kind==='success'?' success':kind==='error'?' error':'');
+ icon.textContent=kind==='success'?'✓':kind==='error'?'!':kind==='confirm'?'?':kind==='prompt'?'✎':'i';
+ $('rovyDialogTitle').textContent=title;$('rovyDialogMessage').textContent=message;
+ input.classList.toggle('hidden',kind!=='prompt');input.value=inputValue;input.placeholder=placeholder;
+ cancel.classList.toggle('hidden',kind==='notice'||kind==='success'||kind==='error');
+ cancel.textContent=cancelText;ok.textContent=okText;
+ back.classList.add('is-open');back.setAttribute('aria-hidden','false');
+ return new Promise(resolve=>{
+  rovyDialogResolver=resolve;
+  const finish=value=>{back.classList.remove('is-open');back.setAttribute('aria-hidden','true');rovyDialogResolver=null;ok.onclick=null;cancel.onclick=null;back.onclick=null;document.removeEventListener('keydown',onKey);resolve(value);};
+  const onKey=e=>{if(e.key==='Escape'&&kind!=='notice'&&kind!=='success'&&kind!=='error')finish(kind==='prompt'?null:false);if(e.key==='Enter'&&kind==='prompt')finish(input.value.trim());};
+  ok.onclick=()=>finish(kind==='prompt'?input.value.trim():true);
+  cancel.onclick=()=>finish(kind==='prompt'?null:false);
+  back.onclick=e=>{if(e.target===back&&kind!=='notice'&&kind!=='success'&&kind!=='error')finish(kind==='prompt'?null:false);};
+  document.addEventListener('keydown',onKey);
+  setTimeout(()=>kind==='prompt'?input.focus():ok.focus(),60);
+ });
+}
+function rovyNotice(message,kind='notice',title){return rovyDialog({kind,title:title||(kind==='success'?'تمت العملية بنجاح':kind==='error'?'تعذر إتمام العملية':'تنبيه'),message,okText:'حسنًا'});}
+function rovyConfirm(message,options={}){return rovyDialog({kind:'confirm',title:'تأكيد العملية',message,okText:'نعم، تأكيد',...options});}
+function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'بيانات الشحنة',message,okText:'حفظ البيانات',placeholder:'اكتب هنا',...options});}
+
 function money(n){return Number(n||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م';}
 async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw error;return typeof data==='string'?JSON.parse(data):data;}
 function renderEligible(){
@@ -105,30 +166,30 @@ async function loadHistory(){
 async function init(){
  const {data:{session}}=await sb.auth.getSession();
  if(!session){location.replace('auth.html?next=returns.html');return;}
- if(!session.user.email_confirmed_at){alert('يرجى تأكيد بريدك الإلكتروني أولاً.');location.replace('auth.html?next=returns.html');return;}
+ if(!session.user.email_confirmed_at){rovyNotice('يرجى تأكيد بريدك الإلكتروني أولاً.');location.replace('auth.html?next=returns.html');return;}
  eligibleOrders=await rpc('customer_list_return_eligible_orders');renderEligible();await loadExchangeCatalog();await loadHistory();
 }
 $('reason').addEventListener('change',()=>{$('shippingRule').textContent=['defective','damaged','not_as_described','wrong_size_sent'].includes($('reason').value)?'في هذه الحالة يتحمل المتجر تكاليف شحن المرتجع.':'في حالة تغيير الرأي أو السبب الآخر، يتحمل العميل تكاليف شحن المرتجع وفق سياسة المتجر.';});
 $('returnForm').addEventListener('submit',async e=>{
  e.preventDefault();const selected=[...document.querySelectorAll('.return-item:checked')];
- if(!selected.length){alert('اختر منتجًا واحدًا على الأقل.');return;}
+ if(!selected.length){rovyNotice('اختر منتجًا واحدًا على الأقل.');return;}
  const byOrder=new Map();
  for(const box of selected){const order=box.dataset.order,item=box.dataset.item,qty=Number(document.querySelector('[data-qty="'+item+'"]').value);if(!byOrder.has(order))byOrder.set(order,[]);byOrder.get(order).push({order_item_id:Number(item),quantity:qty});}
- if(byOrder.size!==1){alert('كل طلب مرتجع يجب أن يكون لطلب أصلي واحد.');return;}
+ if(byOrder.size!==1){rovyNotice('كل طلب مرتجع يجب أن يكون لطلب أصلي واحد.');return;}
  const [orderId,items]=[...byOrder.entries()][0];
- if(!confirm('تأكيد إرسال طلب '+($('requestType').value==='return'?'الاسترجاع':'الاستبدال')+' للطلب #'+orderId+'؟'))return;
+ if(!await rovyConfirm('سيتم إرسال طلب '+($('requestType').value==='return'?'استرجاع':'استبدال')+' للطلب رقم #'+orderId+' لمراجعته من فريق ROVY CARE. لن تحتاج إلى إرسال المنتج قبل مراجعة الطلب والموافقة عليه.',{title:'مراجعة طلبك قبل الإرسال',okText:'إرسال للمراجعة'}))return;
  const btn=$('submitReturn');btn.disabled=true;
- try{const res=await rpc('customer_create_return_request',{p_order_id:Number(orderId),p_request_type:$('requestType').value,p_reason:$('reason').value,p_details:$('details').value,p_items:items});alert('تم إرسال طلبك بنجاح. رقم الطلب: '+res.return_request_id);$('details').value='';await init();}
- catch(err){alert(err.message||'تعذر إرسال الطلب.');}finally{btn.disabled=false;}
+ try{const res=await rpc('customer_create_return_request',{p_order_id:Number(orderId),p_request_type:$('requestType').value,p_reason:$('reason').value,p_details:$('details').value,p_items:items});rovyNotice('تم إرسال طلبك بنجاح. رقم الطلب: '+res.return_request_id);$('details').value='';await init();}
+ catch(err){rovyNotice(err.message||'تعذر إرسال الطلب.');}finally{btn.disabled=false;}
 });
 
 document.addEventListener('change',async e=>{const box=e.target.closest('[data-exchange-builder]');if(!box)return;const row=e.target.closest('[data-ex-line]');if(!row)return;if(e.target.matches('[data-ex-product]')||e.target.matches('[data-ex-quantity]'))refreshExchangeVariantRow(row);if(e.target.matches('[data-ex-product]')||e.target.matches('[data-ex-quantity]')||e.target.matches('[data-ex-variant]'))await refreshExchangePreview(box);});
-document.addEventListener('click',async e=>{const add=e.target.closest('[data-ex-add]');if(add){const box=add.closest('[data-exchange-builder]'),lines=box.querySelector('[data-ex-lines]'),units=Number(box.dataset.exUnits||0);if(lines.querySelectorAll('[data-ex-line]').length>=units){alert('عدد المنتجات المختلفة لا يمكن أن يتجاوز عدد القطع المعتمدة.');return;}lines.insertAdjacentHTML('beforeend',exchangeRowHtml(units));await refreshExchangePreview(box);return;}const remove=e.target.closest('[data-ex-remove]');if(remove){const box=remove.closest('[data-exchange-builder]');remove.closest('[data-ex-line]').remove();await refreshExchangePreview(box);return;}const submit=e.target.closest('[data-ex-submit]');if(!submit)return;const box=submit.closest('[data-exchange-builder]');let items;try{items=collectExchangeItems(box);}catch(err){alert(err.message);return;}const units=Number(box.dataset.exUnits||0),total=items.reduce((n,i)=>n+i.quantity,0);if(total!==units||!items.length){alert('يجب اختيار منتجات بإجمالي '+units+' قطعة بالضبط.');return;}if(!confirm('تأكيد اختيار '+items.length+' منتج/مقاس بإجمالي '+total+' قطعة؟ سيتم إنشاء طلب بديل وحجز المخزون بعد التحقق النهائي.'))return;submit.disabled=true;try{const result=await rpc('customer_create_exchange_replacement',{p_request_id:Number(box.dataset.exchangeBuilder),p_items:items});alert('تم إنشاء طلب البديل بنجاح. رقم الطلب: #'+result.replacement_order_id+'\\nفرق السعر: '+money(result.net_settlement_amount)+'\\nشحن البديل: '+money(result.shipping_fee));await loadHistory();}catch(err){alert(err.message||'تعذر إنشاء طلب البديل.');}finally{submit.disabled=false;}});
+document.addEventListener('click',async e=>{const add=e.target.closest('[data-ex-add]');if(add){const box=add.closest('[data-exchange-builder]'),lines=box.querySelector('[data-ex-lines]'),units=Number(box.dataset.exUnits||0);if(lines.querySelectorAll('[data-ex-line]').length>=units){rovyNotice('عدد المنتجات المختلفة لا يمكن أن يتجاوز عدد القطع المعتمدة.');return;}lines.insertAdjacentHTML('beforeend',exchangeRowHtml(units));await refreshExchangePreview(box);return;}const remove=e.target.closest('[data-ex-remove]');if(remove){const box=remove.closest('[data-exchange-builder]');remove.closest('[data-ex-line]').remove();await refreshExchangePreview(box);return;}const submit=e.target.closest('[data-ex-submit]');if(!submit)return;const box=submit.closest('[data-exchange-builder]');let items;try{items=collectExchangeItems(box);}catch(err){rovyNotice(err.message);return;}const units=Number(box.dataset.exUnits||0),total=items.reduce((n,i)=>n+i.quantity,0);if(total!==units||!items.length){rovyNotice('يجب اختيار منتجات بإجمالي '+units+' قطعة بالضبط.');return;}if(!await rovyConfirm('أنت على وشك تأكيد اختيار '+items.length+' منتج/مقاس بإجمالي '+total+' قطعة. بعد التأكيد سنراجع السعر والمخزون وننشئ طلب البديل ونحجز الكمية المتاحة. لا يمكن التراجع عن إنشاء الطلب بعد إتمامه.',{title:'تأكيد المنتجات البديلة',okText:'تأكيد وإنشاء الطلب'}))return;submit.disabled=true;try{const result=await rpc('customer_create_exchange_replacement',{p_request_id:Number(box.dataset.exchangeBuilder),p_items:items});rovyNotice('تم إنشاء طلب البديل بنجاح. رقم الطلب: #'+result.replacement_order_id+'\\nفرق السعر: '+money(result.net_settlement_amount)+'\\nشحن البديل: '+money(result.shipping_fee));await loadHistory();}catch(err){rovyNotice(err.message||'تعذر إنشاء طلب البديل.');}finally{submit.disabled=false;}});
 document.addEventListener('click',async e=>{
  const btn=e.target.closest('[data-send-return]');if(!btn)return;
- const tracking=prompt('أدخل رقم تتبع شحنة المرتجع بعد تسليمها لشركة الشحن:');if(tracking===null)return;if(!tracking.trim())return;
- btn.disabled=true;try{await rpc('customer_mark_return_shipped',{p_request_id:Number(btn.dataset.sendReturn),p_tracking_number:tracking.trim()});alert('تم تسجيل رقم التتبع.');await loadHistory();}
- catch(err){alert(err.message||'تعذر تحديث الطلب.');}finally{btn.disabled=false;}
+ const tracking=await rovyPrompt('أدخل رقم تتبع شحنة المرتجع بعد تسليمها لشركة الشحن:');if(tracking===null)return;if(!tracking.trim())return;
+ btn.disabled=true;try{await rpc('customer_mark_return_shipped',{p_request_id:Number(btn.dataset.sendReturn),p_tracking_number:tracking.trim()});rovyNotice('تم تسجيل رقم التتبع.');await loadHistory();}
+ catch(err){rovyNotice(err.message||'تعذر تحديث الطلب.');}finally{btn.disabled=false;}
 });
 init().catch(err=>{console.error(err);$('eligibleOrders').innerHTML='<div class="empty">تعذر تحميل طلباتك: '+esc(err.message)+'</div>';});
 </script>
