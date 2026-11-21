@@ -943,7 +943,12 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const review=o.shipping_payment_status==='pending_review' && ['owner','manager','customer_service'].includes(staff.role)
       ? `<button class="mini gold" data-payment-review="approve" data-id="${esc(o.id)}">اعتماد الإيصال</button><button class="mini red" data-payment-review="reject" data-id="${esc(o.id)}">رفض الإيصال</button>`:'';
     const actions=next.map(s=>`<button class="mini ${s==='cancelled'?'red':'gold'}" data-order-action="${esc(s)}" data-id="${esc(o.id)}">${esc(statusNames[s])}</button>`).join('');
-    return paymentLabel+proof+review+actions || '<span class="muted">لا توجد إجراءات</span>';
+    const lifecycleNotice=o.status==='shipped'
+      ? '<div class="muted" style="margin-top:7px;color:#b7791f;font-weight:700">🚚 الشحنة مع شركة الشحن — الإلغاء غير متاح. استخدم مسار المرتجعات عند الحاجة.</div>'
+      : o.status==='delivered'
+        ? '<div class="muted" style="margin-top:7px;color:#16835d;font-weight:700">✓ تم التسليم — لا يمكن إلغاء الطلب؛ استخدم مسار المرتجعات أو الاستبدال.</div>'
+        : '';
+    return paymentLabel+proof+review+actions+lifecycleNotice || '<span class="muted">لا توجد إجراءات</span>';
   }
   function renderOrders() {
     const q=$('orderSearch').value.trim().toLowerCase();
