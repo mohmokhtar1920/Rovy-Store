@@ -384,16 +384,11 @@
         msg.textContent = english ? 'Verifying code...' : 'جاري التحقق من الكود...';
 
         try {
-            const { data, error } = await supabaseClient
-                .from('coupons')
-                .select('code, discount_percentage, is_active')
-                .eq('code', code)
-                .eq('is_active', true)
-                .maybeSingle();
+            const { data, error } = await supabaseClient.rpc('validate_coupon', { p_code: code });
 
             if (error) throw error;
 
-            if (!data) {
+            if (!data?.valid) {
                 throw new Error('كود الخصم غير صحيح أو غير نشط.');
             }
 
