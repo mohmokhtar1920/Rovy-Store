@@ -43,7 +43,7 @@ textarea{min-height:90px;resize:vertical}.row{display:grid;grid-template-columns
   <div id="eligibleOrders"><div class="empty">جاري تحميل طلباتك المؤهلة…</div></div>
   <form id="returnForm">
    <div class="row"><div><label for="requestType">نوع الطلب</label><select id="requestType" required><option value="return">استرجاع واسترداد المبلغ</option><option value="exchange">استبدال بمنتج آخر</option></select></div>
-   <div><label for="reason">سبب الطلب</label><select id="reason" required><option value="wrong_size">المقاس غير مناسب</option><option value="defective">عيب صناعة</option><option value="damaged">المنتج وصل تالف</option><option value="not_as_described">المنتج غير مطابق للوصف</option><option value="changed_mind">تغيير الرأي</option><option value="other">سبب آخر</option></select></div></div>
+   <div><label for="reason">سبب الطلب</label><select id="reason" required><option value="wrong_size">المقاس لا يناسبني</option><option value="wrong_size_sent">تم إرسال مقاس مختلف عن المطلوب</option><option value="defective">عيب صناعة</option><option value="damaged">المنتج وصل تالف</option><option value="not_as_described">المنتج غير مطابق للوصف</option><option value="changed_mind">تغيير الرأي</option><option value="other">سبب آخر</option></select></div></div>
    <label for="details">تفاصيل إضافية (اختياري)</label><textarea id="details" maxlength="1500" placeholder="اشرح لنا المشكلة أو المقاس المطلوب…"></textarea>
    <p class="notice" id="shippingRule">في حالة العيب أو التلف أو خطأ المقاس، يتحمل المتجر شحن المرتجع.</p>
    <button class="btn gold" id="submitReturn" type="submit">إرسال طلب الاسترجاع / الاستبدال</button>
@@ -59,7 +59,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
 let eligibleOrders=[];
 const statusNames={submitted:'طلب جديد - بانتظار المراجعة',approved:'تمت الموافقة - أرسل المرتجع وسجل رقم التتبع',rejected:'تم رفض الطلب',in_transit:'المرتجع في طريقه للمتجر',received:'استلمنا المرتجع - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'تم اعتماد الاسترداد - بانتظار التحويل',refunded:'تم استرداد المبلغ',exchange_pending:'تم الفحص - جاري تجهيز البديل',exchanged:'تم الاستبدال'};
-const reasons={wrong_size:'المقاس غير مناسب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
+const reasons={wrong_size:'المقاس لا يناسبني',wrong_size_sent:'تم إرسال مقاس مختلف عن المطلوب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function money(n){return Number(n||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م';}
 async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw error;return typeof data==='string'?JSON.parse(data):data;}
@@ -86,7 +86,7 @@ async function init(){
  if(!session.user.email_confirmed_at){alert('يرجى تأكيد بريدك الإلكتروني أولاً.');location.replace('auth.html?next=returns.html');return;}
  eligibleOrders=await rpc('customer_list_return_eligible_orders');renderEligible();await loadHistory();
 }
-$('reason').addEventListener('change',()=>{$('shippingRule').textContent=['defective','damaged','not_as_described','wrong_size'].includes($('reason').value)?'في هذه الحالة يتحمل المتجر تكاليف شحن المرتجع.':'في حالة تغيير الرأي أو السبب الآخر، يتحمل العميل تكاليف شحن المرتجع وفق سياسة المتجر.';});
+$('reason').addEventListener('change',()=>{$('shippingRule').textContent=['defective','damaged','not_as_described','wrong_size_sent'].includes($('reason').value)?'في هذه الحالة يتحمل المتجر تكاليف شحن المرتجع.':'في حالة تغيير الرأي أو السبب الآخر، يتحمل العميل تكاليف شحن المرتجع وفق سياسة المتجر.';});
 $('returnForm').addEventListener('submit',async e=>{
  e.preventDefault();const selected=[...document.querySelectorAll('.return-item:checked')];
  if(!selected.length){alert('اختر منتجًا واحدًا على الأقل.');return;}
