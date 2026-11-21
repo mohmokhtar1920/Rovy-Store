@@ -301,6 +301,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn invoice-access-only hidden" data-page="invoices">▧ الفواتير والمستندات</button>
       <button class="navbtn invoice-access-only hidden" data-page="waybills">▤ بوليصات الشحن</button>
       <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
+      <button class="navbtn returns-access-only hidden" data-page="returns">↩ المرتجعات والاستبدال</button>
       <button class="navbtn manager-only" data-page="refunds">↩ استردادات الشحن</button>
       <button class="navbtn" data-page="activity">◷ سجل النشاط</button>
       <button class="navbtn owner-only" data-page="staff">♙ الموظفون والصلاحيات</button>
@@ -396,6 +397,13 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         <div class="stats"><div class="stat"><small>بانتظار المراجعة</small><strong id="refundPendingCount">0</strong></div><div class="stat"><small>معتمدة بانتظار التحويل</small><strong id="refundApprovedCount">0</strong></div><div class="stat"><small>تم استردادها</small><strong id="refundPaidCount">0</strong></div><div class="stat"><small>مرفوضة</small><strong id="refundRejectedCount">0</strong></div></div>
         <div class="toolbar"><input id="refundSearch" placeholder="بحث برقم الطلب أو العميل أو الهاتف"><select id="refundFilter"><option value="">كل الحالات</option><option value="pending_review">بانتظار المراجعة</option><option value="approved">معتمد - بانتظار التحويل</option><option value="paid">تم الاسترداد</option><option value="rejected">مرفوض</option></select></div>
         <div class="panel"><div id="refundsTable" class="table-wrap"><div class="empty">جاري تحميل الاستردادات…</div></div></div>
+      </section>
+      <section id="page-returns" class="page hidden returns-access-only">
+        <div class="pagehead"><div><h1>المرتجعات والاستبدال</h1><div class="muted">مراجعة الطلبات، استلام المرتجع، الفحص، إعادة المخزون، والاسترداد أو الاستبدال.</div></div><button class="btn light" id="reloadReturns">↻ تحديث الطلبات</button></div>
+        <div class="notice">لا يتم رد أي منتج للمخزون إلا بعد استلامه وفحصه. ولا يتم تسجيل الاسترداد المالي إلا بعد تنفيذ التحويل فعليًا.</div>
+        <div class="stats"><div class="stat"><small>طلبات جديدة</small><strong id="returnSubmittedCount">0</strong></div><div class="stat"><small>في طريق العودة</small><strong id="returnTransitCount">0</strong></div><div class="stat"><small>بانتظار الفحص</small><strong id="returnReceivedCount">0</strong></div><div class="stat"><small>بانتظار الإجراء المالي</small><strong id="returnRefundCount">0</strong></div></div>
+        <div class="toolbar"><input id="returnSearch" placeholder="بحث برقم الطلب أو اسم العميل أو الهاتف"><select id="returnFilter"><option value="">كل الحالات</option><option value="submitted">طلب جديد</option><option value="approved">معتمد</option><option value="rejected">مرفوض</option><option value="in_transit">في طريق العودة</option><option value="received">تم الاستلام - بانتظار الفحص</option><option value="inspected">تم الفحص</option><option value="refund_approved">استرداد معتمد</option><option value="refunded">تم الاسترداد</option><option value="exchange_pending">استبدال بانتظار البديل</option><option value="exchanged">تم الاستبدال</option></select></div>
+        <div class="panel"><div id="returnsTable" class="table-wrap"><div class="empty">جاري تحميل طلبات المرتجعات…</div></div></div>
       </section>
       <section id="page-activity" class="page hidden"><div class="pagehead"><div><h1>سجل النشاط</h1><div class="muted">تاريخ تغييرات حالات الطلبات ومن قام بها</div></div><button class="btn light" id="reloadActivity">تحديث السجل</button></div><div class="panel"><div id="activityTable" class="table-wrap"><div class="empty">جاري تحميل سجل النشاط…</div></div></div></section>
       <section id="page-staff" class="page hidden owner-only"><div class="pagehead"><div><h1>الموظفون والصلاحيات</h1><div class="muted">إدارة حسابات الموظفين الموجودة وتحديد دور كل حساب</div></div><button class="btn gold" id="addStaffBtn">＋ إضافة موظف</button></div><div class="notice">لإضافة موظف جديد، يجب أن يكون لديه حساب مسجل مسبقًا بنفس البريد الإلكتروني. هذه الصفحة تربط الحساب بدور داخل لوحة الإدارة؛ ولا تنشئ كلمة مرور أو ترسل دعوة.</div><div class="panel"><div id="staffTable" class="table-wrap"><div class="empty">جاري تحميل الموظفين…</div></div></div></section>
@@ -677,6 +685,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('staffRole').textContent=roleNames[staff.role] || staff.role;
     document.querySelectorAll('.manager-only').forEach(el=>el.classList.toggle('hidden',!isManager()));
     document.querySelectorAll('.payment-review-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
+    document.querySelectorAll('.returns-access-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service','shipping'].includes(staff.role)));
     document.querySelectorAll('.invoice-access-only').forEach(el=>el.classList.toggle('hidden',!['owner','manager','customer_service'].includes(staff.role)));
     document.querySelectorAll('.owner-only').forEach(el=>el.classList.toggle('hidden',staff.role!=='owner'));
   }
@@ -858,6 +867,40 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       }).join('')+'</tbody></table>':'<div class="empty">لا توجد طلبات استرداد مطابقة.</div>';
   }
 
+  let returnRequests=[];
+  async function loadReturnRequests(){
+    if(!['owner','manager','customer_service','shipping'].includes(staff?.role))return;
+    const data=await rpc('admin_list_return_requests');
+    returnRequests=Array.isArray(data)?data:[];
+    renderReturnRequests();
+  }
+  function renderReturnRequests(){
+    if(!$('returnsTable'))return;
+    const counts={submitted:0,in_transit:0,received:0,inspected:0,refund_approved:0,exchange_pending:0};
+    returnRequests.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++;});
+    $('returnSubmittedCount').textContent=counts.submitted;
+    $('returnTransitCount').textContent=counts.in_transit;
+    $('returnReceivedCount').textContent=counts.received;
+    $('returnRefundCount').textContent=counts.inspected+counts.refund_approved;
+    const labels={submitted:'طلب جديد',approved:'معتمد - بانتظار إرسال المرتجع',rejected:'مرفوض',in_transit:'في طريق العودة',received:'تم الاستلام - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'استرداد معتمد - بانتظار التحويل',refunded:'تم الاسترداد',exchange_pending:'الفحص مكتمل - بانتظار طلب البديل',exchanged:'تم الاستبدال'};
+    const reasons={wrong_size:'مقاس غير مناسب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
+    const q=($('returnSearch')?.value||'').trim().toLowerCase(),filter=$('returnFilter')?.value||'';
+    const rows=returnRequests.filter(r=>(!filter||r.status===filter)&&[r.id,r.order_id,r.customer_name,r.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
+    $('returnsTable').innerHTML=rows.length?'<table><thead><tr><th>الطلب / المرتجع</th><th>العميل</th><th>النوع والسبب</th><th>المنتجات</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>'+
+      rows.map(r=>{
+        const items=(r.items||[]).map(i=>'<div class="muted">• '+esc(i.product_name)+' × '+esc(i.requested_quantity)+(i.size?' · '+esc(i.size):'')+(i.color?' · '+esc(i.color):'')+'</div>').join('');
+        let actions='';
+        if(r.status==='submitted'&&['owner','manager','customer_service'].includes(staff.role))actions='<button class="mini gold" data-return-review="approve" data-id="'+esc(r.id)+'">اعتماد</button> <button class="mini red" data-return-review="reject" data-id="'+esc(r.id)+'">رفض</button>';
+        if(r.status==='in_transit'&&['owner','manager','shipping'].includes(staff.role))actions='<button class="mini gold" data-return-receive="'+esc(r.id)+'">تأكيد استلام المرتجع</button>';
+        if(r.status==='received'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-inspect="'+esc(r.id)+'">فحص وتحديث المخزون</button>';
+        if(r.status==='inspected'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-approve-refund="'+esc(r.id)+'">اعتماد الاسترداد</button>';
+        if(r.status==='refund_approved'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-paid="'+esc(r.id)+'">تسجيل التحويل</button>';
+        if(r.status==='exchange_pending'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-exchange="'+esc(r.id)+'">ربط طلب البديل</button>';
+        const ship=r.return_tracking_number?'<div class="muted">تتبع المرتجع: '+esc(r.return_tracking_number)+'</div>':'';
+        const amount=r.refund_amount?'<div class="muted">قيمة الاسترداد: '+money(r.refund_amount)+'</div>':'';
+        return '<tr><td><strong>طلب #'+esc(r.order_id)+'</strong><div class="muted">مرتجع #'+esc(r.id)+'</div></td><td>'+esc(r.customer_name||'—')+'<div class="muted">'+esc(r.customer_phone||'')+'</div></td><td>'+ (r.request_type==='return'?'استرجاع':'استبدال')+'<div class="muted">'+esc(reasons[r.reason]||r.reason)+'</div><div class="muted">شحن العودة على: '+(r.return_shipping_payer==='store'?'المتجر':'العميل')+'</div></td><td>'+items+ship+amount+'</td><td><span class="pill '+(['refunded','exchanged'].includes(r.status)?'green':['rejected'].includes(r.status)?'red':'blue')+'">'+esc(labels[r.status]||r.status)+'</span>'+(r.review_notes?'<div class="muted">'+esc(r.review_notes)+'</div>':'')+(r.inspection_notes?'<div class="muted">'+esc(r.inspection_notes)+'</div>':'')+'</td><td><div class="actions">'+(actions||'—')+'</div></td></tr>';
+      }).join('')+'</tbody></table>':'<div class="empty">لا توجد طلبات مرتجعات مطابقة.</div>';
+  }
   async function loadProducts() {
     const data=await rpc('admin_list_products');
     products=Array.isArray(data)?data:[];
@@ -1259,6 +1302,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
       if(page==='finance'&&staff?.role!=='owner')return;
       if(page==='refunds'&&!isManager())return;
+      if(page==='returns'&&!['owner','manager','customer_service','shipping'].includes(staff?.role))return;
+      if(page==='returns')loadReturnRequests().catch(err=>notify(err.message||'تعذر تحميل المرتجعات.',true));
       if(page==='refunds')loadShippingRefunds().catch(err=>notify(err.message||'تعذر تحميل الاستردادات.',true));
       if(page==='analytics'&&staff?.role!=='owner')return;
       if(page==='invoices'&&!['owner','manager','customer_service'].includes(staff?.role))return;
@@ -1334,6 +1379,71 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('paymentFilter').addEventListener('change',renderPayments);
   $('reloadPayments').addEventListener('click',()=>loadOrders().then(()=>notify('تم تحديث بيانات المدفوعات.')).catch(e=>notify(e.message,true)));
   $('reloadRefunds').addEventListener('click',()=>loadShippingRefunds().then(()=>notify('تم تحديث الاستردادات.')).catch(e=>notify(e.message,true)));
+  $('reloadReturns')?.addEventListener('click',()=>loadReturnRequests().then(()=>notify('تم تحديث طلبات المرتجعات.')).catch(e=>notify(e.message,true)));
+  $('returnSearch')?.addEventListener('input',renderReturnRequests);
+  $('returnFilter')?.addEventListener('change',renderReturnRequests);
+  document.addEventListener('click',async e=>{
+    const review=e.target.closest('[data-return-review]');
+    if(review){
+      const id=Number(review.dataset.id),approve=review.dataset.returnReview==='approve';
+      let notes=prompt(approve?'ملاحظات الاعتماد (اختياري):':'سبب رفض طلب المرتجع:');
+      if(notes===null)return;
+      if(!approve&&!notes.trim()){notify('سبب الرفض مطلوب.',true);return;}
+      if(!confirm(approve?'اعتماد طلب المرتجع؟':'تأكيد رفض طلب المرتجع؟'))return;
+      review.disabled=true;
+      try{await rpc('admin_review_return_request',{p_request_id:id,p_approved:approve,p_notes:notes||null});notify(approve?'تم اعتماد طلب المرتجع.':'تم رفض طلب المرتجع.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر تحديث طلب المرتجع.',true);}finally{review.disabled=false;}
+    }
+    const receive=e.target.closest('[data-return-receive]');
+    if(receive){
+      const id=Number(receive.dataset.returnReceive),notes=prompt('ملاحظات استلام المرتجع (اختياري):');
+      if(notes===null)return;
+      if(!confirm('تأكيد استلام المرتجع فعليًا؟'))return;
+      receive.disabled=true;try{await rpc('admin_receive_return_request',{p_request_id:id,p_notes:notes||null});notify('تم تسجيل استلام المرتجع.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر تسجيل الاستلام.',true);}finally{receive.disabled=false;}
+    }
+    const inspect=e.target.closest('[data-return-inspect]');
+    if(inspect){
+      const r=returnRequests.find(x=>Number(x.id)===Number(inspect.dataset.returnInspect));if(!r)return;
+      const items=[];
+      for(const item of (r.items||[])){
+        const answer=prompt('فحص: '+item.product_name+' '+(item.size||'')+' '+(item.color||'')+'\nالكمية المطلوبة: '+item.requested_quantity+'\nاكتب الكمية المقبولة التي ستعود للمخزون (0 إلى '+item.requested_quantity+'):',String(item.requested_quantity));
+        if(answer===null)return;
+        const accepted=Number(answer);if(!Number.isInteger(accepted)||accepted<0||accepted>Number(item.requested_quantity)){notify('الكمية المقبولة غير صحيحة.',true);return;}
+        const note=prompt('ملاحظة فحص '+item.product_name+' (اختياري):')||'';
+        items.push({return_item_id:item.id,accepted_quantity:accepted,inspection_note:note});
+      }
+      const notes=prompt('ملاحظات الفحص العامة (اختياري):');if(notes===null)return;
+      if(!confirm('تأكيد نتيجة الفحص؟ الكميات المقبولة ستضاف للمخزون الآن.'))return;
+      inspect.disabled=true;try{const result=await rpc('admin_inspect_return_request',{p_request_id:Number(r.id),p_items:items,p_notes:notes||null});notify(result?.status==='rejected'?'لم يتم قبول أي منتج.':'تم الفحص وتحديث المخزون.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر حفظ الفحص.',true);}finally{inspect.disabled=false;}
+    }
+    const approveRefund=e.target.closest('[data-return-approve-refund]');
+    if(approveRefund){
+      const notes=prompt('ملاحظات اعتماد الاسترداد (اختياري):');if(notes===null)return;
+      if(!confirm('اعتماد استرداد قيمة المنتجات المقبولة؟'))return;
+      approveRefund.disabled=true;try{await rpc('admin_approve_return_refund',{p_request_id:Number(approveRefund.dataset.returnApproveRefund),p_notes:notes||null});notify('تم اعتماد الاسترداد.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر اعتماد الاسترداد.',true);}finally{approveRefund.disabled=false;}
+    }
+    const paid=e.target.closest('[data-return-paid]');
+    if(paid){
+      const method=prompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
+      const reference=prompt('مرجع التحويل (مطلوب):');if(reference===null||!reference.trim())return;
+      if(!confirm('هل تم تحويل المبلغ فعليًا للعميل؟'))return;
+      paid.disabled=true;try{await rpc('admin_mark_return_refund_paid',{p_request_id:Number(paid.dataset.returnPaid),p_payment_method:method.trim(),p_payment_reference:reference.trim()});notify('تم تسجيل الاسترداد وربطه بالمصروفات.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر تسجيل الاسترداد.',true);}finally{paid.disabled=false;}
+    }
+    const exchange=e.target.closest('[data-return-exchange]');
+    if(exchange){
+      const orderId=prompt('أدخل رقم طلب البديل الذي تم إنشاؤه لنفس العميل:');if(orderId===null)return;
+      if(!/^\\d+$/.test(orderId.trim())){notify('رقم الطلب غير صحيح.',true);return;}
+      const notes=prompt('ملاحظات الاستبدال (اختياري):');if(notes===null)return;
+      if(!confirm('ربط طلب البديل #'+orderId+' وإغلاق طلب الاستبدال؟'))return;
+      exchange.disabled=true;try{await rpc('admin_complete_return_exchange',{p_request_id:Number(exchange.dataset.returnExchange),p_replacement_order_id:Number(orderId),p_notes:notes||null});notify('تم ربط طلب البديل وإغلاق الاستبدال.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر إتمام الاستبدال.',true);}finally{exchange.disabled=false;}
+    }
+  });
+
   $('refundSearch').addEventListener('input',renderShippingRefunds);$('refundFilter').addEventListener('change',renderShippingRefunds);
   document.addEventListener('click',async e=>{
     const review=e.target.closest('[data-refund-review]');
