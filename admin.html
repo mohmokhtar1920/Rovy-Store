@@ -967,7 +967,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const items=itemsFor(o);
     const summary=items.map(i=>{const productName=i.product_name||i.name||i.products?.name||'منتج';const imageUrl=safeUrl(i.image_url||i.products?.image_url);const options=[i.size?('المقاس: '+i.size):'',i.color?('اللون: '+i.color):''].filter(Boolean).join(' - ');const image=imageUrl?`<img class="order-product-thumb" src="${esc(imageUrl)}" alt="${esc(productName)}" data-order-image="${esc(imageUrl)}" title="اضغط لتكبير الصورة" loading="lazy">`:'<span class="order-product-noimage">لا توجد صورة</span>';return `<div class="order-product">${image}<div><strong>${esc(productName)}</strong><div class="muted">الكمية: ${Number(i.quantity||0)}${options?' · '+esc(options):''}</div></div></div>`;}).join('') || '—';
     return `<tr>
-      <td><strong>#${esc(o.id)}</strong><div class="muted">${esc(o.created_at ? new Date(o.created_at).toLocaleString('ar-EG') : '')}</div></td>
+      <td><strong>#${esc(o.id)}</strong>${o.is_exchange_replacement?'<span class="pill blue" style="margin-right:6px">استبدال</span>':''}<div class="muted">${esc(o.created_at ? new Date(o.created_at).toLocaleString('ar-EG') : '')}</div>${o.is_exchange_replacement?'<div class="muted">فرق السعر: '+money(o.exchange_price_difference)+' · رصيد المرتجع: '+money(o.exchange_credit_amount)+'</div>':''}</td>
       <td>${esc(o.customer_name)}<div class="muted">${esc(o.customer_phone)}</div>${compact?'':`<div class="muted">${esc(o.governorate_name||'المحافظة غير محددة')} · الشحن: ${money(o.shipping_fee||0)}</div><div class="muted">${esc(o.customer_address||'')}</div>`}</td>
       ${compact?'':`<td>${summary}</td>`}
       <td>${money(o.total_price)}</td>
