@@ -882,7 +882,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('returnTransitCount').textContent=counts.in_transit;
     $('returnReceivedCount').textContent=counts.received;
     $('returnRefundCount').textContent=counts.inspected+counts.refund_approved;
-    const labels={submitted:'طلب جديد',approved:'معتمد - بانتظار إرسال المرتجع',rejected:'مرفوض',in_transit:'في طريق العودة',received:'تم الاستلام - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'استرداد معتمد - بانتظار التحويل',refunded:'تم الاسترداد',exchange_pending:'الفحص مكتمل - بانتظار طلب البديل',exchanged:'تم الاستبدال'};
+    const labels={submitted:'طلب جديد',approved:'معتمد - بانتظار إرسال المرتجع',rejected:'مرفوض',in_transit:'في طريق العودة',received:'تم الاستلام - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'استرداد معتمد - بانتظار التحويل',refunded:'تم الاسترداد',exchange_pending:'الفحص مكتمل - بانتظار طلب البديل',exchanged:'تم إنشاء البديل - بانتظار التسليم'};
     const reasons={wrong_size:'المقاس لا يناسب العميل',wrong_size_sent:'تم إرسال مقاس مختلف عن المطلوب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
     const q=($('returnSearch')?.value||'').trim().toLowerCase(),filter=$('returnFilter')?.value||'';
     const rows=returnRequests.filter(r=>(!filter||r.status===filter)&&[r.id,r.order_id,r.customer_name,r.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
@@ -895,10 +895,12 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
         if(r.status==='received'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-inspect="'+esc(r.id)+'">فحص وتحديث المخزون</button>';
         if(r.status==='inspected'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-approve-refund="'+esc(r.id)+'">اعتماد الاسترداد</button>';
         if(r.status==='refund_approved'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-paid="'+esc(r.id)+'">تسجيل التحويل</button>';
-        if(r.status==='exchange_pending'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-exchange="'+esc(r.id)+'">ربط طلب البديل</button>';
+        if(r.status==='exchange_pending'&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-return-exchange="'+esc(r.id)+'">ربط طلب البديل وحساب الفرق</button>';
+        if(r.status==='exchanged'&&['customer_due','store_refund_due'].includes(r.exchange_difference_status)&&['owner','manager'].includes(staff.role))actions='<button class="mini gold" data-exchange-settle="'+esc(r.id)+'">تسوية فرق السعر</button>';
         const ship=r.return_tracking_number?'<div class="muted">تتبع المرتجع: '+esc(r.return_tracking_number)+'</div>':'';
         const amount=r.refund_amount?'<div class="muted">قيمة الاسترداد: '+money(r.refund_amount)+'</div>':'';
-        return '<tr><td><strong>طلب #'+esc(r.order_id)+'</strong><div class="muted">مرتجع #'+esc(r.id)+'</div></td><td>'+esc(r.customer_name||'—')+'<div class="muted">'+esc(r.customer_phone||'')+'</div></td><td>'+ (r.request_type==='return'?'استرجاع':'استبدال')+'<div class="muted">'+esc(reasons[r.reason]||r.reason)+'</div><div class="muted">شحن العودة على: '+(r.return_shipping_payer==='store'?'المتجر':'العميل')+'</div></td><td>'+items+ship+amount+'</td><td><span class="pill '+(['refunded','exchanged'].includes(r.status)?'green':['rejected'].includes(r.status)?'red':'blue')+'">'+esc(labels[r.status]||r.status)+'</span>'+(r.review_notes?'<div class="muted">'+esc(r.review_notes)+'</div>':'')+(r.inspection_notes?'<div class="muted">'+esc(r.inspection_notes)+'</div>':'')+'</td><td><div class="actions">'+(actions||'—')+'</div></td></tr>';
+        const exchangeInfo=r.replacement_order_id?'<div class="muted" style="margin-top:6px;padding:7px;background:#f7f8fa;border-radius:8px">طلب البديل #'+esc(r.replacement_order_id)+' · قيمة المرتجع '+money(r.exchange_original_value)+' · قيمة البديل '+money(r.exchange_replacement_value)+' · فرق السعر '+(Number(r.exchange_price_difference)>0?'على العميل: ':Number(r.exchange_price_difference)<0?'لصالح العميل: ':'')+money(Math.abs(Number(r.exchange_price_difference||0)))+' · شحن البديل '+money(r.exchange_shipping_fee)+' · '+(r.exchange_difference_status==='customer_due'?'فرق السعر يُحصّل عند التسليم':r.exchange_difference_status==='store_refund_due'?'المتجر يرد الفرق بعد التسليم':r.exchange_difference_status==='settled'?'تمت تسوية فرق السعر':'')+(r.exchange_difference_reference?'<br>مرجع التسوية: '+esc(r.exchange_difference_reference):'')+'</div>':'';
+        return '<tr><td><strong>طلب #'+esc(r.order_id)+'</strong><div class="muted">مرتجع #'+esc(r.id)+'</div></td><td>'+esc(r.customer_name||'—')+'<div class="muted">'+esc(r.customer_phone||'')+'</div></td><td>'+ (r.request_type==='return'?'استرجاع':'استبدال')+'<div class="muted">'+esc(reasons[r.reason]||r.reason)+'</div><div class="muted">شحن العودة على: '+(r.return_shipping_payer==='store'?'المتجر':'العميل')+'</div></td><td>'+items+ship+amount+'</td><td><span class="pill '+(['refunded','exchanged'].includes(r.status)?'green':['rejected'].includes(r.status)?'red':'blue')+'">'+esc(labels[r.status]||r.status)+'</span>'+(r.review_notes?'<div class="muted">'+esc(r.review_notes)+'</div>':'')+(r.inspection_notes?'<div class="muted">'+esc(r.inspection_notes)+'</div>':'')+exchangeInfo+'</td><td><div class="actions">'+(actions||'—')+'</div></td></tr>';
       }).join('')+'</tbody></table>':'<div class="empty">لا توجد طلبات مرتجعات مطابقة.</div>';
   }
   async function loadProducts() {
@@ -1433,6 +1435,23 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       paid.disabled=true;try{await rpc('admin_mark_return_refund_paid',{p_request_id:Number(paid.dataset.returnPaid),p_payment_method:method.trim(),p_payment_reference:reference.trim()});notify('تم تسجيل الاسترداد وربطه بالمصروفات.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر تسجيل الاسترداد.',true);}finally{paid.disabled=false;}
     }
+
+    const exchangeSettle=e.target.closest('[data-exchange-settle]');
+    if(exchangeSettle){
+      const row=returnRequests.find(x=>Number(x.id)===Number(exchangeSettle.dataset.exchangeSettle));
+      if(!row)return;
+      const refund=row.exchange_difference_status==='store_refund_due';
+      const method=prompt(refund?'طريقة تحويل فرق السعر للعميل: vodafone_cash أو instapay أو bank_transfer':'طريقة تحصيل فرق السعر من العميل: cash أو vodafone_cash أو instapay أو bank_transfer');
+      if(method===null)return;
+      const allowed=refund?['vodafone_cash','instapay','bank_transfer']:['cash','vodafone_cash','instapay','bank_transfer'];
+      if(!allowed.includes(method.trim())){notify('طريقة التسوية غير صحيحة.',true);return;}
+      const reference=prompt('رقم مرجع التحويل أو إيصال التحصيل (مطلوب):');if(reference===null||!reference.trim())return;
+      if(!confirm(refund?'تأكيد أن المتجر حوّل فرق السعر فعليًا للعميل؟':'تأكيد أن العميل دفع فرق السعر فعليًا؟'))return;
+      exchangeSettle.disabled=true;
+      try{await rpc('admin_settle_exchange_difference',{p_request_id:Number(row.id),p_payment_method:method.trim(),p_payment_reference:reference.trim()});notify('تم تسجيل تسوية فرق السعر.');await loadReturnRequests();}
+      catch(err){notify(err.message||'تعذر تسجيل التسوية.',true);}finally{exchangeSettle.disabled=false;}
+    }
+
     const exchange=e.target.closest('[data-return-exchange]');
     if(exchange){
       const orderId=prompt('أدخل رقم طلب البديل الذي تم إنشاؤه لنفس العميل:');if(orderId===null)return;
