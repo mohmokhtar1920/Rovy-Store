@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>الاسترجاع والاستبدال | ROVY STORE</title>
+<meta name="description" content="قدم وتابع طلب استرجاع أو استبدال مشترياتك من ROVY STORE.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="assets/rovy-brand.css">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#171717;--gold:#b58a61;--paper:#f7f5f1;--line:#e8e1d8}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Cairo,sans-serif}
+header{background:#171717;color:#fff;padding:18px 5%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:25px;font-weight:900;letter-spacing:2px;color:#fff;text-decoration:none}.logo span{color:#c9a27d}
+header a.back{color:#e9d6c3;text-decoration:none;font-size:14px}
+main{max-width:980px;margin:38px auto;padding:0 16px}
+.hero{background:linear-gradient(120deg,#171717,#29231f);color:#fff;border-radius:20px;padding:28px 30px;margin-bottom:22px}
+.hero small{color:#d8b38e;letter-spacing:2px}.hero h1{margin:7px 0;font-size:28px}.hero p{margin:0;color:#ded8d1}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin:18px 0;box-shadow:0 8px 28px #20160d08}
+h2{font-size:20px;margin:0 0 16px}.hint{background:#f8f1e9;border:1px solid #ead8c7;border-radius:12px;padding:12px 14px;color:#654c37;font-size:13px;margin-bottom:16px}
+label{display:block;font-weight:700;margin:10px 0 6px}input,select,textarea{font:inherit;width:100%;padding:11px 12px;border:1px solid #dcd5cd;border-radius:10px;background:#fff;color:#222}
+textarea{min-height:90px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.order{border:1px solid var(--line);border-radius:13px;padding:16px;margin:12px 0}
+.orderhead{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:8px}
+.item{display:grid;grid-template-columns:22px 1fr 90px;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f1eee9}
+.item:last-child{border:0}.item input[type=checkbox]{width:18px;height:18px}.item small,.muted{display:block;color:#777;font-size:12px}
+.qty{padding:7px}.btn{border:0;border-radius:10px;background:#171717;color:#fff;padding:12px 20px;font:inherit;font-weight:800;cursor:pointer}
+.btn.gold{background:var(--gold);color:#fff}.btn:disabled{opacity:.5;cursor:wait}
+.status{display:inline-block;border-radius:99px;padding:4px 10px;background:#f0eee9;font-size:12px;font-weight:800}
+.status.green{background:#e8f5ed;color:#23744a}.status.red{background:#fbe9e9;color:#a33}.status.gold{background:#f8eee4;color:#8a5b30}
+.request{border:1px solid var(--line);border-radius:12px;padding:14px;margin:10px 0}
+.empty{padding:20px;text-align:center;color:#777}.notice{margin:12px 0;font-size:13px;color:#6b625a}
+@media(max-width:650px){.row{grid-template-columns:1fr}.hero{padding:22px}.hero h1{font-size:23px}.item{grid-template-columns:22px 1fr 76px}}
+</style>
+</head>
+<body>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><a class="back" href="return-policy.html">سياسة الاسترجاع ←</a></header>
+<main>
+ <section class="hero"><small>ROVY CARE · AFTER-SALES</small><h1>الاسترجاع والاستبدال</h1><p>تجربة شراء مطمئنة تبدأ من لحظة الطلب وتستمر حتى بعد الاستلام.</p></section>
+ <section class="card">
+  <h2>طلب جديد</h2>
+  <div class="hint">يمكنك تقديم الطلب خلال 14 يومًا من تاريخ الاستلام. اختر القطع والكميات المطلوبة، وسيتم مراجعة الطلب قبل إرسال المرتجع.</div>
+  <div id="eligibleOrders"><div class="empty">جاري تحميل طلباتك المؤهلة…</div></div>
+  <form id="returnForm">
+   <div class="row"><div><label for="requestType">نوع الطلب</label><select id="requestType" required><option value="return">استرجاع واسترداد المبلغ</option><option value="exchange">استبدال بمنتج آخر</option></select></div>
+   <div><label for="reason">سبب الطلب</label><select id="reason" required><option value="wrong_size">المقاس غير مناسب</option><option value="defective">عيب صناعة</option><option value="damaged">المنتج وصل تالف</option><option value="not_as_described">المنتج غير مطابق للوصف</option><option value="changed_mind">تغيير الرأي</option><option value="other">سبب آخر</option></select></div></div>
+   <label for="details">تفاصيل إضافية (اختياري)</label><textarea id="details" maxlength="1500" placeholder="اشرح لنا المشكلة أو المقاس المطلوب…"></textarea>
+   <p class="notice" id="shippingRule">في حالة العيب أو التلف أو خطأ المقاس، يتحمل المتجر شحن المرتجع.</p>
+   <button class="btn gold" id="submitReturn" type="submit">إرسال طلب الاسترجاع / الاستبدال</button>
+  </form>
+ </section>
+ <section class="card"><h2>طلباتي السابقة</h2><div id="returnHistory"><div class="empty">جاري تحميل السجل…</div></div></section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+let eligibleOrders=[];
+const statusNames={submitted:'طلب جديد - بانتظار المراجعة',approved:'تمت الموافقة - أرسل المرتجع وسجل رقم التتبع',rejected:'تم رفض الطلب',in_transit:'المرتجع في طريقه للمتجر',received:'استلمنا المرتجع - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'تم اعتماد الاسترداد - بانتظار التحويل',refunded:'تم استرداد المبلغ',exchange_pending:'تم الفحص - جاري تجهيز البديل',exchanged:'تم الاستبدال'};
+const reasons={wrong_size:'المقاس غير مناسب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function money(n){return Number(n||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م';}
+async function rpc(name,args={}){const {data,error}=await sb.rpc(name,args);if(error)throw error;return typeof data==='string'?JSON.parse(data):data;}
+function renderEligible(){
+ if(!eligibleOrders.length){$('eligibleOrders').innerHTML='<div class="empty">لا توجد طلبات مستلمة متاحة للاسترجاع خلال الفترة الحالية.</div>';return;}
+ $('eligibleOrders').innerHTML=eligibleOrders.map(o=>'<div class="order"><div class="orderhead"><strong>الطلب #'+esc(o.order_id)+'</strong><span class="muted">تاريخ الاستلام: '+new Date(o.delivered_at).toLocaleDateString('ar-EG')+'</span></div>'+
+ (o.items||[]).map(i=>'<div class="item"><input type="checkbox" class="return-item" data-order="'+esc(o.order_id)+'" data-item="'+esc(i.order_item_id)+'" aria-label="اختيار '+esc(i.product_name)+'">'+
+ '<div><strong>'+esc(i.product_name)+'</strong><small>'+(i.size?'المقاس: '+esc(i.size)+' · ':'')+(i.color?'اللون: '+esc(i.color)+' · ':'')+'المتاح للإرجاع: '+esc(i.remaining_quantity)+' · '+money(i.unit_price)+'</small></div>'+
+ '<select class="qty" data-qty="'+esc(i.order_item_id)+'">'+Array.from({length:Number(i.remaining_quantity)},(_,n)=>'<option value="'+(n+1)+'">'+(n+1)+'</option>').join('')+'</select></div>').join('')+'</div>').join('');
+}
+async function loadHistory(){
+ const rows=await rpc('customer_list_return_requests');
+ $('returnHistory').innerHTML=rows.length?rows.map(r=>'<div class="request"><div class="orderhead"><strong>طلب مرتجع #'+esc(r.id)+' · الطلب الأصلي #'+esc(r.order_id)+'</strong><span class="status '+(['refunded','exchanged'].includes(r.status)?'green':r.status==='rejected'?'red':'gold')+'">'+esc(statusNames[r.status]||r.status)+'</span></div><div class="muted">'+(r.request_type==='return'?'استرجاع':'استبدال')+' · '+esc(reasons[r.reason]||r.reason)+' · '+new Date(r.created_at).toLocaleDateString('ar-EG')+'</div>'+
+ (r.items||[]).map(i=>'<div class="muted">'+esc(i.product_name)+' × '+esc(i.requested_quantity)+(i.accepted_quantity?' · المقبول: '+esc(i.accepted_quantity):'')+'</div>').join('')+
+ (r.refund_amount?'<p><strong>قيمة الاسترداد: '+money(r.refund_amount)+'</strong></p>':'')+
+ (r.review_notes?'<p class="muted">ملاحظات: '+esc(r.review_notes)+'</p>':'')+
+ (r.status==='approved'?'<button class="btn gold" data-send-return="'+esc(r.id)+'">سجل تسليم المرتجع لشركة الشحن</button>':'')+
+ (r.return_tracking_number?'<div class="muted">رقم تتبع المرتجع: '+esc(r.return_tracking_number)+'</div>':'')+
+ (r.replacement_order_id?'<div class="muted">رقم طلب البديل: #'+esc(r.replacement_order_id)+'</div>':'')+'</div>').join(''):'<div class="empty">لم تقدم أي طلب استرجاع أو استبدال حتى الآن.</div>';
+}
+async function init(){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){location.replace('auth.html?next=returns.html');return;}
+ if(!session.user.email_confirmed_at){alert('يرجى تأكيد بريدك الإلكتروني أولاً.');location.replace('auth.html?next=returns.html');return;}
+ eligibleOrders=await rpc('customer_list_return_eligible_orders');renderEligible();await loadHistory();
+}
+$('reason').addEventListener('change',()=>{$('shippingRule').textContent=['defective','damaged','not_as_described','wrong_size'].includes($('reason').value)?'في هذه الحالة يتحمل المتجر تكاليف شحن المرتجع.':'في حالة تغيير الرأي أو السبب الآخر، يتحمل العميل تكاليف شحن المرتجع وفق سياسة المتجر.';});
+$('returnForm').addEventListener('submit',async e=>{
+ e.preventDefault();const selected=[...document.querySelectorAll('.return-item:checked')];
+ if(!selected.length){alert('اختر منتجًا واحدًا على الأقل.');return;}
+ const byOrder=new Map();
+ for(const box of selected){const order=box.dataset.order,item=box.dataset.item,qty=Number(document.querySelector('[data-qty="'+item+'"]').value);if(!byOrder.has(order))byOrder.set(order,[]);byOrder.get(order).push({order_item_id:Number(item),quantity:qty});}
+ if(byOrder.size!==1){alert('كل طلب مرتجع يجب أن يكون لطلب أصلي واحد.');return;}
+ const [orderId,items]=[...byOrder.entries()][0];
+ if(!confirm('تأكيد إرسال طلب '+($('requestType').value==='return'?'الاسترجاع':'الاستبدال')+' للطلب #'+orderId+'؟'))return;
+ const btn=$('submitReturn');btn.disabled=true;
+ try{const res=await rpc('customer_create_return_request',{p_order_id:Number(orderId),p_request_type:$('requestType').value,p_reason:$('reason').value,p_details:$('details').value,p_items:items});alert('تم إرسال طلبك بنجاح. رقم الطلب: '+res.return_request_id);$('details').value='';await init();}
+ catch(err){alert(err.message||'تعذر إرسال الطلب.');}finally{btn.disabled=false;}
+});
+document.addEventListener('click',async e=>{
+ const btn=e.target.closest('[data-send-return]');if(!btn)return;
+ const tracking=prompt('أدخل رقم تتبع شحنة المرتجع بعد تسليمها لشركة الشحن:');if(tracking===null)return;if(!tracking.trim())return;
+ btn.disabled=true;try{await rpc('customer_mark_return_shipped',{p_request_id:Number(btn.dataset.sendReturn),p_tracking_number:tracking.trim()});alert('تم تسجيل رقم التتبع.');await loadHistory();}
+ catch(err){alert(err.message||'تعذر تحديث الطلب.');}finally{btn.disabled=false;}
+});
+init().catch(err=>{console.error(err);$('eligibleOrders').innerHTML='<div class="empty">تعذر تحميل طلباتك: '+esc(err.message)+'</div>';});
+</script>
+</body></html>
