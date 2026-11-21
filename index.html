@@ -80,7 +80,8 @@
             .search-box { display: flex; width: 100%; min-width: 0; flex: 1 0 100%; order: 3; margin-top: 10px; }
             .hero-content h1 { font-size: 32px; }
             .hero { padding: 30px; }
-            .cart-sidebar { width: 100%; right: -100%; }
+            .cart-sidebar { width: 100%; right: -100%; visibility:hidden; }
+            .cart-sidebar.open { visibility:visible; }
             .cart-sidebar.open {
                 top: 12px;
                 bottom: calc(76px + env(safe-area-inset-bottom, 0px));
@@ -117,8 +118,8 @@
     <div class="top-bar" id="topBar">🚚 التوصيل متاح للمحافظات التي تظهر في صفحة إتمام الطلب | للاستفسار عن محافظة أخرى تواصل معنا</div>
 
     <header>
-        <div class="logo" onclick="window.location.reload()">ROVY<span>.</span></div>
-        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="ابحث عن منتج..." onkeyup="searchProducts()"></div>
+        <a class="logo" href="index.html" style="text-decoration:none;color:inherit">ROVY<span>.</span></a>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" aria-label="بحث عن منتج" placeholder="ابحث عن منتج..." oninput="searchProductsDebounced()"></div>
         
         <div class="header-icons">
             <a href="auth.html" class="icon-btn" id="accountLink" title="تسجيل الدخول" aria-label="تسجيل الدخول"><i class="fas fa-user-circle"></i></a>
@@ -126,7 +127,7 @@
                 <i class="fas fa-map-location-dot"></i>
             </a>
             <button class="lang-btn" onclick="changeLanguage()" id="langBtn">English</button>
-            <button class="icon-btn" onclick="toggleCart()"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
+            <button class="icon-btn" onclick="toggleCart()" aria-label="سلة المشتريات"><i class="fas fa-shopping-bag"></i><span class="cart-count" id="cartCount">0</span></button>
         </div>
     </header>
 
@@ -142,10 +143,10 @@
         <div style="max-width:1200px;margin:auto;border-radius:18px;padding:30px 5%;background:linear-gradient(115deg,#171717,#35291f);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;box-shadow:0 12px 30px rgba(0,0,0,.10)">
             <div style="max-width:650px">
                 <div style="color:#d9b45b;font-size:12px;font-weight:900;letter-spacing:2px;margin-bottom:8px">ROVY STYLE STUDIO</div>
-                <h2 style="font-size:clamp(22px,4vw,32px);font-weight:900;margin:0 0 8px">مش بس تشتري قطعة.. كوّن إطلالتك كاملة.</h2>
-                <p style="color:#ddd0c2;font-size:14px;line-height:1.9;margin:0">اختار المناسبة والستايل، نسّق القطع المتاحة، واحفظ إطلالتك أو شاركها مع أصحابك.</p>
+                <h2 data-en="Don't just buy a piece… build your whole look." style="font-size:clamp(22px,4vw,32px);font-weight:900;margin:0 0 8px">مش بس تشتري قطعة.. كوّن إطلالتك كاملة.</h2>
+                <p data-en="Pick the occasion and style, mix the available pieces, then save your look or share it with friends." style="color:#ddd0c2;font-size:14px;line-height:1.9;margin:0">اختار المناسبة والستايل، نسّق القطع المتاحة، واحفظ إطلالتك أو شاركها مع أصحابك.</p>
             </div>
-            <a href="style-studio.html" style="display:inline-flex;align-items:center;gap:10px;background:#b58a61;color:#fff;text-decoration:none;padding:13px 22px;border-radius:30px;font-weight:900;white-space:nowrap">جرّب الاستوديو <i class="fas fa-arrow-left"></i></a>
+            <a href="style-studio.html" style="display:inline-flex;align-items:center;gap:10px;background:#b58a61;color:#fff;text-decoration:none;padding:13px 22px;border-radius:30px;font-weight:900;white-space:nowrap"><span data-en="Try the Studio">جرّب الاستوديو</span> <i class="fas fa-arrow-left"></i></a>
         </div>
     </section>
 
@@ -160,7 +161,7 @@
     </section>
 
     <section id="bestSellers">
-        <h2 class="section-title" id="bestTitle">الأكثر مبيعاً</h2>
+        <h2 class="section-title" id="bestTitle">منتجات مميزة</h2>
         <div class="products-grid" id="bestProductsGrid"></div>
     </section>
 
@@ -255,7 +256,7 @@
             document.getElementById('newTitle').textContent = currentCategory === 'All'
                 ? (english ? 'New Arrivals' : 'وصل حديثاً')
                 : (english ? `Category: ${currentCategory}` : `قسم: ${currentCategory}`);
-            document.getElementById('bestTitle').textContent = english ? 'Best Sellers' : 'الأكثر مبيعاً';
+            document.getElementById('bestTitle').textContent = english ? 'Featured' : 'منتجات مميزة';
             document.getElementById('searchInput').placeholder = english ? 'Search for a product...' : 'ابحث عن منتج...';
             document.getElementById('cartTitle').textContent = english ? 'Shopping Cart' : 'سلة المشتريات';
             document.getElementById('totalText').textContent = english ? 'Total:' : 'الإجمالي:';
@@ -268,6 +269,10 @@
                 if (english && footerMap[a.textContent.trim()]) a.textContent = footerMap[a.textContent.trim()];
                 else if (!english && reverse[a.textContent.trim()]) a.textContent = reverse[a.textContent.trim()];
             });
+            document.querySelectorAll('[data-en]').forEach(el=>{
+                if(!el.dataset.ar)el.dataset.ar=el.textContent;
+                el.textContent=english?el.dataset.en:el.dataset.ar;
+            });
             renderCategoryCards();
             renderHomeSections();
             updateCart();
@@ -276,6 +281,7 @@
         function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
         function safeImageURL(value){try{const u=new URL(String(value||''),location.href);return u.protocol==='https:'?u.href:'';}catch{return '';}}
         function loadCartSafely(){try{const value=JSON.parse(localStorage.getItem('rovyCart')||'[]');return Array.isArray(value)?value.filter(x=>x&&typeof x==='object'&&Number.isSafeInteger(Number(x.id))&&Number(x.id)>0&&Number.isSafeInteger(Number(x.quantity))&&Number(x.quantity)>0&&Number.isFinite(Number(x.price))&&Number(x.price)>=0):[];}catch{return [];}}
+        const PLACEHOLDER_IMG='data:image/svg+xml;utf8,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><rect width='100%' height='100%' fill='#f2f2f2'/></svg>");
         let allProducts = [];
         let productVariantStock = {};
         let activeCategories = [];
@@ -319,29 +325,7 @@
         }
 
         async function translateProductText(value) {
-            const original = String(value || '').trim();
-            if (!english || !original || !/[\u0600-\u06FF]/.test(original)) return original;
-            const key = 'ar-en:' + original;
-            if (translationCache[key]) return translationCache[key];
-            try {
-                const translatedParts = [];
-                for (const part of splitForTranslation(original)) {
-                    const params = new URLSearchParams({q:part, langpair:'ar|en'});
-                    const response = await fetch('https://api.mymemory.translated.net/get?' + params.toString());
-                    if (!response.ok) throw new Error('Translation service unavailable');
-                    const result = await response.json();
-                    if (Number(result.responseStatus) !== 200 || !result.responseData?.translatedText) throw new Error('Translation unavailable');
-                    translatedParts.push(result.responseData.translatedText);
-                }
-                const translated = decodeTranslatedText(translatedParts.join('')).trim();
-                if (!translated) return original;
-                translationCache[key] = translated;
-                try { localStorage.setItem('rovyAutoTranslations', JSON.stringify(translationCache)); } catch {}
-                return translated;
-            } catch (error) {
-                console.warn('Automatic translation failed:', error);
-                return original;
-            }
+            return String(value || '').trim(); // الترجمة من name_en في لوحة الإدارة
         }
 
         async function translateVisibleProductCards() {
@@ -388,10 +372,14 @@
             const best=document.getElementById('bestSellers');if(best)best.style.display='none';
         }
         async function fetchProducts() {
-            const { data, error } = await supabaseClient.from('products').select('*').eq('is_active', true).order('id', { ascending: false });
+            const [productsRes, variantsRes] = await Promise.all([
+                supabaseClient.from('products').select('id,name,name_en,description,description_en,price,image_url,category,stock,created_at').eq('is_active', true).order('id', { ascending: false }),
+                supabaseClient.from('product_variants').select('product_id, stock')
+            ]);
+            const { data, error } = productsRes;
             if (error){console.error('Products load error:',error);showStoreLoadError('تعذر تحميل المنتجات الآن. تحقق من الاتصال وحاول مرة أخرى.');return;}
             allProducts = Array.isArray(data)?data:[];
-            const { data: variantRows,error:variantError } = await supabaseClient.from('product_variants').select('product_id, stock');
+            const { data: variantRows,error:variantError } = variantsRes;
             if(variantError){console.error('Product variants load error:',variantError);showStoreLoadError('تعذر التحقق من مخزون المقاسات والألوان. أعد المحاولة قبل التسوق.');return;}
             productVariantStock = {};
             (variantRows || []).forEach(v => {
@@ -515,16 +503,16 @@
             const available = isProductAvailable(p);
             const id=Number(p.id);
             if(!Number.isSafeInteger(id)||id<=0)return '';
-            const name=escapeHTML(p.name_en||p.name||'منتج');
-            const image=escapeHTML(safeImageURL(p.image_url));
+            const name=escapeHTML((english&&p.name_en)||p.name||'منتج');
+            const image=escapeHTML(safeImageURL(p.image_url)||PLACEHOLDER_IMG);
             const price=Number(p.price);
             return `
                 <div class="product-card">
                     <a href="product.html?id=${id}"><img src="${image}" alt="${escapeHTML(p.name||'منتج')}" loading="lazy"></a>
                     <div class="product-info">
                         <a href="product.html?id=${id}" style="text-decoration:none; color:inherit;"><div class="product-title" data-product-name="${id}">${name}</div></a>
-                        <div class="product-price">${Number.isFinite(price)?price.toLocaleString('en-US'):'—'} جنيه</div>
-                        ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> المنتج نفد</span>' : ''}
+                        <div class="product-price">${Number.isFinite(price)?price.toLocaleString('en-US'):'—'} ${english?'EGP':'جنيه'}</div>
+                        ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> '+(english?'Sold out':'المنتج نفد')+'</span>' : ''}
                         <button class="add-to-cart-btn" onclick="openProductDetails(${p.id})">${english ? 'View Details' : 'التفاصيل'}</button>
                     </div>
                 </div>
@@ -569,14 +557,14 @@
                 if(!Number.isSafeInteger(id)||id<=0||!Number.isSafeInteger(quantity)||quantity<=0||!Number.isFinite(price)||price<0)return;
                 totalCount += quantity;
                 totalAmount += price * quantity;
-                const image=escapeHTML(safeImageURL(item.image_url));
-                const name=escapeHTML(item.name_en||item.name||'منتج');
+                const image=escapeHTML(safeImageURL(item.image_url)||PLACEHOLDER_IMG);
+                const name=escapeHTML((english&&item.name_en)||item.name||'منتج');
                 cartItemsContainer.innerHTML += `
                     <div class="cart-item">
                         <img src="${image}" alt="${escapeHTML(item.name||'منتج')}" loading="lazy">
                         <div class="cart-item-info">
                             <h4 data-cart-name="${id}">${name}</h4>
-                            <p>${price.toLocaleString('en-US')} × ${quantity} = ${(price*quantity).toLocaleString('en-US')} جنيه</p>
+                            <p>${price.toLocaleString('en-US')} × ${quantity} = ${(price*quantity).toLocaleString('en-US')} ${english?'EGP':'جنيه'}</p>
                         </div>
                         <button class="remove-item" data-remove-cart="${escapeHTML(item.cartItemId||String(id)+'-no-variant')}" onclick="removeFromCart(this.dataset.removeCart)" aria-label="حذف هذا الاختيار من السلة"><i class="fas fa-trash"></i></button>
                     </div>
@@ -598,6 +586,8 @@
             currentSearchTerm = document.getElementById('searchInput').value.trim();
             renderHomeSections();
         }
+        let searchTimer;
+        function searchProductsDebounced(){clearTimeout(searchTimer);searchTimer=setTimeout(searchProducts,250);}
 
         if (english) {
             english = false;
@@ -607,6 +597,7 @@
             document.documentElement.dir = 'rtl';
             document.getElementById('langBtn').textContent = 'English';
         }
+        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('cartSidebar').classList.contains('open'))toggleCart();});
         fetchProducts();
         if (window.location.hash === '#cart') setTimeout(() => toggleCart(), 350);
         updateCart();
