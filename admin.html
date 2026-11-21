@@ -301,6 +301,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn invoice-access-only hidden" data-page="invoices">▧ الفواتير والمستندات</button>
       <button class="navbtn invoice-access-only hidden" data-page="waybills">▤ بوليصات الشحن</button>
       <button class="navbtn payment-review-only" data-page="payments">💳 مدفوعات الشحن</button>
+      <button class="navbtn manager-only" data-page="refunds">↩ استردادات الشحن</button>
       <button class="navbtn" data-page="activity">◷ سجل النشاط</button>
       <button class="navbtn owner-only" data-page="staff">♙ الموظفون والصلاحيات</button>
       <button class="navbtn manager-only" data-page="products">◇ المنتجات</button>
@@ -389,6 +390,13 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       </section>
 
       <section id="page-payments" class="page hidden payment-review-only"><div class="pagehead"><div><h1>مراجعة مدفوعات الشحن</h1><div class="muted">راجع إيصالات التحويل واعتمدها أو ارفضها قبل تأكيد الطلب</div></div><button class="btn light" id="reloadPayments">تحديث المدفوعات</button></div><div class="stats"><div class="stat"><small>بانتظار المراجعة</small><strong id="paymentPendingCount">0</strong></div><div class="stat"><small>تم اعتمادها</small><strong id="paymentApprovedCount">0</strong></div><div class="stat"><small>مرفوضة</small><strong id="paymentRejectedCount">0</strong></div></div><div class="toolbar"><input id="paymentSearch" placeholder="بحث برقم الطلب أو اسم العميل أو الهاتف"><select id="paymentFilter"><option value="">كل حالات الدفع</option><option value="pending_review">بانتظار المراجعة</option><option value="approved">معتمد</option><option value="rejected">مرفوض</option><option value="unpaid">غير مدفوع</option></select></div><div class="panel"><div id="paymentsTable" class="table-wrap"><div class="empty">جاري تحميل المدفوعات…</div></div></div></section>
+      <section id="page-refunds" class="page hidden manager-only">
+        <div class="pagehead"><div><h1>استرداد رسوم الشحن</h1><div class="muted">طلبات الاسترداد الناتجة عن إلغاء طلب تم اعتماد دفع رسوم شحنه مسبقًا.</div></div><button class="btn light" id="reloadRefunds">↻ تحديث الاستردادات</button></div>
+        <div class="notice">تسجيل الحالة «تم الاسترداد» لا يحوّل الأموال تلقائيًا؛ لا تستخدمه إلا بعد تنفيذ التحويل فعليًا وتسجيل مرجع العملية.</div>
+        <div class="stats"><div class="stat"><small>بانتظار المراجعة</small><strong id="refundPendingCount">0</strong></div><div class="stat"><small>معتمدة بانتظار التحويل</small><strong id="refundApprovedCount">0</strong></div><div class="stat"><small>تم استردادها</small><strong id="refundPaidCount">0</strong></div><div class="stat"><small>مرفوضة</small><strong id="refundRejectedCount">0</strong></div></div>
+        <div class="toolbar"><input id="refundSearch" placeholder="بحث برقم الطلب أو العميل أو الهاتف"><select id="refundFilter"><option value="">كل الحالات</option><option value="pending_review">بانتظار المراجعة</option><option value="approved">معتمد - بانتظار التحويل</option><option value="paid">تم الاسترداد</option><option value="rejected">مرفوض</option></select></div>
+        <div class="panel"><div id="refundsTable" class="table-wrap"><div class="empty">جاري تحميل الاستردادات…</div></div></div>
+      </section>
       <section id="page-activity" class="page hidden"><div class="pagehead"><div><h1>سجل النشاط</h1><div class="muted">تاريخ تغييرات حالات الطلبات ومن قام بها</div></div><button class="btn light" id="reloadActivity">تحديث السجل</button></div><div class="panel"><div id="activityTable" class="table-wrap"><div class="empty">جاري تحميل سجل النشاط…</div></div></div></section>
       <section id="page-staff" class="page hidden owner-only"><div class="pagehead"><div><h1>الموظفون والصلاحيات</h1><div class="muted">إدارة حسابات الموظفين الموجودة وتحديد دور كل حساب</div></div><button class="btn gold" id="addStaffBtn">＋ إضافة موظف</button></div><div class="notice">لإضافة موظف جديد، يجب أن يكون لديه حساب مسجل مسبقًا بنفس البريد الإلكتروني. هذه الصفحة تربط الحساب بدور داخل لوحة الإدارة؛ ولا تنشئ كلمة مرور أو ترسل دعوة.</div><div class="panel"><div id="staffTable" class="table-wrap"><div class="empty">جاري تحميل الموظفين…</div></div></div></section>
       <section id="page-products" class="page hidden">
@@ -683,6 +691,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       await loadStaff();
       showApp();
       await loadOrders();
+      if(isManager()) { try { await loadShippingRefunds(); } catch(e) { console.warn("Shipping refunds unavailable:",e); } }
       if(isManager()) { await loadProducts(); await loadCategories(); await loadShippingGovernorates(); await loadCoupons(); }
       try { await loadActivity(); } catch(e) { console.warn('Activity log unavailable:',e); }
       if(staff.role==='owner') { try { await loadStaffMembers(); } catch(e) { console.warn('Staff list unavailable:',e); } try { await loadFinancialCenter(); } catch(e) { console.warn('Financial center unavailable:',e); } }
@@ -823,6 +832,32 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     }
     renderOrders(); renderDashboard(); renderReports(); renderPayments();
   }
+  let shippingRefunds=[];
+  async function loadShippingRefunds(){
+    if(!isManager())return;
+    const data=await rpc('admin_list_shipping_refunds');
+    shippingRefunds=Array.isArray(data)?data:[];
+    renderShippingRefunds();
+  }
+  function renderShippingRefunds(){
+    if(!$('refundsTable'))return;
+    const counts={pending_review:0,approved:0,paid:0,rejected:0};
+    shippingRefunds.forEach(r=>{if(counts[r.status]!==undefined)counts[r.status]++;});
+    $('refundPendingCount').textContent=counts.pending_review;$('refundApprovedCount').textContent=counts.approved;
+    $('refundPaidCount').textContent=counts.paid;$('refundRejectedCount').textContent=counts.rejected;
+    const q=($('refundSearch')?.value||'').trim().toLowerCase(),filter=$('refundFilter')?.value||'';
+    const labels={pending_review:'بانتظار المراجعة',approved:'معتمد - بانتظار التحويل',paid:'تم الاسترداد',rejected:'مرفوض'};
+    const classes={pending_review:'blue',paid:'green',rejected:'red'};
+    const methods={vodafone_cash:'Vodafone Cash',instapay:'InstaPay',bank_transfer:'تحويل بنكي',cash:'نقدًا'};
+    const rows=shippingRefunds.filter(r=>(!filter||r.status===filter)&&[r.order_id,r.customer_name,r.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
+    $('refundsTable').innerHTML=rows.length?'<table><thead><tr><th>الطلب</th><th>العميل</th><th>المبلغ</th><th>الحالة</th><th>بيانات الاسترداد</th><th>الإجراءات</th></tr></thead><tbody>'+
+      rows.map(r=>{const details=r.status==='paid'?((methods[r.payment_method]||'—')+' · '+(r.payment_reference||'—')):(r.review_notes||'—');
+        let actions='—';if(r.status==='pending_review')actions='<button class="mini gold" data-refund-review="approve" data-id="'+esc(r.id)+'">اعتماد</button> <button class="mini red" data-refund-review="reject" data-id="'+esc(r.id)+'">رفض</button>';
+        if(r.status==='approved')actions='<button class="mini gold" data-refund-paid="'+esc(r.id)+'">تسجيل التحويل بعد تنفيذه</button>';
+        return '<tr><td><strong>#'+esc(r.order_id)+'</strong></td><td>'+esc(r.customer_name||'—')+'<div class="muted">'+esc(r.customer_phone||'')+'</div></td><td><strong>'+money(r.amount)+'</strong></td><td><span class="pill '+(classes[r.status]||'')+'">'+(labels[r.status]||esc(r.status))+'</span></td><td>'+esc(details)+'</td><td><div class="actions">'+actions+'</div></td></tr>';
+      }).join('')+'</tbody></table>':'<div class="empty">لا توجد طلبات استرداد مطابقة.</div>';
+  }
+
   async function loadProducts() {
     const data=await rpc('admin_list_products');
     products=Array.isArray(data)?data:[];
@@ -1218,6 +1253,8 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','reports'].includes(page)&&!isManager())return;
       if(page==='finance'&&staff?.role!=='owner')return;
+      if(page==='refunds'&&!isManager())return;
+      if(page==='refunds')loadShippingRefunds().catch(err=>notify(err.message||'تعذر تحميل الاستردادات.',true));
       if(page==='analytics'&&staff?.role!=='owner')return;
       if(page==='invoices'&&!['owner','manager','customer_service'].includes(staff?.role))return;
       if(page==='waybills'&&!['owner','manager','customer_service'].includes(staff?.role))return;
@@ -1291,6 +1328,24 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('staffForm').addEventListener('submit',saveStaffProfile);
   $('paymentFilter').addEventListener('change',renderPayments);
   $('reloadPayments').addEventListener('click',()=>loadOrders().then(()=>notify('تم تحديث بيانات المدفوعات.')).catch(e=>notify(e.message,true)));
+  $('reloadRefunds').addEventListener('click',()=>loadShippingRefunds().then(()=>notify('تم تحديث الاستردادات.')).catch(e=>notify(e.message,true)));
+  $('refundSearch').addEventListener('input',renderShippingRefunds);$('refundFilter').addEventListener('change',renderShippingRefunds);
+  document.addEventListener('click',async e=>{
+    const review=e.target.closest('[data-refund-review]');
+    if(review){const id=Number(review.dataset.id),approve=review.dataset.refundReview==='approve';let notes=null;
+      if(!approve){notes=prompt('اكتب سبب رفض طلب الاسترداد:');if(notes===null)return;if(!notes.trim()){notify('سبب الرفض مطلوب.',true);return;}}
+      else if(!confirm('اعتماد طلب الاسترداد؟ هذا لا ينفذ التحويل المالي.'))return;
+      review.disabled=true;try{await rpc('admin_review_shipping_refund',{p_refund_id:id,p_approved:approve,p_notes:notes});notify(approve?'تم اعتماد طلب الاسترداد.':'تم رفض طلب الاسترداد.');await loadShippingRefunds();}
+      catch(err){notify(err.message||'تعذر تحديث طلب الاسترداد.',true);}finally{review.disabled=false;}
+    }
+    const paid=e.target.closest('[data-refund-paid]');
+    if(paid){const id=Number(paid.dataset.refundPaid);const method=prompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
+      const reference=prompt('رقم مرجع التحويل أو وصف إثبات العملية (مطلوب):');if(reference===null)return;if(!reference.trim()){notify('مرجع التحويل مطلوب.',true);return;}
+      const proof=prompt('مسار إثبات التحويل (اختياري حاليًا):')||null;if(!confirm('هل تم تحويل مبلغ الاسترداد فعليًا للعميل؟'))return;
+      paid.disabled=true;try{await rpc('admin_mark_shipping_refund_paid',{p_refund_id:id,p_payment_method:method.trim(),p_payment_reference:reference.trim(),p_payment_proof_path:proof});notify('تم تسجيل الاسترداد بعد تأكيد التحويل.');await loadShippingRefunds();}
+      catch(err){notify(err.message||'تعذر تسجيل الاسترداد.',true);}finally{paid.disabled=false;}
+    }
+  });
   ['productSearch','productCategoryFilter','productStatusFilter','productStockFilter','productSort'].forEach(id=>$(id).addEventListener(id==='productSearch'?'input':'change',renderProducts));
   $('orderFilter').addEventListener('change',renderOrders);
   $('orderSort').addEventListener('change',renderOrders);
