@@ -883,7 +883,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     $('returnReceivedCount').textContent=counts.received;
     $('returnRefundCount').textContent=counts.inspected+counts.refund_approved;
     const labels={submitted:'طلب جديد',approved:'معتمد - بانتظار إرسال المرتجع',rejected:'مرفوض',in_transit:'في طريق العودة',received:'تم الاستلام - بانتظار الفحص',inspected:'تم الفحص - بانتظار اعتماد الاسترداد',refund_approved:'استرداد معتمد - بانتظار التحويل',refunded:'تم الاسترداد',exchange_pending:'الفحص مكتمل - بانتظار طلب البديل',exchanged:'تم الاستبدال'};
-    const reasons={wrong_size:'مقاس غير مناسب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
+    const reasons={wrong_size:'المقاس لا يناسب العميل',wrong_size_sent:'تم إرسال مقاس مختلف عن المطلوب',defective:'عيب صناعة',damaged:'تالف',not_as_described:'غير مطابق للوصف',changed_mind:'تغيير الرأي',other:'سبب آخر'};
     const q=($('returnSearch')?.value||'').trim().toLowerCase(),filter=$('returnFilter')?.value||'';
     const rows=returnRequests.filter(r=>(!filter||r.status===filter)&&[r.id,r.order_id,r.customer_name,r.customer_phone].some(v=>String(v??'').toLowerCase().includes(q)));
     $('returnsTable').innerHTML=rows.length?'<table><thead><tr><th>الطلب / المرتجع</th><th>العميل</th><th>النوع والسبب</th><th>المنتجات</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody>'+
