@@ -84,32 +84,12 @@ async function loadExchangeCatalog(){
  exchangeProducts=products.data||[];
  exchangeVariants=variants.data||[];
 }
-function exchangeBuilder(r){
- const units=(r.items||[]).reduce((n,i)=>n+Number(i.accepted_quantity||0),0);
- if(!units)return '<div class="muted">لا توجد كميات معتمدة للاستبدال.</div>';
- const options=exchangeProducts.filter(p=>{
-  const variants=exchangeVariants.filter(v=>Number(v.product_id)===Number(p.id));
-  return variants.length ? variants.some(v=>Number(v.stock)>=units) : Number(p.stock)>=units;
- }).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' — '+money(p.price)+'</option>').join('');
- return '<div class="exchange-builder" data-exchange-builder="'+esc(r.id)+'" data-ex-units="'+units+'"><strong>اختار المنتج البديل</strong><div class="muted">الكمية المعتمدة: '+units+' قطعة.</div><label>المنتج</label><select data-ex-product><option value="">اختر المنتج</option>'+options+'</select><div data-ex-variant-wrap class="hidden"><label>المقاس واللون</label><select data-ex-variant><option value="">اختر المقاس واللون</option></select></div><div class="exchange-preview" data-ex-preview>اختار المنتج لعرض فرق السعر والشحن.</div><div class="exchange-actions"><button type="button" class="btn gold" data-ex-submit disabled>تأكيد اختيار البديل</button></div></div>';
-}
-async function previewExchange(box){
- const productId=Number(box.querySelector('[data-ex-product]').value);
- const variantSelect=box.querySelector('[data-ex-variant]');
- const variantId=variantSelect.value?Number(variantSelect.value):null;
- const preview=box.querySelector('[data-ex-preview]');
- const submit=box.querySelector('[data-ex-submit]');
- submit.disabled=true;
- if(!productId){preview.textContent='اختار المنتج لعرض فرق السعر والشحن.';return;}
- const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId);
- if(variants.length&&!variantId){preview.textContent='اختار المقاس واللون أولاً.';return;}
- try{
-  const data=await rpc('customer_preview_exchange_replacement',{p_request_id:Number(box.dataset.exchangeBuilder),p_product_id:productId,p_variant_id:variantId});
-  preview.innerHTML='<strong>معاينة الحساب</strong><div>رصيد القطع المرتجعة: '+money(data.original_value)+'</div><div>قيمة البديل ('+esc(data.quantity)+' قطعة): '+money(data.replacement_value)+'</div><div>فرق سعر المنتجات: '+money(data.price_difference)+'</div><div>شحن البديل: '+money(data.shipping_fee)+'</div><div><strong>'+(Number(data.net_settlement_amount)>0?'المستحق عليك عند التسليم: ':Number(data.net_settlement_amount)<0?'المستحق لك بعد التسليم: ':'لا يوجد فرق سعر: ')+money(Math.abs(Number(data.net_settlement_amount)))+'</strong></div><small>سيتم التحقق من السعر والمخزون مرة أخرى عند التأكيد.</small>';
-  submit.disabled=false;
- }catch(err){preview.textContent=err.message||'تعذر حساب فرق السعر.';}
-}
-
+function exchangeProductOptions(){return exchangeProducts.filter(p=>{const vs=exchangeVariants.filter(v=>Number(v.product_id)===Number(p.id));return vs.length?vs.some(v=>Number(v.stock)>0):Number(p.stock)>0;}).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+' — '+money(p.price)+'</option>').join('');}
+function exchangeRowHtml(units){return '<div class="exchange-line" data-ex-line style="display:grid;grid-template-columns:1fr 90px auto;gap:8px;align-items:end;margin:10px 0;padding:10px;border:1px solid #ddd;border-radius:10px"><div><label>المنتج البديل</label><select data-ex-product><option value="">اختر المنتج</option>'+exchangeProductOptions()+'</select><div data-ex-variant-wrap class="hidden"><label>المقاس واللون</label><select data-ex-variant><option value="">اختر المقاس واللون</option></select></div></div><div><label>الكمية</label><select data-ex-quantity>'+Array.from({length:Math.max(1,units)},(_,n)=>'<option value="'+(n+1)+'">'+(n+1)+'</option>').join('')+'</select></div><button type="button" class="btn" data-ex-remove>حذف</button></div>';}
+function exchangeBuilder(r){const units=(r.items||[]).reduce((n,i)=>n+Number(i.accepted_quantity||0),0);if(!units)return '<div class="muted">لا توجد كميات معتمدة للاستبدال.</div>';return '<div class="exchange-builder" data-exchange-builder="'+esc(r.id)+'" data-ex-units="'+units+'"><strong>اختار المنتجات البديلة</strong><div class="muted">الكمية المعتمدة: '+units+' قطعة. تقدر توزعها على أكتر من منتج ومقاس.</div><div data-ex-lines>'+exchangeRowHtml(units)+'</div><button type="button" class="btn" data-ex-add>+ إضافة منتج آخر</button><div class="exchange-preview" data-ex-preview>وزّع الكمية المعتمدة على المنتجات لعرض الحساب.</div><div class="exchange-actions"><button type="button" class="btn gold" data-ex-submit disabled>تأكيد اختيار البدائل</button></div></div>';}
+function collectExchangeItems(box){const items=[];for(const row of box.querySelectorAll('[data-ex-line]')){const productId=Number(row.querySelector('[data-ex-product]').value),quantity=Number(row.querySelector('[data-ex-quantity]').value);if(!productId)continue;const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId),variantId=row.querySelector('[data-ex-variant]').value;if(variants.length&&!variantId)throw new Error('اختار المقاس واللون لكل منتج.');const variant=variantId?variants.find(v=>Number(v.id)===Number(variantId)):null;if(variantId&&!variant)throw new Error('اختيار المقاس أو اللون غير صحيح.');const item={product_id:productId,quantity};if(variant){item.variant_id=Number(variant.id);item.size=variant.size;item.color=variant.color;}items.push(item);}return items;}
+function refreshExchangeVariantRow(row){const pid=Number(row.querySelector('[data-ex-product]').value),qty=Number(row.querySelector('[data-ex-quantity]').value||1),all=exchangeVariants.filter(v=>Number(v.product_id)===pid),available=all.filter(v=>Number(v.stock)>=qty),wrap=row.querySelector('[data-ex-variant-wrap]'),select=row.querySelector('[data-ex-variant]');if(all.length){wrap.classList.remove('hidden');select.innerHTML='<option value="">اختر المقاس واللون</option>'+available.map(v=>'<option value="'+esc(v.id)+'">'+esc([v.size,v.color].filter(Boolean).join(' / ')||'اختيار متاح')+' — متاح '+esc(v.stock)+'</option>').join('');}else{wrap.classList.add('hidden');select.innerHTML='<option value="">غير مطلوب</option>';}}
+async function refreshExchangePreview(box){const units=Number(box.dataset.exUnits||0),preview=box.querySelector('[data-ex-preview]'),submit=box.querySelector('[data-ex-submit]');submit.disabled=true;try{const items=collectExchangeItems(box),total=items.reduce((n,i)=>n+i.quantity,0);if(!items.length){preview.textContent='اختار المنتجات البديلة.';return;}if(total!==units){preview.textContent='وزّع '+units+' قطعة بالضبط. المختار حاليًا: '+total+'.';return;}const data=await rpc('customer_preview_exchange_replacement_items',{p_request_id:Number(box.dataset.exchangeBuilder),p_items:items});preview.innerHTML='<strong>معاينة الحساب</strong><div>رصيد القطع المرتجعة: '+money(data.original_value)+'</div><div>قيمة المنتجات البديلة ('+esc(data.quantity)+' قطعة): '+money(data.replacement_value)+'</div><div>فرق سعر المنتجات: '+money(data.price_difference)+'</div><div>شحن البديل: '+money(data.shipping_fee)+'</div><div><strong>'+(Number(data.net_settlement_amount)>0?'المستحق عليك عند التسليم: ':Number(data.net_settlement_amount)<0?'المستحق لك بعد التسليم: ':'لا يوجد فرق سعر: ')+money(Math.abs(Number(data.net_settlement_amount)))+'</strong></div><small>سيتم التحقق من السعر والمخزون مرة أخرى عند التأكيد.</small>';submit.disabled=false;}catch(err){preview.textContent=err.message||'تعذر حساب فرق السعر.';}}
 async function loadHistory(){
  const rows=await rpc('customer_list_return_requests');
  $('returnHistory').innerHTML=rows.length?rows.map(r=>'<div class="request"><div class="orderhead"><strong>طلب مرتجع #'+esc(r.id)+' · الطلب الأصلي #'+esc(r.order_id)+'</strong><span class="status '+(['refunded','exchanged'].includes(r.status)?'green':r.status==='rejected'?'red':'gold')+'">'+esc(r.status==='exchanged'?(r.replacement_order_status==='delivered'?(r.exchange_difference_status==='settled'?'تم تسليم البديل وإتمام الاستبدال':'تم تسليم البديل - بانتظار تسوية فرق السعر'):(r.exchange_difference_status==='settled'?'تم إنشاء البديل - لا يوجد فرق سعر':'تم إنشاء البديل - قيد التجهيز')):statusNames[r.status]||r.status)+'</span></div><div class="muted">'+(r.request_type==='return'?'استرجاع':'استبدال')+' · '+esc(reasons[r.reason]||r.reason)+' · '+new Date(r.created_at).toLocaleDateString('ar-EG')+'</div>'+
@@ -142,42 +122,8 @@ $('returnForm').addEventListener('submit',async e=>{
  catch(err){alert(err.message||'تعذر إرسال الطلب.');}finally{btn.disabled=false;}
 });
 
-document.addEventListener('change',async e=>{
- const box=e.target.closest('[data-exchange-builder]');if(!box)return;
- if(e.target.matches('[data-ex-product]')){
-  const productId=Number(e.target.value);
-  const units=Number(box.dataset.exUnits||0);
-  const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId&&Number(v.stock)>=units);
-  const wrap=box.querySelector('[data-ex-variant-wrap]');
-  const select=box.querySelector('[data-ex-variant]');
-  if(variants.length){
-   wrap.classList.remove('hidden');
-   select.innerHTML='<option value="">اختر المقاس واللون</option>'+variants.map(v=>'<option value="'+esc(v.id)+'">'+esc([v.size,v.color].filter(Boolean).join(' / ')||'اختيار متاح')+' — متاح '+esc(v.stock)+'</option>').join('');
-  }else{wrap.classList.add('hidden');select.innerHTML='<option value="">لا يوجد مقاس/لون</option>';}
-  await previewExchange(box);
- }else if(e.target.matches('[data-ex-variant]'))await previewExchange(box);
-});
-document.addEventListener('click',async e=>{
- const submit=e.target.closest('[data-ex-submit]');if(!submit)return;
- const box=submit.closest('[data-exchange-builder]');
- const productId=Number(box.querySelector('[data-ex-product]').value);
- const product=exchangeProducts.find(p=>Number(p.id)===productId);
- const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId);
- const variant=variants.length?variants.find(v=>Number(v.id)===Number(box.querySelector('[data-ex-variant]').value)):null;
- if(!product||(variants.length&&!variant)){alert('اختار المنتج والمقاس/اللون أولاً.');return;}
- const quantity=Number(box.dataset.exUnits||0);
- if(!quantity){alert('لا توجد كمية معتمدة للاستبدال.');return;}
- if(!confirm('تأكيد اختيار '+product.name+' بكمية '+quantity+'؟ سيتم إنشاء طلب بديل وحجز المخزون بعد التحقق النهائي.'))return;
- submit.disabled=true;
- try{
-  const item={product_id:productId,quantity};
-  if(variant){item.variant_id=Number(variant.id);item.size=variant.size;item.color=variant.color;}
-  const result=await rpc('customer_create_exchange_replacement',{p_request_id:Number(box.dataset.exchangeBuilder),p_items:[item]});
-  alert('تم إنشاء طلب البديل بنجاح. رقم الطلب: #'+result.replacement_order_id+'\nفرق السعر: '+money(result.net_settlement_amount)+'\nشحن البديل: '+money(result.shipping_fee));
-  await loadHistory();
- }catch(err){alert(err.message||'تعذر إنشاء طلب البديل.');}finally{submit.disabled=false;}
-});
-
+document.addEventListener('change',async e=>{const box=e.target.closest('[data-exchange-builder]');if(!box)return;const row=e.target.closest('[data-ex-line]');if(!row)return;if(e.target.matches('[data-ex-product]')||e.target.matches('[data-ex-quantity]'))refreshExchangeVariantRow(row);if(e.target.matches('[data-ex-product]')||e.target.matches('[data-ex-quantity]')||e.target.matches('[data-ex-variant]'))await refreshExchangePreview(box);});
+document.addEventListener('click',async e=>{const add=e.target.closest('[data-ex-add]');if(add){const box=add.closest('[data-exchange-builder]'),lines=box.querySelector('[data-ex-lines]'),units=Number(box.dataset.exUnits||0);if(lines.querySelectorAll('[data-ex-line]').length>=units){alert('عدد المنتجات المختلفة لا يمكن أن يتجاوز عدد القطع المعتمدة.');return;}lines.insertAdjacentHTML('beforeend',exchangeRowHtml(units));await refreshExchangePreview(box);return;}const remove=e.target.closest('[data-ex-remove]');if(remove){const box=remove.closest('[data-exchange-builder]');remove.closest('[data-ex-line]').remove();await refreshExchangePreview(box);return;}const submit=e.target.closest('[data-ex-submit]');if(!submit)return;const box=submit.closest('[data-exchange-builder]');let items;try{items=collectExchangeItems(box);}catch(err){alert(err.message);return;}const units=Number(box.dataset.exUnits||0),total=items.reduce((n,i)=>n+i.quantity,0);if(total!==units||!items.length){alert('يجب اختيار منتجات بإجمالي '+units+' قطعة بالضبط.');return;}if(!confirm('تأكيد اختيار '+items.length+' منتج/مقاس بإجمالي '+total+' قطعة؟ سيتم إنشاء طلب بديل وحجز المخزون بعد التحقق النهائي.'))return;submit.disabled=true;try{const result=await rpc('customer_create_exchange_replacement',{p_request_id:Number(box.dataset.exchangeBuilder),p_items:items});alert('تم إنشاء طلب البديل بنجاح. رقم الطلب: #'+result.replacement_order_id+'\\nفرق السعر: '+money(result.net_settlement_amount)+'\\nشحن البديل: '+money(result.shipping_fee));await loadHistory();}catch(err){alert(err.message||'تعذر إنشاء طلب البديل.');}finally{submit.disabled=false;}});
 document.addEventListener('click',async e=>{
  const btn=e.target.closest('[data-send-return]');if(!btn)return;
  const tracking=prompt('أدخل رقم تتبع شحنة المرتجع بعد تسليمها لشركة الشحن:');if(tracking===null)return;if(!tracking.trim())return;
