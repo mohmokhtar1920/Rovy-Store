@@ -265,6 +265,20 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 /* ROVY first-party analytics */.analytics-toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:18px;padding:16px}.analytics-toolbar>div{display:grid;gap:6px;min-width:145px;flex:1}.analytics-toolbar label{font-size:12px;color:var(--muted);font-weight:800}.analytics-toolbar input,.analytics-toolbar select{width:100%;min-height:42px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;color:var(--ink)}.analytics-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-bottom:18px}.analytics-card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 5px 20px rgba(15,30,48,.035)}.analytics-card small{display:block;color:var(--muted);font-weight:800}.analytics-card strong{display:block;font-size:29px;line-height:1.5;color:var(--ink);font-weight:900}.analytics-card span{font-size:11px;color:var(--muted)}.analytics-panels{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px}.analytics-panels>.panel{min-width:0;padding:18px}.gender-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}.gender-metrics>div{padding:15px 8px;border-radius:12px;background:#f7f8fa;text-align:center}.gender-metrics span{display:block;color:var(--muted);font-size:12px}.gender-metrics strong{font-size:24px;color:var(--ink)}.analytics-note{font-size:12px;color:var(--muted);line-height:1.8;padding:13px 16px}.analytics-panels .analytics-note{padding:8px 0}.analytics-product-row{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(3,minmax(55px,.6fr));gap:8px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--line);font-size:12px}.analytics-product-row strong{font-size:13px}.analytics-product-row small{display:block;color:var(--muted)}.analytics-source-row{display:flex;justify-content:space-between;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line)}@media(max-width:850px){.analytics-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-panels{grid-template-columns:1fr}}@media(max-width:480px){.analytics-grid{gap:8px}.analytics-card{padding:13px}.analytics-card strong{font-size:24px}.analytics-toolbar{align-items:stretch}.analytics-product-row{grid-template-columns:minmax(0,1fr) repeat(3,48px);font-size:10px}}
 .analytics-wide{grid-column:1/-1}.analytics-funnel{display:grid;gap:15px;padding:8px 0}.funnel-step{display:grid;gap:7px}.funnel-label{display:flex;justify-content:space-between;gap:12px;font-size:12px}.funnel-label strong{font-weight:900}.funnel-label span{color:var(--muted);white-space:nowrap}.funnel-track{height:13px;border-radius:20px;background:#edf0f3;overflow:hidden}.funnel-track i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,#b18b3e,#e2c77e);min-width:0}.funnel-foot{padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.analytics-daily{overflow:hidden}.daily-legend{display:flex;gap:18px;font-size:11px;color:var(--muted);margin-bottom:10px}.daily-legend span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:3px;background:#b18b3e;margin-left:6px}.daily-legend span+span:before{background:#27384a}.daily-chart{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(34px,1fr);gap:7px;align-items:end;overflow-x:auto;padding:8px 2px 12px;min-height:180px}.daily-col{display:flex;flex-direction:column;align-items:center;justify-content:end;gap:5px;min-width:0;font-size:10px}.daily-bars{height:115px;width:100%;display:flex;align-items:end;justify-content:center;gap:3px;border-bottom:1px solid var(--line)}.daily-bars i{display:block;width:9px;max-width:42%;border-radius:4px 4px 0 0}.daily-visits{background:#b18b3e}.daily-orders{background:#27384a}.daily-col b{font-size:9px;color:var(--muted);font-weight:700}.daily-col small{font-size:9px;white-space:nowrap;color:var(--muted)}@media(max-width:480px){.funnel-label{font-size:11px}.funnel-label span{font-size:10px}.analytics-wide{grid-column:1/-1}.daily-chart{grid-auto-columns:34px}}
  .btn.dark{background:#172538;color:#fff}
+
+/* ROVY dialog system */
+.rovy-dialog-backdrop{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:18px;background:rgba(12,11,10,.64);backdrop-filter:blur(7px);opacity:0;visibility:hidden;transition:.2s}
+.rovy-dialog-backdrop.is-open{opacity:1;visibility:visible}.rovy-dialog{width:min(100%,440px);background:#fffdfa;border:1px solid #e8dccf;border-radius:22px;box-shadow:0 28px 90px #0005;overflow:hidden;transform:translateY(12px) scale(.98);transition:.2s;font-family:Cairo,sans-serif;text-align:center;color:#191715}
+.rovy-dialog-backdrop.is-open .rovy-dialog{transform:none}.rovy-dialog-top{height:7px;background:linear-gradient(90deg,#8d6545,#d2b08c,#8d6545)}
+.rovy-dialog-body{padding:26px 24px 22px}.rovy-dialog-icon{width:58px;height:58px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;background:#f4ece3;color:#9a704e;font-size:26px;font-weight:900;border:1px solid #e8d8c7}
+.rovy-dialog-icon.success{background:#edf5ef;color:#397452;border-color:#d5e8da}.rovy-dialog-icon.error{background:#fbefed;color:#a34f42;border-color:#f0d8d3}
+.rovy-dialog-kicker{font-size:10px;letter-spacing:2px;color:#a17b59;font-weight:800}.rovy-dialog h3{font-size:21px;margin:5px 0 9px;font-weight:900}
+.rovy-dialog-message{font-size:14px;line-height:1.9;color:#6d655e;white-space:pre-line}.rovy-dialog-input{width:100%;margin-top:15px;padding:12px;border:1px solid #dfd3c7;border-radius:11px;font:inherit;outline:none}
+.rovy-dialog-input:focus{border-color:#b58a61;box-shadow:0 0 0 3px #b58a6122}.rovy-dialog-actions{display:flex;gap:10px;margin-top:20px}
+.rovy-dialog-actions button{flex:1;border:0;border-radius:11px;padding:11px 12px;font:inherit;font-weight:800;cursor:pointer}
+.rovy-dialog-primary{background:linear-gradient(135deg,#b58a61,#8f6748);color:white}.rovy-dialog-secondary{background:#f2eee9;color:#65584d}
+@media(max-width:480px){.rovy-dialog-body{padding:22px 18px 18px}.rovy-dialog-actions button{font-size:13px}}
+
 </style>
 <meta name="theme-color" content="#171717"><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="description" content="لوحة إدارة ROVY STORE لإدارة الطلبات والمنتجات والمخزون والشحن."><meta name="theme-color" content="#171717">    <meta name="robots" content="noindex,nofollow">
 </head>
@@ -629,6 +643,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 <div id="staffModal" class="modal-back hidden"><div class="modal" style="width:min(470px,100%)"><div class="modal-head"><h2 id="staffModalTitle">إضافة موظف</h2><button class="close" data-close="staffModal">✕</button></div><form id="staffForm"><input type="hidden" id="staffUserId"><div class="field" id="staffEmailWrap"><label for="staffEmail">البريد الإلكتروني للحساب المسجل *</label><input id="staffEmail" type="email" required></div><div class="field"><label for="staffFullName">اسم الموظف *</label><input id="staffFullName" maxlength="100" required></div><div class="field"><label for="staffRoleSelect">الصلاحية *</label><select id="staffRoleSelect" required><option value="manager">مدير</option><option value="customer_service">خدمة العملاء</option><option value="shipping">الشحن</option></select></div><label style="display:flex;align-items:center;gap:9px;margin:12px 0"><input id="staffActive" type="checkbox" checked> حساب نشط</label><div class="modal-actions"><button class="btn gold" type="submit" id="saveStaffBtn">حفظ الموظف</button><button class="btn light" type="button" data-close="staffModal">إلغاء</button></div><div id="staffError" class="error"></div></form></div></div>
 <div id="orderImageViewer" class="image-viewer hidden" role="dialog" aria-modal="true" aria-label="تكبير صورة المنتج"><button type="button" id="closeOrderImage">إغلاق ✕</button><img id="orderImageLarge" src="" alt="صورة المنتج مكبرة"></div>
 <div id="toast" class="toast hidden" role="status"></div>
+<div class="rovy-dialog-backdrop" id="rovyDialogBackdrop" aria-hidden="true"><section class="rovy-dialog" role="dialog" aria-modal="true" aria-labelledby="rovyDialogTitle"><div class="rovy-dialog-top"></div><div class="rovy-dialog-body"><div class="rovy-dialog-icon" id="rovyDialogIcon">i</div><div class="rovy-dialog-kicker">ROVY · PREMIUM EXPERIENCE</div><h3 id="rovyDialogTitle">تأكيد</h3><div class="rovy-dialog-message" id="rovyDialogMessage"></div><input class="rovy-dialog-input hidden" id="rovyDialogInput" type="text"><div class="rovy-dialog-actions"><button class="rovy-dialog-secondary" id="rovyDialogCancel" type="button">إلغاء</button><button class="rovy-dialog-primary" id="rovyDialogOk" type="button">متابعة</button></div></div></section></div>
 
 <script>
 (() => {
@@ -658,6 +673,21 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   const money = (v) => Number(v || 0).toLocaleString('ar-EG',{maximumFractionDigits:2}) + ' ج.م';
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeUrl = (v) => { try { const u = new URL(String(v)); return ['https:','http:'].includes(u.protocol) ? u.href : ''; } catch { return ''; } };
+
+function rovyDialog({kind='notice',title='تنبيه',message='',okText='حسنًا',cancelText='إلغاء',inputValue='',placeholder=''}={}){
+ const back=$('rovyDialogBackdrop'),icon=$('rovyDialogIcon'),input=$('rovyDialogInput'),cancel=$('rovyDialogCancel'),ok=$('rovyDialogOk');
+ icon.className='rovy-dialog-icon'+(kind==='success'?' success':kind==='error'?' error':'');icon.textContent=kind==='success'?'✓':kind==='error'?'!':kind==='prompt'?'✎':kind==='confirm'?'?':'i';
+ $('rovyDialogTitle').textContent=title;$('rovyDialogMessage').textContent=message;input.classList.toggle('hidden',kind!=='prompt');input.value=inputValue;input.placeholder=placeholder;
+ cancel.classList.toggle('hidden',kind==='notice'||kind==='success'||kind==='error');cancel.textContent=cancelText;ok.textContent=okText;
+ back.classList.add('is-open');back.setAttribute('aria-hidden','false');
+ return new Promise(resolve=>{const finish=v=>{back.classList.remove('is-open');back.setAttribute('aria-hidden','true');ok.onclick=null;cancel.onclick=null;back.onclick=null;document.removeEventListener('keydown',key);resolve(v)};
+ const key=e=>{if(e.key==='Escape'&&kind!=='notice'&&kind!=='success'&&kind!=='error')finish(kind==='prompt'?null:false);if(e.key==='Enter'&&kind==='prompt')finish(input.value.trim())};
+ ok.onclick=()=>finish(kind==='prompt'?input.value.trim():true);cancel.onclick=()=>finish(kind==='prompt'?null:false);back.onclick=e=>{if(e.target===back&&kind!=='notice'&&kind!=='success'&&kind!=='error')finish(kind==='prompt'?null:false)};document.addEventListener('keydown',key);setTimeout(()=>kind==='prompt'?input.focus():ok.focus(),50)});
+}
+function rovyNotice(message,kind='notice',title){return rovyDialog({kind,title:title||(kind==='success'?'تمت العملية بنجاح':kind==='error'?'تعذر إتمام العملية':'تنبيه'),message})}
+function rovyConfirm(message,options={}){return rovyDialog({kind:'confirm',title:'تأكيد العملية',message,okText:'نعم، تأكيد',...options})}
+function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'إدخال البيانات',message,okText:'حفظ البيانات',placeholder:'اكتب هنا',...options})}
+
   function notify(message, error=false) {
     $('toast').textContent = message;
     $('toast').style.background = error ? '#9f2633' : '#172538';
@@ -1293,9 +1323,9 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   $('analyticsRange')?.addEventListener('change',()=>{const n=Number($('analyticsRange').value);const to=new Date();const from=new Date(Date.now()-(n-1)*86400000);$('analyticsFrom').value=localISODate(from);$('analyticsTo').value=localISODate(to);});
   $('applyAnalyticsDates')?.addEventListener('click',()=>loadAnalytics().catch(e=>notify(e.message||'تعذر تحميل التحليلات.',true)));
   async function changeOrder(id,status) {
-    const notes=prompt('ملاحظات على تغيير الحالة (اختياري):');
+    const notes=await rovyPrompt('ملاحظات على تغيير الحالة (اختياري):');
     if(notes===null)return;
-    if(status==='cancelled'&&!confirm('تأكيد إلغاء الطلب؟ سيتم استرجاع المخزون'))return;
+    if(status==='cancelled'&&!await rovyConfirm('تأكيد إلغاء الطلب؟ سيتم استرجاع المخزون'))return;
     try { await rpc('admin_update_order_status',{p_order_id:Number(id),p_new_status:status,p_notes:notes||null}); notify('تم تحديث حالة الطلب.'); await loadOrders(); }
     catch(e){notify(e.message||'تعذر تحديث الطلب.',true);}
   }
@@ -1331,7 +1361,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const openWaybill=e.target.closest('[data-open-waybill]');
     if(openWaybill){await openStoreWaybill(openWaybill.dataset.openWaybill);return;}
     const expenseDelete=e.target.closest('[data-delete-expense]');
-    if(expenseDelete){if(!confirm('هل تريد حذف المصروف من السجل؟'))return;try{await rpc('admin_delete_store_expense',{p_expense_id:Number(expenseDelete.dataset.deleteExpense)});notify('تم حذف المصروف.');await loadFinancialCenter();}catch(err){notify(err.message||'تعذر حذف المصروف.',true);}return;}
+    if(expenseDelete){if(!await rovyConfirm('هل تريد حذف المصروف من السجل؟'))return;try{await rpc('admin_delete_store_expense',{p_expense_id:Number(expenseDelete.dataset.deleteExpense)});notify('تم حذف المصروف.');await loadFinancialCenter();}catch(err){notify(err.message||'تعذر حذف المصروف.',true);}return;}
     const close=e.target.closest('[data-close]'); if(close){$(close.dataset.close).classList.add('hidden');return;}
     const proofButton=e.target.closest('[data-payment-proof]');
     if(proofButton){
@@ -1347,7 +1377,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const reviewButton=e.target.closest('[data-payment-review]');
     if(reviewButton){
       const approved=reviewButton.dataset.paymentReview==='approve';
-      const notes=prompt(approved?'ملاحظات اعتماد الدفع (اختياري):':'سبب رفض إيصال الدفع:')??null;
+      const notes=await rovyPrompt(approved?'ملاحظات اعتماد الدفع (اختياري):':'سبب رفض إيصال الدفع:')??null;
       if(notes===null)return;
       try{
         await rpc('admin_review_shipping_payment',{p_order_id:Number(reviewButton.dataset.id),p_approved:approved,p_notes:notes||null});
@@ -1365,7 +1395,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const editCat=e.target.closest('[data-edit-category]'); if(editCat){const c=categories.find(x=>String(x.id)===editCat.dataset.editCategory);if(c)openCategory(c);return;}
     const editShipping=e.target.closest('[data-edit-shipping-governorate]'); if(editShipping){const g=shippingGovernorates.find(x=>String(x.id)===editShipping.dataset.editShippingGovernorate);if(g)openShippingGovernorate(g);return;}
     const toggleShipping=e.target.closest('[data-toggle-shipping-governorate]'); if(toggleShipping){try{await rpc('admin_set_shipping_governorate_active',{p_governorate_id:Number(toggleShipping.dataset.toggleShippingGovernorate),p_is_active:toggleShipping.dataset.active==='1'});notify('تم تحديث حالة المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
-    const deleteShipping=e.target.closest('[data-delete-shipping-governorate]'); if(deleteShipping){const id=Number(deleteShipping.dataset.deleteShippingGovernorate);const g=shippingGovernorates.find(x=>Number(x.id)===id);if(!g)return;if(!confirm('حذف محافظة '+g.name+' نهائيًا؟ بيانات الطلبات السابقة ستظل محفوظة.'))return;try{await rpc('admin_delete_shipping_governorate',{p_governorate_id:id});notify('تم حذف المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
+    const deleteShipping=e.target.closest('[data-delete-shipping-governorate]'); if(deleteShipping){const id=Number(deleteShipping.dataset.deleteShippingGovernorate);const g=shippingGovernorates.find(x=>Number(x.id)===id);if(!g)return;if(!await rovyConfirm('حذف محافظة '+g.name+' نهائيًا؟ بيانات الطلبات السابقة ستظل محفوظة.'))return;try{await rpc('admin_delete_shipping_governorate',{p_governorate_id:id});notify('تم حذف المحافظة.');await loadShippingGovernorates();}catch(err){notify(err.message,true);}return;}
     const toggleCat=e.target.closest('[data-toggle-category]'); if(toggleCat){try{await rpc('admin_set_category_active',{p_category_id:Number(toggleCat.dataset.toggleCategory),p_is_active:toggleCat.dataset.active==='1'});notify('تم تحديث حالة القسم.');await loadCategories();}catch(err){notify(err.message,true);}return;}
     const editStaff=e.target.closest('[data-edit-staff]'); if(editStaff){const member=staffMembers.find(x=>x.user_id===editStaff.dataset.editStaff);if(member)openStaffModal(member);return;}
     const toggleStaff=e.target.closest('[data-toggle-staff]'); if(toggleStaff){const member=staffMembers.find(x=>x.user_id===toggleStaff.dataset.toggleStaff);if(member){try{await rpc('admin_update_staff_profile',{p_user_id:member.user_id,p_full_name:member.full_name,p_role:member.role,p_is_active:!member.is_active});notify('تم تحديث حالة الموظف.');await loadStaffMembers();}catch(err){notify(err.message||'تعذر تحديث الموظف.',true);}}return;}
@@ -1390,19 +1420,19 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const review=e.target.closest('[data-return-review]');
     if(review){
       const id=Number(review.dataset.id),approve=review.dataset.returnReview==='approve';
-      let notes=prompt(approve?'ملاحظات الاعتماد (اختياري):':'سبب رفض طلب المرتجع:');
+      let notes=await rovyPrompt(approve?'ملاحظات الاعتماد (اختياري):':'سبب رفض طلب المرتجع:');
       if(notes===null)return;
       if(!approve&&!notes.trim()){notify('سبب الرفض مطلوب.',true);return;}
-      if(!confirm(approve?'اعتماد طلب المرتجع؟':'تأكيد رفض طلب المرتجع؟'))return;
+      if(!await rovyConfirm(approve?'اعتماد طلب المرتجع؟':'تأكيد رفض طلب المرتجع؟'))return;
       review.disabled=true;
       try{await rpc('admin_review_return_request',{p_request_id:id,p_approved:approve,p_notes:notes||null});notify(approve?'تم اعتماد طلب المرتجع.':'تم رفض طلب المرتجع.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر تحديث طلب المرتجع.',true);}finally{review.disabled=false;}
     }
     const receive=e.target.closest('[data-return-receive]');
     if(receive){
-      const id=Number(receive.dataset.returnReceive),notes=prompt('ملاحظات استلام المرتجع (اختياري):');
+      const id=Number(receive.dataset.returnReceive),notes=await rovyPrompt('ملاحظات استلام المرتجع (اختياري):');
       if(notes===null)return;
-      if(!confirm('تأكيد استلام المرتجع فعليًا؟'))return;
+      if(!await rovyConfirm('تأكيد استلام المرتجع فعليًا؟'))return;
       receive.disabled=true;try{await rpc('admin_receive_return_request',{p_request_id:id,p_notes:notes||null});notify('تم تسجيل استلام المرتجع.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر تسجيل الاستلام.',true);}finally{receive.disabled=false;}
     }
@@ -1411,29 +1441,29 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       const r=returnRequests.find(x=>Number(x.id)===Number(inspect.dataset.returnInspect));if(!r)return;
       const items=[];
       for(const item of (r.items||[])){
-        const answer=prompt('فحص: '+item.product_name+' '+(item.size||'')+' '+(item.color||'')+'\nالكمية المطلوبة: '+item.requested_quantity+'\nاكتب الكمية المقبولة التي ستعود للمخزون (0 إلى '+item.requested_quantity+'):',String(item.requested_quantity));
+        const answer=await rovyPrompt('فحص: '+item.product_name+' '+(item.size||'')+' '+(item.color||'')+'\nالكمية المطلوبة: '+item.requested_quantity+'\nاكتب الكمية المقبولة التي ستعود للمخزون (0 إلى '+item.requested_quantity+'):',String(item.requested_quantity));
         if(answer===null)return;
         const accepted=Number(answer);if(!Number.isInteger(accepted)||accepted<0||accepted>Number(item.requested_quantity)){notify('الكمية المقبولة غير صحيحة.',true);return;}
-        const note=prompt('ملاحظة فحص '+item.product_name+' (اختياري):')||'';
+        const note=await rovyPrompt('ملاحظة فحص '+item.product_name+' (اختياري):')||'';
         items.push({return_item_id:item.id,accepted_quantity:accepted,inspection_note:note});
       }
-      const notes=prompt('ملاحظات الفحص العامة (اختياري):');if(notes===null)return;
-      if(!confirm('تأكيد نتيجة الفحص؟ الكميات المقبولة ستضاف للمخزون الآن.'))return;
+      const notes=await rovyPrompt('ملاحظات الفحص العامة (اختياري):');if(notes===null)return;
+      if(!await rovyConfirm('تأكيد نتيجة الفحص؟ الكميات المقبولة ستضاف للمخزون الآن.'))return;
       inspect.disabled=true;try{const result=await rpc('admin_inspect_return_request',{p_request_id:Number(r.id),p_items:items,p_notes:notes||null});notify(result?.status==='rejected'?'لم يتم قبول أي منتج.':'تم الفحص وتحديث المخزون.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر حفظ الفحص.',true);}finally{inspect.disabled=false;}
     }
     const approveRefund=e.target.closest('[data-return-approve-refund]');
     if(approveRefund){
-      const notes=prompt('ملاحظات اعتماد الاسترداد (اختياري):');if(notes===null)return;
-      if(!confirm('اعتماد استرداد قيمة المنتجات المقبولة؟'))return;
+      const notes=await rovyPrompt('ملاحظات اعتماد الاسترداد (اختياري):');if(notes===null)return;
+      if(!await rovyConfirm('اعتماد استرداد قيمة المنتجات المقبولة؟'))return;
       approveRefund.disabled=true;try{await rpc('admin_approve_return_refund',{p_request_id:Number(approveRefund.dataset.returnApproveRefund),p_notes:notes||null});notify('تم اعتماد الاسترداد.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر اعتماد الاسترداد.',true);}finally{approveRefund.disabled=false;}
     }
     const paid=e.target.closest('[data-return-paid]');
     if(paid){
-      const method=prompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
-      const reference=prompt('مرجع التحويل (مطلوب):');if(reference===null||!reference.trim())return;
-      if(!confirm('هل تم تحويل المبلغ فعليًا للعميل؟'))return;
+      const method=await rovyPrompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
+      const reference=await rovyPrompt('مرجع التحويل (مطلوب):');if(reference===null||!reference.trim())return;
+      if(!await rovyConfirm('هل تم تحويل المبلغ فعليًا للعميل؟'))return;
       paid.disabled=true;try{await rpc('admin_mark_return_refund_paid',{p_request_id:Number(paid.dataset.returnPaid),p_payment_method:method.trim(),p_payment_reference:reference.trim()});notify('تم تسجيل الاسترداد وربطه بالمصروفات.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر تسجيل الاسترداد.',true);}finally{paid.disabled=false;}
     }
@@ -1443,12 +1473,12 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       const row=returnRequests.find(x=>Number(x.id)===Number(exchangeSettle.dataset.exchangeSettle));
       if(!row)return;
       const refund=row.exchange_difference_status==='store_refund_due';
-      const method=prompt(refund?'طريقة تحويل فرق السعر للعميل: vodafone_cash أو instapay أو bank_transfer':'طريقة تحصيل فرق السعر من العميل: cash أو vodafone_cash أو instapay أو bank_transfer');
+      const method=await rovyPrompt(refund?'طريقة تحويل فرق السعر للعميل: vodafone_cash أو instapay أو bank_transfer':'طريقة تحصيل فرق السعر من العميل: cash أو vodafone_cash أو instapay أو bank_transfer');
       if(method===null)return;
       const allowed=refund?['vodafone_cash','instapay','bank_transfer']:['cash','vodafone_cash','instapay','bank_transfer'];
       if(!allowed.includes(method.trim())){notify('طريقة التسوية غير صحيحة.',true);return;}
-      const reference=prompt('رقم مرجع التحويل أو إيصال التحصيل (مطلوب):');if(reference===null||!reference.trim())return;
-      if(!confirm(refund?'تأكيد أن المتجر حوّل فرق السعر فعليًا للعميل؟':'تأكيد أن العميل دفع فرق السعر فعليًا؟'))return;
+      const reference=await rovyPrompt('رقم مرجع التحويل أو إيصال التحصيل (مطلوب):');if(reference===null||!reference.trim())return;
+      if(!await rovyConfirm(refund?'تأكيد أن المتجر حوّل فرق السعر فعليًا للعميل؟':'تأكيد أن العميل دفع فرق السعر فعليًا؟'))return;
       exchangeSettle.disabled=true;
       try{await rpc('admin_settle_exchange_difference',{p_request_id:Number(row.id),p_payment_method:method.trim(),p_payment_reference:reference.trim()});notify('تم تسجيل تسوية فرق السعر.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر تسجيل التسوية.',true);}finally{exchangeSettle.disabled=false;}
@@ -1456,10 +1486,10 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 
     const exchange=e.target.closest('[data-return-exchange]');
     if(exchange){
-      const orderId=prompt('أدخل رقم طلب البديل الذي تم إنشاؤه لنفس العميل:');if(orderId===null)return;
+      const orderId=await rovyPrompt('أدخل رقم طلب البديل الذي تم إنشاؤه لنفس العميل:');if(orderId===null)return;
       if(!/^\d+$/.test(orderId.trim())){notify('رقم الطلب غير صحيح.',true);return;}
-      const notes=prompt('ملاحظات الاستبدال (اختياري):');if(notes===null)return;
-      if(!confirm('ربط طلب البديل #'+orderId+' وإغلاق طلب الاستبدال؟'))return;
+      const notes=await rovyPrompt('ملاحظات الاستبدال (اختياري):');if(notes===null)return;
+      if(!await rovyConfirm('ربط طلب البديل #'+orderId+' وإغلاق طلب الاستبدال؟'))return;
       exchange.disabled=true;try{await rpc('admin_complete_return_exchange',{p_request_id:Number(exchange.dataset.returnExchange),p_replacement_order_id:Number(orderId),p_notes:notes||null});notify('تم ربط طلب البديل وإغلاق الاستبدال.');await loadReturnRequests();}
       catch(err){notify(err.message||'تعذر إتمام الاستبدال.',true);}finally{exchange.disabled=false;}
     }
@@ -1469,15 +1499,15 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
   document.addEventListener('click',async e=>{
     const review=e.target.closest('[data-refund-review]');
     if(review){const id=Number(review.dataset.id),approve=review.dataset.refundReview==='approve';let notes=null;
-      if(!approve){notes=prompt('اكتب سبب رفض طلب الاسترداد:');if(notes===null)return;if(!notes.trim()){notify('سبب الرفض مطلوب.',true);return;}}
-      else if(!confirm('اعتماد طلب الاسترداد؟ هذا لا ينفذ التحويل المالي.'))return;
+      if(!approve){notes=await rovyPrompt('اكتب سبب رفض طلب الاسترداد:');if(notes===null)return;if(!notes.trim()){notify('سبب الرفض مطلوب.',true);return;}}
+      else if(!await rovyConfirm('اعتماد طلب الاسترداد؟ هذا لا ينفذ التحويل المالي.'))return;
       review.disabled=true;try{await rpc('admin_review_shipping_refund',{p_refund_id:id,p_approved:approve,p_notes:notes});notify(approve?'تم اعتماد طلب الاسترداد.':'تم رفض طلب الاسترداد.');await loadShippingRefunds();}
       catch(err){notify(err.message||'تعذر تحديث طلب الاسترداد.',true);}finally{review.disabled=false;}
     }
     const paid=e.target.closest('[data-refund-paid]');
-    if(paid){const id=Number(paid.dataset.refundPaid);const method=prompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
-      const reference=prompt('رقم مرجع التحويل أو وصف إثبات العملية (مطلوب):');if(reference===null)return;if(!reference.trim()){notify('مرجع التحويل مطلوب.',true);return;}
-      const proof=prompt('مسار إثبات التحويل (اختياري حاليًا):')||null;if(!confirm('هل تم تحويل مبلغ الاسترداد فعليًا للعميل؟'))return;
+    if(paid){const id=Number(paid.dataset.refundPaid);const method=await rovyPrompt('طريقة التحويل: vodafone_cash أو instapay أو bank_transfer أو cash');if(method===null)return;
+      const reference=await rovyPrompt('رقم مرجع التحويل أو وصف إثبات العملية (مطلوب):');if(reference===null)return;if(!reference.trim()){notify('مرجع التحويل مطلوب.',true);return;}
+      const proof=await rovyPrompt('مسار إثبات التحويل (اختياري حاليًا):')||null;if(!await rovyConfirm('هل تم تحويل مبلغ الاسترداد فعليًا للعميل؟'))return;
       paid.disabled=true;try{await rpc('admin_mark_shipping_refund_paid',{p_refund_id:id,p_payment_method:method.trim(),p_payment_reference:reference.trim(),p_payment_proof_path:proof});notify('تم تسجيل الاسترداد بعد تأكيد التحويل.');await loadShippingRefunds();}
       catch(err){notify(err.message||'تعذر تسجيل الاسترداد.',true);}finally{paid.disabled=false;}
     }
