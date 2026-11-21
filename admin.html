@@ -1436,7 +1436,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     const exchange=e.target.closest('[data-return-exchange]');
     if(exchange){
       const orderId=prompt('أدخل رقم طلب البديل الذي تم إنشاؤه لنفس العميل:');if(orderId===null)return;
-      if(!/^\\d+$/.test(orderId.trim())){notify('رقم الطلب غير صحيح.',true);return;}
+      if(!/^\d+$/.test(orderId.trim())){notify('رقم الطلب غير صحيح.',true);return;}
       const notes=prompt('ملاحظات الاستبدال (اختياري):');if(notes===null)return;
       if(!confirm('ربط طلب البديل #'+orderId+' وإغلاق طلب الاستبدال؟'))return;
       exchange.disabled=true;try{await rpc('admin_complete_return_exchange',{p_request_id:Number(exchange.dataset.returnExchange),p_replacement_order_id:Number(orderId),p_notes:notes||null});notify('تم ربط طلب البديل وإغلاق الاستبدال.');await loadReturnRequests();}
