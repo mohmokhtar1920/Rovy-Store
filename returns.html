@@ -71,7 +71,7 @@ function renderEligible(){
  $('eligibleOrders').innerHTML=eligibleOrders.map(o=>'<div class="order"><div class="orderhead"><strong>الطلب #'+esc(o.order_id)+'</strong><span class="muted">تاريخ الاستلام: '+new Date(o.delivered_at).toLocaleDateString('ar-EG')+'</span></div>'+
  (o.items||[]).map(i=>'<div class="item"><input type="checkbox" class="return-item" data-order="'+esc(o.order_id)+'" data-item="'+esc(i.order_item_id)+'" aria-label="اختيار '+esc(i.product_name)+'">'+
  '<div><strong>'+esc(i.product_name)+'</strong><small>'+(i.size?'المقاس: '+esc(i.size)+' · ':'')+(i.color?'اللون: '+esc(i.color)+' · ':'')+'المتاح للإرجاع: '+esc(i.remaining_quantity)+' · '+money(i.unit_price)+'</small></div>'+
- '<select class="qty" data-qty="'+esc(i.order_item_id)+'">'+Array.from({length:Number(i.remaining_quantity)},(_,n)=>'<option value="'+(n+1)+'" '+((n+1)===initial?'selected':'')+'>'+(n+1)+'</option>').join('')+'</select></div>').join('')+'</div>').join('');
+ '<select class="qty" data-qty="'+esc(i.order_item_id)+'">'+Array.from({length:Number(i.remaining_quantity)},(_,n)=>'<option value="'+(n+1)+'" '+((n+1)===1?'selected':'')+'>'+(n+1)+'</option>').join('')+'</select></div>').join('')+'</div>').join('');
 }
 
 async function loadExchangeCatalog(){
