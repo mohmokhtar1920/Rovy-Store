@@ -146,7 +146,8 @@ document.addEventListener('change',async e=>{
  const box=e.target.closest('[data-exchange-builder]');if(!box)return;
  if(e.target.matches('[data-ex-product]')){
   const productId=Number(e.target.value);
-  const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId&&Number(v.stock)>0);
+  const units=Number(box.dataset.exUnits||0);
+  const variants=exchangeVariants.filter(v=>Number(v.product_id)===productId&&Number(v.stock)>=units);
   const wrap=box.querySelector('[data-ex-variant-wrap]');
   const select=box.querySelector('[data-ex-variant]');
   if(variants.length){
