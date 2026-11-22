@@ -532,8 +532,21 @@
                 return;
             }
             window.rovyAnalytics?.track('add_to_cart',{product_id:Number(currentProduct?.id)});
-            if (existingItem) existingItem.quantity += 1;
-            else cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
+            if (existingItem) {
+                existingItem.cartStock = availableStock;
+                existingItem.stock = Number(currentProduct?.stock || 0);
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...currentProduct,
+                    cartItemId: uniqueId,
+                    variantId: selectedVariantId,
+                    size: selectedSize || '',
+                    color: selectedColor || '',
+                    cartStock: availableStock,
+                    quantity: 1
+                });
+            }
             updateProductCart();
             showToast(english ? 'Product added to your cart successfully.' : 'تمت إضافة المنتج إلى سلة مشترياتك بنجاح.', 'success', english ? 'Added to cart' : 'أُضيف إلى السلة');
             toggleCart(true);
