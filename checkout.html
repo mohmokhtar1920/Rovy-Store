@@ -63,7 +63,56 @@
         .whatsapp-float { position: fixed; bottom: 25px; left: 25px; background-color: #25d366; color: white; border-radius: 50px; text-align: center; font-size: 35px; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 9999; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.3s; }
         .whatsapp-float:hover { background-color: #128c7e; transform: scale(1.1); }
         .site-toast{position:fixed;top:18px;left:50%;transform:translate(-50%,-18px);width:min(92%,430px);display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid #e8e8e8;border-radius:14px;box-shadow:0 12px 35px rgba(0,0,0,.16);z-index:10000;opacity:0;visibility:hidden;pointer-events:none;transition:.25s;direction:rtl}.site-toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0)}.site-toast-icon{width:38px;height:38px;flex:0 0 38px;border-radius:50%;display:grid;place-items:center;background:#eef8f1;color:#20a45a}.site-toast.success .site-toast-icon{background:#e9f8ef;color:#159447}.site-toast.error .site-toast-icon{background:#fff0f0;color:#b52d2d}.site-toast.info .site-toast-icon{background:#f2f4f7;color:#555}.site-toast-content{flex:1;min-width:0}.site-toast-title{font-weight:900;font-size:14px;margin-bottom:2px}.site-toast-message{font-size:13px;color:#666;line-height:1.6}.site-toast-close{border:0;background:transparent;color:#888;font-size:16px;cursor:pointer;padding:5px}
-    </style>
+    
+/* ROVY premium checkout */
+body{background:linear-gradient(180deg,#f7f4ef 0,#fbfaf8 260px,#fbfaf8 100%);color:#211e1b}
+header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #e9e1d8;box-shadow:0 5px 22px rgba(34,27,20,.04)}
+.logo{color:#171513;letter-spacing:3px}
+.logo span{color:#b58a61}
+.checkout-intro{max-width:1000px;margin:30px auto 0;padding:0 20px;text-align:right}
+.checkout-eyebrow{font-size:11px;letter-spacing:2.6px;color:#a47b55;font-weight:900}
+.checkout-intro h1{font-size:clamp(24px,4vw,34px);margin:5px 0;color:#201c18;font-weight:900}
+.checkout-intro p{color:#77716b;font-size:14px;margin:0}
+.checkout-progress{display:flex;align-items:center;gap:10px;margin-top:20px;max-width:540px}
+.checkout-progress-step{display:flex;align-items:center;gap:8px;color:#9b938b;font-size:12px;font-weight:800;white-space:nowrap}
+.checkout-progress-step.active{color:#7d593d}
+.checkout-progress-step span{width:27px;height:27px;border-radius:50%;display:grid;place-items:center;background:#eee8e1;color:#877d72;font-size:12px}
+.checkout-progress-step.active span{background:#a77b54;color:#fff}
+.checkout-progress-line{height:1px;background:#ded5cb;flex:1;min-width:18px}
+.container{max-width:1000px;margin:24px auto 50px;gap:22px;align-items:start}
+.card{border:1px solid #eee7df;border-radius:20px;padding:clamp(20px,3vw,30px);box-shadow:0 14px 40px rgba(42,31,20,.055)}
+.card h2{font-size:20px;border-bottom:1px solid #eee8e1;padding-bottom:15px;color:#211e1b}
+#checkoutForm .form-group label{font-size:14px;color:#403a34}
+.form-group input,.form-group textarea,#cGovernorate{border:1px solid #e4ddd5!important;border-radius:11px!important;background:#fff;min-height:48px;transition:border-color .18s,box-shadow .18s}
+.form-group input:focus,.form-group textarea:focus,#cGovernorate:focus,.coupon-input-group input:focus{outline:none;border-color:#b58a61!important;box-shadow:0 0 0 3px rgba(181,138,97,.13)}
+.form-group textarea{min-height:104px}
+#shippingHint{font-size:12px!important;color:#8b8177!important}
+.btn-submit{border-radius:12px;background:linear-gradient(135deg,#211d19,#080808);min-height:55px;box-shadow:0 8px 20px rgba(20,16,12,.13);letter-spacing:.2px}
+.btn-submit:hover{background:linear-gradient(135deg,#b58a61,#8c6443);transform:translateY(-1px)}
+.btn-submit:disabled{background:#bdb8b2}
+#checkoutItems{display:grid;gap:4px}
+.cart-item{gap:12px;padding:12px 0;border-bottom:1px solid #f0ebe6}
+.cart-item-info{min-width:0}
+.cart-item img{width:64px;height:68px;object-fit:contain;background:#f8f5f1;border-radius:10px}
+.cart-item-title{font-size:14px;color:#29241f}
+.cart-item-qty{font-size:12px;line-height:1.7}
+.coupon-section{background:#faf7f3;border:1px solid #eee5da;border-radius:14px;padding:14px;margin-top:18px}
+.coupon-input-group input{min-width:0;border:1px solid #e3d9ce;border-radius:10px;padding:11px 12px;background:#fff}
+.coupon-input-group button{border-radius:10px;background:#29231e;padding:10px 18px}
+.coupon-msg{line-height:1.7}
+.checkout-total-line{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;color:#716961;font-size:14px}
+.checkout-total-line strong{color:#342e28}
+.checkout-discount-line{color:#2f8052}
+.checkout-discount-line strong{color:#2f8052}
+.total-row{border-top:1px solid #eee5dc;padding-top:17px;margin-top:18px;font-size:21px;color:#916b49}
+.checkout-assurance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+.checkout-assurance div{display:flex;align-items:center;gap:9px;padding:11px 12px;background:#f8f5f1;border:1px solid #eee7df;border-radius:12px;color:#6d6258;font-size:12px;font-weight:700}
+.checkout-assurance i{color:#a77b54;font-size:15px}
+.checkout-note{margin-top:14px;padding:12px 14px;border-radius:12px;background:#f5efe8;color:#78624e;font-size:12px;line-height:1.8}
+@media(max-width:768px){.checkout-intro{margin-top:22px}.container{margin:18px auto 35px;gap:15px}.card{border-radius:17px;padding:20px}.checkout-progress{gap:7px}.checkout-progress-step{font-size:10px;gap:5px}.checkout-progress-step span{width:24px;height:24px}.checkout-assurance{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.checkout-assurance{grid-template-columns:1fr}.coupon-input-group{gap:7px}.coupon-input-group button{padding:9px 12px}}
+
+</style>
     <meta name="description" content="أكمل طلبك في ROVY STORE واختر عنوان التوصيل وطريقة الدفع عند الاستلام.">
     <meta name="theme-color" content="#171717">
     <meta property="og:site_name" content="ROVY STORE">
@@ -85,7 +134,17 @@
         <button class="lang-btn" id="checkoutLangBtn" type="button" onclick="toggleCheckoutLanguage()">English</button>
     </header>
 
-    <div class="container" id="checkoutSection" style="display:none;">
+    <section class="checkout-intro" aria-label="خطوات إتمام الطلب">
+ <div class="checkout-eyebrow">ROVY STORE · SECURE CHECKOUT</div>
+ <h1 id="checkoutPageTitle">خطوة واحدة تفصلك عن طلبك</h1>
+ <p id="checkoutPageSubtitle">راجع منتجاتك وأدخل بيانات التوصيل لإتمام طلبك بأمان.</p>
+ <div class="checkout-progress" aria-label="مراحل الطلب">
+  <div class="checkout-progress-step"><span><i class="fas fa-check"></i></span><b id="progressCart">السلة</b></div><div class="checkout-progress-line"></div>
+  <div class="checkout-progress-step active"><span>2</span><b id="progressDetails">بيانات التوصيل</b></div><div class="checkout-progress-line"></div>
+  <div class="checkout-progress-step"><span>3</span><b id="progressConfirm">التأكيد</b></div>
+ </div>
+</section>
+<div class="container" id="checkoutSection" style="display:none;">
         <div class="card">
             <h2>بيانات التوصيل</h2>
             <form id="checkoutForm">
@@ -115,7 +174,12 @@
                 <div class="coupon-msg" id="couponMsg"></div>
             </div>
 
-            <div style="display:flex;justify-content:space-between;margin-top:18px;color:#666;font-size:15px"><span id="subtotalLabel">قيمة المنتجات:</span><strong id="checkoutSubtotal">0 جنيه</strong></div><div style="display:flex;justify-content:space-between;margin-top:10px;color:#666;font-size:15px"><span id="shippingLabel">الشحن:</span><strong id="checkoutShipping">اختر المحافظة</strong></div><div class="total-row"><span>الإجمالي:</span><span id="checkoutTotalContainer">0 جنيه</span></div>
+            <div class="checkout-total-line"><span id="subtotalLabel">قيمة المنتجات:</span><strong id="checkoutSubtotal">0 جنيه</strong></div>
+            <div class="checkout-total-line checkout-discount-line" id="discountRow" hidden><span id="discountLabel">الخصم:</span><strong id="checkoutDiscount">0 جنيه</strong></div>
+            <div class="checkout-total-line"><span id="shippingLabel">الشحن:</span><strong id="checkoutShipping">اختر المحافظة</strong></div>
+            <div class="total-row"><span id="grandTotalLabel">الإجمالي:</span><span id="checkoutTotalContainer">0 جنيه</span></div>
+            <div class="checkout-assurance"><div><i class="fas fa-shield-alt"></i><span id="assuranceSecure">بياناتك محمية</span></div><div><i class="fas fa-truck"></i><span id="assuranceDelivery">توصيل لباب البيت</span></div></div>
+            <div class="checkout-note" id="checkoutPaymentNote"><i class="fas fa-info-circle"></i> الدفع عند الاستلام للمنتجات. رسوم الشحن تُدفع مسبقًا حسب سياسة المتجر.</div>
         </div>
     </div>
 
@@ -216,6 +280,16 @@
         updateCheckoutTotals();
         renderGovernorateOptions();
         document.getElementById('submitBtn').textContent=english?'Confirm Order':'تأكيد الطلب';
+        document.getElementById('checkoutPageTitle').textContent=english?'One step away from your order':'خطوة واحدة تفصلك عن طلبك';
+        document.getElementById('checkoutPageSubtitle').textContent=english?'Review your items and enter delivery details to complete your order securely.':'راجع منتجاتك وأدخل بيانات التوصيل لإتمام طلبك بأمان.';
+        document.getElementById('progressCart').textContent=english?'Cart':'السلة';
+        document.getElementById('progressDetails').textContent=english?'Delivery details':'بيانات التوصيل';
+        document.getElementById('progressConfirm').textContent=english?'Confirmation':'التأكيد';
+        document.getElementById('discountLabel').textContent=english?'Discount:':'الخصم:';
+        document.getElementById('grandTotalLabel').textContent=english?'Total:':'الإجمالي:';
+        document.getElementById('assuranceSecure').textContent=english?'Your details are protected':'بياناتك محمية';
+        document.getElementById('assuranceDelivery').textContent=english?'Delivery to your door':'توصيل لباب البيت';
+        document.getElementById('checkoutPaymentNote').innerHTML=english?'<i class="fas fa-info-circle"></i> Cash on delivery for products. Shipping fees are prepaid according to store policy.':'<i class="fas fa-info-circle"></i> الدفع عند الاستلام للمنتجات. رسوم الشحن تُدفع مسبقًا حسب سياسة المتجر.';
         document.getElementById('couponCode').placeholder=english?'Enter coupon code':'أدخل كود الخصم هنا';
         document.querySelector('.coupon-input-group button').textContent=english?'Apply':'تطبيق';
         document.querySelector('.total-row span').textContent=english?'Total:':'الإجمالي:';
@@ -289,7 +363,7 @@
     const governorateEnglishNames={'القاهرة':'Cairo','الجيزة':'Giza','الإسكندرية':'Alexandria','القليوبية':'Qalyubia','الدقهلية':'Dakahlia','الشرقية':'Sharqia','الغربية':'Gharbia','المنوفية':'Menoufia','البحيرة':'Beheira','كفر الشيخ':'Kafr El Sheikh','دمياط':'Damietta','بورسعيد':'Port Said','الإسماعيلية':'Ismailia','السويس':'Suez','شمال سيناء':'North Sinai','جنوب سيناء':'South Sinai','الفيوم':'Fayoum','بني سويف':'Beni Suef','المنيا':'Minya','أسيوط':'Assiut','سوهاج':'Sohag','قنا':'Qena','الأقصر':'Luxor','أسوان':'Aswan','البحر الأحمر':'Red Sea','الوادي الجديد':'New Valley','مطروح':'Matrouh'};
     function renderGovernorateOptions(){const sel=document.getElementById('cGovernorate');if(!sel)return;const old=sel.value;sel.innerHTML='';const first=document.createElement('option');first.value='';first.textContent=english?'Choose governorate':'اختر المحافظة';sel.appendChild(first);shippingGovernorates.forEach(g=>{const o=document.createElement('option');o.value=String(g.id);o.textContent=english?(governorateEnglishNames[g.name]||g.name):g.name;sel.appendChild(o);});if(shippingGovernorates.some(g=>String(g.id)===old))sel.value=old;if(!shippingGovernorates.length){const o=document.createElement('option');o.value='';o.textContent=english?'Shipping is not configured yet':'لم يتم إعداد أسعار الشحن بعد';sel.appendChild(o);}const hint=document.getElementById('shippingHint');if(hint)hint.textContent=english?'Shipping fee is calculated automatically by governorate.':'سعر الشحن بيتحسب تلقائيًا حسب المحافظة.';}
     async function loadShippingGovernorates(){const {data,error}=await supabaseClient.rpc('get_active_shipping_governorates');if(error)throw error;shippingGovernorates=Array.isArray(data)?data.filter(g=>g&&g.is_active!==false&&g.shipping_fee!==null&&Number.isFinite(Number(g.shipping_fee))&&Number(g.shipping_fee)>=0):[];renderGovernorateOptions();const sel=document.getElementById('cGovernorate');if(sel)sel.addEventListener('change',()=>{const g=shippingGovernorates.find(x=>String(x.id)===sel.value);shippingFee=(g&&g.shipping_fee!==null)?Number(g.shipping_fee):null;updateCheckoutTotals();});}
-    function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');const selected=document.getElementById('cGovernorate')?.value;ship.textContent=shippingFee===null?(selected?(english?'Shipping price not set':'سعر الشحن غير محدد'):(english?'Choose governorate':'اختر المحافظة')):formatPrice(shippingFee)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingFee===null?0:shippingFee))+(english?' EGP':' جنيه');}
+    function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer'),discountRow=document.getElementById('discountRow'),discountValue=document.getElementById('checkoutDiscount');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');const discountAmount=Math.max(0,originalTotal-finalTotal);if(discountRow&&discountValue){discountRow.hidden=discountAmount<=0;discountValue.textContent='− '+formatPrice(discountAmount)+(english?' EGP':' جنيه');}const selected=document.getElementById('cGovernorate')?.value;ship.textContent=shippingFee===null?(selected?(english?'Shipping price not set':'سعر الشحن غير محدد'):(english?'Choose governorate':'اختر المحافظة')):formatPrice(shippingFee)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingFee===null?0:shippingFee))+(english?' EGP':' جنيه');}
     function renderCheckout() {
         if (!Array.isArray(cart) || cart.length === 0) {
             window.location.href = 'index.html';
