@@ -631,8 +631,16 @@
         function changeCartQuantity(cartItemKey,delta){
             const key=String(cartItemKey??'');const item=cart.find(x=>String(x.cartItemId||String(x.id)+'-no-variant')===key);if(!item)return;
             const next=Number(item.quantity)+Number(delta);if(!Number.isSafeInteger(next)||next<1)return;
-            const stock=Number(item.stock);
-            if(delta>0&&Number.isFinite(stock)&&stock>=0&&next>stock){showToast(english?'Only the available stock can be added.':'مش متاح كمية أكبر من المخزون الحالي.','info',english?'Stock limit':'حد المخزون');return;}
+            // Variant-specific stock is stored on the cart item by product.html.
+            // Never use parent stock as a fallback for legacy variant cart entries.
+            const hasVariant=item.variantId!==undefined&&item.variantId!==null&&item.variantId!=='';
+            const stock=hasVariant?Number(item.cartStock):Number(item.stock);
+            if(delta>0&&(!Number.isSafeInteger(stock)||stock<0||next>stock)){
+                const message=hasVariant&&!Number.isSafeInteger(stock)
+                    ? (english?'Open the product page to refresh this size/color stock.':'افتح صفحة المنتج لتحديث مخزون المقاس واللون المختار.')
+                    : (english?'Only the available stock can be added.':'مش متاح كمية أكبر من المخزون الحالي.');
+                showToast(message,'info',english?'Stock limit':'حد المخزون');return;
+            }
             item.quantity=next;updateCart();
         }
         function removeFromCart(cartItemKey) { const key=String(cartItemKey??'');const removed=cart.find(item=>String(item.cartItemId||String(item.id)+'-no-variant')===key);if(removed)window.rovyAnalytics?.track('remove_from_cart',{product_id:Number(removed.id)});cart=cart.filter(item=>String(item.cartItemId||String(item.id)+'-no-variant')!==key);updateCart(); }
