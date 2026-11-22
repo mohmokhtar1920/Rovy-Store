@@ -521,9 +521,17 @@
         }
         
         function addToCart() {
-            window.rovyAnalytics?.track('add_to_cart',{product_id:Number(currentProduct?.id)});
             const uniqueId = `${currentProduct.id}-${selectedVariantId || 'no-variant'}`;
             const existingItem = cart.find(item => item.cartItemId === uniqueId);
+            const availableStock = selectedVariantId
+                ? Number(variants.find(v => String(v.id) === String(selectedVariantId))?.stock || 0)
+                : Number(currentProduct?.stock || 0);
+            const currentQuantity = Number(existingItem?.quantity || 0);
+            if (!Number.isSafeInteger(availableStock) || availableStock < 1 || currentQuantity >= availableStock) {
+                showToast(english ? 'You have reached the available stock for this option.' : 'وصلت للحد الأقصى المتاح من هذا الاختيار في المخزون.', 'info', english ? 'Stock limit reached' : 'وصلت للكمية المتاحة');
+                return;
+            }
+            window.rovyAnalytics?.track('add_to_cart',{product_id:Number(currentProduct?.id)});
             if (existingItem) existingItem.quantity += 1;
             else cart.push({ ...currentProduct, cartItemId: uniqueId, variantId: selectedVariantId, size: selectedSize || '', color: selectedColor || '', quantity: 1 });
             updateProductCart();
