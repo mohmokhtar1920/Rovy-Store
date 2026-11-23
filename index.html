@@ -439,31 +439,13 @@
         }
 
         function renderCategoryCards() {
-            const container = document.getElementById('homeCategories');
-            if (!container) return;
-            container.innerHTML = '';
-            const fallbackImages = [
-                'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500',
-                'https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500',
-                'https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500',
-                'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500',
-                'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500'
-            ];
-            activeCategories.forEach((category, index) => {
-                const categoryPath=category.path||category.name;\n                const product = allProducts.find(p => p.category === categoryPath && p.image_url);
-                const card = document.createElement('div');
-                card.className = 'category';
-                card.addEventListener('click', () => filterCategory(categoryPath));
-                const img = document.createElement('img');
-                img.src = product ? (safeImageURL(product.image_url) || fallbackImages[index % fallbackImages.length]) : fallbackImages[index % fallbackImages.length];
-                img.alt = categoryPath;
-                const title = document.createElement('h3');
-                title.textContent = categoryPath;
-                card.append(img, title);
-                container.appendChild(card);
-            });
-            document.getElementById('categories').style.display = activeCategories.length ? 'block' : 'none';
-            translateCategoryCards();
+            const container=document.getElementById('homeCategories');if(!container)return;container.innerHTML='';
+            const selected=currentCategory==='All'?null:activeCategories.find(c=>(c.path||c.name)===currentCategory);
+            const visible=selected?activeCategories.filter(c=>Number(c.parent_id)===Number(selected.id)):activeCategories.filter(c=>!c.parent_id);
+            if(selected){const parent=selected.parent_id?activeCategories.find(c=>Number(c.id)===Number(selected.parent_id)):null;const back=document.createElement('button');back.type='button';back.className='btn light';back.style.margin='0 0 14px';back.textContent=parent?(english?'Back to ':'رجوع إلى ')+(parent.path||parent.name):(english?'All categories':'كل الأقسام');back.addEventListener('click',()=>filterCategory(parent?(parent.path||parent.name):'All'));container.appendChild(back);}
+            const fallbackImages=['https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500','https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=500','https://images.unsplash.com/photo-1503919005314-30d93d07d823?w=500','https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=500','https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500'];
+            visible.forEach((category,index)=>{const path=category.path||category.name;const product=allProducts.find(p=>p.category===path&&p.image_url);const card=document.createElement('div');card.className='category';card.addEventListener('click',()=>filterCategory(path));const img=document.createElement('img');img.src=product?(safeImageURL(product.image_url)||fallbackImages[index%fallbackImages.length]):fallbackImages[index%fallbackImages.length];img.alt=path;const title=document.createElement('h3');title.textContent=category.name;card.append(img,title);container.appendChild(card);});
+            document.getElementById('categories').style.display=visible.length?'block':'none';translateCategoryCards();
         }
         function normalizeSearchText(value) {
             return String(value ?? '')
@@ -512,23 +494,14 @@
                     bestProducts.forEach(p => { bestGrid.innerHTML += createProductCard(p); });
                     document.getElementById('bestSellers').style.display = 'block';
                 } else {
-                    document.getElementById('bestSellers').style.display = 'none';
-                }
-
-            } else {
-                document.getElementById('categories').style.display = 'none';
-                document.getElementById('bestSellers').style.display = 'none';
-                document.getElementById('newTitle').innerText = english ? `Category: ${currentCategory}` : `قسم: ${currentCategory}`;
-                
-                const newGrid = document.getElementById('newProductsGrid');
-                newGrid.innerHTML = '';
-                const filtered = allProducts.filter(p => p.category === currentCategory);
-                if(filtered.length > 0) {
-                    filtered.forEach(p => { newGrid.innerHTML += createProductCard(p); });
-                } else {
-                    newGrid.innerHTML = `<p style="text-align:center; width:100%;">${english ? 'No products in this category.' : 'لا توجد منتجات في هذا القسم.'}</p>`;
-                }
-                document.getElementById('newArrivals').scrollIntoView({behavior: 'smooth'});
+                renderCategoryCards();
+                document.getElementById('bestSellers').style.display='none';
+                document.getElementById('newTitle').innerText=english?'Category: '+currentCategory:'قسم: '+currentCategory;
+                const newGrid=document.getElementById('newProductsGrid');newGrid.innerHTML='';
+                const filtered=allProducts.filter(p=>p.category===currentCategory||String(p.category||'').startsWith(currentCategory+' / '));
+                if(filtered.length){filtered.forEach(p=>{newGrid.innerHTML+=createProductCard(p);});}
+                else{newGrid.innerHTML='<p style="text-align:center;width:100%;">'+(english?'No products in this category.':'لا توجد منتجات في هذا القسم.')+'</p>';}
+                document.getElementById('newArrivals').scrollIntoView({behavior:'smooth'});
             }
             translateVisibleProductCards();
         }
@@ -564,6 +537,7 @@
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
             currentCategory = cat;
+            renderCategoryCards();
             renderHomeSections();
         }
 
