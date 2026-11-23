@@ -378,8 +378,9 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
             promotionFreeShipping=data?.free_shipping===true;promotionName=data?.promotion_name||'';
             finalTotal=Math.max(0,originalTotal-Number(data?.coupon_discount||0)-Number(data?.promotion_discount||0));
             if(notice){notice.textContent=promotionName?(english?'Automatic offer applied: '+promotionName:'تم تطبيق العرض تلقائيًا: '+promotionName):'';notice.style.color='#28734e';}
-        }catch(err){promotionFreeShipping=false;promotionName='';if(notice){notice.textContent=english?'Automatic offers will be recalculated when the order is placed.':'سيتم إعادة حساب العروض تلقائيًا عند تأكيد الطلب.';notice.style.color='#8a6b43';}console.warn('Order discount preview unavailable:',err);}
+        }catch(err){lastOrderPreview=null;promotionFreeShipping=false;promotionName='';if(notice){notice.textContent=english?'Automatic offers will be recalculated when the order is placed.':'سيتم إعادة حساب العروض تلقائيًا عند تأكيد الطلب.';notice.style.color='#8a6b43';}console.warn('Order discount preview unavailable:',err);}
         updateCheckoutTotals();
+        return lastOrderPreview;
     }
     function renderCheckout() {
         if (!Array.isArray(cart) || cart.length === 0) {
