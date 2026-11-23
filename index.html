@@ -450,15 +450,15 @@
                 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=500'
             ];
             activeCategories.forEach((category, index) => {
-                const product = allProducts.find(p => p.category === category.name && p.image_url);
+                const categoryPath=category.path||category.name;\n                const product = allProducts.find(p => p.category === categoryPath && p.image_url);
                 const card = document.createElement('div');
                 card.className = 'category';
-                card.addEventListener('click', () => filterCategory(category.name));
+                card.addEventListener('click', () => filterCategory(categoryPath));
                 const img = document.createElement('img');
                 img.src = product ? (safeImageURL(product.image_url) || fallbackImages[index % fallbackImages.length]) : fallbackImages[index % fallbackImages.length];
-                img.alt = category.name;
+                img.alt = categoryPath;
                 const title = document.createElement('h3');
-                title.textContent = category.name;
+                title.textContent = categoryPath;
                 card.append(img, title);
                 container.appendChild(card);
             });
