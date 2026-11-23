@@ -892,26 +892,80 @@
             try{
                 status.textContent='جارٍ فتح الكاميرا…';
                 const model=window.DecartSDK.models.realtime('lucy-vton-3.6');
-                status.textContent='جارٍ فتح الكاميرا وتجهيز الاتصال معاً…';
                 const facingConstraint=options.strictFacing?{exact:tryonFacingMode}:{ideal:tryonFacingMode};
                 tryonCameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:facingConstraint,width:model.width||1280,height:model.height||720,frameRate:model.fps||30}});
                 ensureTryOnNotCancelled();
                 const actualFacing=tryonCameraStream.getVideoTracks()[0]?.getSettings?.().facingMode;
                 if(options.strictFacing&&actualFacing&&actualFacing!==tryonFacingMode)throw new Error('CAMERA_FACING_MISMATCH');
-                const localVideo=document.getElementById('tryonLocal');const tryonStage=localVideo.closest('.tryon-stage');if(tryonStage)tryonStage.classList.remove('is-live');localVideo.srcObject=tryonCameraStream;localVideo.play().catch(()=>{});
-                status.textContent=english?'Getting a secure try-on session…':'جاري تجهيز تصريح آمن للتجربة…';
-                const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:'{}'});
+                const localVideo=document.getElementById('tryonLocal');
+                const tryonStage=localVideo.closest('.tryon-stage');
+                if(tryonStage)tryonStage.classList.remove('is-live');
+                localVideo.srcObject=tryonCameraStream;
+                await localVideo.play().catch(()=>{});
                 ensureTryOnNotCancelled();
-                const tokenData=await tokenResponse.json().catch(()=>({}));
+
+                status.textContent='جاري تجهيز تصريح آمن واتصال الفيديو…';
+                // Mint a fresh short-lived Decart token for every dial/reconnect.
+                const client=window.DecartSDK.createDecartClient({
+                    apiKeyProvider:async()=>{
+                        const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{
+                            method:'POST',
+                            headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
+                            body:'{}',
+                            cache:'no-store'
+                        });
+                        const tokenData=await tokenResponse.json().catch(()=>({}));
+                        if(!tokenResponse.ok||!tokenData.apiKey){
+                            const tokenError=tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':(tokenData.error||'TOKEN_FAILED');
+                            throw new Error(tokenError);
+                        }
+                        return tokenData.apiKey;
+                    }
+                });
                 ensureTryOnNotCancelled();
-                if(!tokenResponse.ok||!tokenData.apiKey)throw new Error(tokenData.error==='TRYON_NOT_CONFIGURED'?'DECART_KEY_MISSING':(tokenData.error||'TOKEN_FAILED'));
-                status.textContent='جارٍ الاتصال بغرفة القياس الافتراضية…';
-                const client=window.DecartSDK.createDecartClient({apiKey:tokenData.apiKey});
-                tryonClient=await client.realtime.connect(tryonCameraStream,{model,mirror:'auto',onRemoteStream:(remoteStream)=>{const output=document.getElementById('tryonOutput');const stage=output.closest('.tryon-stage');const revealOutput=()=>{if(stage&&output.readyState>=2)stage.classList.add('is-live');};output.srcObject=remoteStream;output.addEventListener('loadeddata',revealOutput,{once:true});output.play().then(revealOutput).catch(()=>{});}});
+                status.textContent='جاري إنشاء اتصال الفيديو المباشر…';
+                tryonClient=await client.realtime.connect(tryonCameraStream,{
+                    model,
+                    mirror:'auto',
+                    onCapacityWait:({retryAfterMs})=>{
+                        if(!tryonCancelRequested)status.textContent='الخدمة مزدحمة؛ إعادة المحاولة خلال '+Math.max(1,Math.ceil(retryAfterMs/1000))+' ثانية…';
+                    },
+                    onConnectionQuality:({quality,limitingFactor})=>{
+                        if(!tryonCancelRequested&&quality==='poor')status.textContent='جودة الاتصال ضعيفة ('+limitingFactor+'). جاري محاولة الحفاظ على البث…';
+                    },
+                    onRemoteStream:(remoteStream)=>{
+                        const output=document.getElementById('tryonOutput');
+                        const stage=output?.closest('.tryon-stage');
+                        if(!output)return;
+                        output.srcObject=remoteStream;
+                        const revealOutput=()=>{
+                            if(stage&&output.readyState>=2&&output.videoWidth>0)stage.classList.add('is-live');
+                        };
+                        output.addEventListener('loadeddata',revealOutput);
+                        output.addEventListener('playing',revealOutput);
+                        output.play().then(revealOutput).catch(()=>{});
+                    }
+                });
                 ensureTryOnNotCancelled();
+                if(tryonClient?.on){
+                    tryonClient.on('sessionEnded',({reason})=>{
+                        if(!tryonCancelRequested){
+                            tryonActive=false;
+                            status.textContent='انتهت جلسة التجربة ('+String(reason||'connection')+'). اضغط بدء التجربة للمحاولة مرة أخرى.';
+                            if(stop)stop.disabled=true;
+                            if(start)start.disabled=false;
+                            if(tryonCameraStream)tryonCameraStream.getTracks().forEach(track=>track.stop());
+                            tryonCameraStream=null;
+                            document.getElementById('tryonLocal').srcObject=null;
+                        }
+                    });
+                }
+
                 const initialGarment=tryonSelectedProduct||currentProduct;
-                const initialGarmentUrl=safeImageURL(initialGarment.image_url);if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
-                const imageResponse=await fetch(initialGarmentUrl,{mode:'cors'});
+                const initialGarmentUrl=safeImageURL(initialGarment.image_url);
+                if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
+                status.textContent='تم الاتصال. جاري تحميل صورة المنتج وتجهيزها…';
+                const imageResponse=await fetch(initialGarmentUrl,{mode:'cors',cache:'no-store'});
                 ensureTryOnNotCancelled();
                 if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
                 const garmentBlob=await imageResponse.blob();
@@ -920,20 +974,66 @@
                 await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.',enhance:false});
                 ensureTryOnNotCancelled();
                 setTryOnGarmentPreview(initialGarment);
-                tryonActive=true;stop.disabled=false;
+
+                status.textContent='تم إرسال صورة المنتج. مستنيين أول صورة من غرفة القياس…';
+                const output=document.getElementById('tryonOutput');
+                await new Promise((resolve,reject)=>{
+                    let settled=false;
+                    const finish=(error)=>{
+                        if(settled)return;
+                        settled=true;
+                        clearTimeout(timer);
+                        output.removeEventListener('loadeddata',checkFrame);
+                        output.removeEventListener('playing',checkFrame);
+                        if(error)reject(error);else resolve();
+                    };
+                    const checkFrame=()=>{
+                        if(output.readyState>=2&&output.videoWidth>0)finish();
+                    };
+                    const timer=setTimeout(()=>finish(new Error('REMOTE_VIDEO_TIMEOUT')),30000);
+                    output.addEventListener('loadeddata',checkFrame);
+                    output.addEventListener('playing',checkFrame);
+                    checkFrame();
+                });
+                ensureTryOnNotCancelled();
+                tryonActive=true;
+                stop.disabled=false;
                 document.getElementById('tryonSwitchCamera').disabled=false;
                 document.getElementById('tryonCapture').disabled=false;
                 if(tryonSelectedVariant&&tryonSelectedVariant.image_url)await applyTryOnVariant();
-                status.textContent='التجربة المباشرة تعمل الآن. ابتعد قليلًا حتى يظهر الجزء العلوي من جسمك.';
+                status.textContent='التجربة المباشرة شغالة دلوقتي. ابتعد قليلاً حتى يظهر الجزء العلوي من جسمك.';
             }catch(error){
                 console.error('Virtual try-on error:',error);
-                const messages={DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secret.',TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',TOKEN_CREATION_FAILED:'خدمة القياس غير متاحة مؤقتاً. حاول بعد قليل.',TOKEN_SERVICE_UNAVAILABLE:'تعذر الاتصال بخدمة القياس. تحقق من الإنترنت وحاول مرة أخرى.',TRYON_RATE_LIMITED:'وصلت إلى الحد المؤقت لمحاولات القياس. انتظر 10 دقائق ثم حاول مرة أخرى.',RATE_LIMIT_NOT_CONFIGURED:'خدمة الحماية من المحاولات المتكررة غير جاهزة. تواصل مع الدعم.',RATE_LIMIT_UNAVAILABLE:'تعذر التحقق من صلاحية تشغيل القياس. حاول مرة أخرى بعد قليل.',PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.'};
-                const errorDetail=String(error?.message||error?.name||'UNKNOWN_ERROR').replace(/[<>]/g,'').slice(0,160);status.textContent=error.message==='TRYON_CANCELLED'?(english?'Try-on closed. Camera stopped.':'تم إغلاق التجربة وإيقاف الكاميرا.'):(messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':error.name==='NotFoundError'?'لم يتم العثور على كاميرا متاحة على الجهاز.':error.name==='NotReadableError'?'الكاميرا مستخدمة في تطبيق آخر. اقفل التطبيق وجرب تاني.':error.name==='OverconstrainedError'?'الكاميرا لا تدعم الإعداد المطلوب. جرّب كاميرا أخرى.':error.message==='CAMERA_FACING_MISMATCH'?'المتصفح لم يفتح الكاميرا المطلوبة.':(english?'Try-on connection failed: ':'فشل اتصال القياس: ')+errorDetail));
+                const messages={
+                    DECART_KEY_MISSING:'مفتاح Decart غير مضبوط في Supabase. راجع إعدادات Secrets.',
+                    TOKEN_FAILED:'تعذر الحصول على تصريح التجربة من Decart.',
+                    TOKEN_CREATION_FAILED:'Decart لم يتمكن من إنشاء تصريح جديد. حاول بعد قليل.',
+                    TOKEN_SERVICE_UNAVAILABLE:'تعذر الاتصال بخدمة التصاريح. تحقق من الإنترنت وحاول مرة أخرى.',
+                    TRYON_RATE_LIMITED:'وصلت إلى الحد المؤقت لمحاولات القياس. انتظر 10 دقائق ثم حاول مرة أخرى.',
+                    RATE_LIMIT_NOT_CONFIGURED:'خدمة الحماية من المحاولات المتكررة غير جاهزة. تواصل مع الدعم.',
+                    RATE_LIMIT_UNAVAILABLE:'تعذر التحقق من صلاحية تشغيل القياس. حاول مرة أخرى بعد قليل.',
+                    PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.',
+                    REMOTE_VIDEO_TIMEOUT:'اتصلنا بالخدمة لكن الفيديو الناتج لم يصل. غالباً اتصال WebRTC محجوب أو ضعيف على الشبكة الحالية؛ جرّب شبكة مختلفة.'
+                };
+                const errorDetail=String(error?.message||error?.name||'UNKNOWN_ERROR').replace(/[<>]/g,'').slice(0,160);
+                status.textContent=error.message==='TRYON_CANCELLED'
+                    ?(english?'Try-on closed. Camera stopped.':'تم إغلاق التجربة وإيقاف الكاميرا.')
+                    :(messages[error.message]||(error.name==='NotAllowedError'?'لم تسمح للمتصفح باستخدام الكاميرا.':error.name==='NotFoundError'?'لم يتم العثور على كاميرا متاحة على الجهاز.':error.name==='NotReadableError'?'الكاميرا مستخدمة في تطبيق آخر. اقفل التطبيق وجرب تاني.':error.name==='OverconstrainedError'?'الكاميرا لا تدعم الإعداد المطلوب. جرّب كاميرا أخرى.':error.message==='CAMERA_FACING_MISMATCH'?'المتصفح لم يفتح الكاميرا المطلوبة.':(english?'Try-on connection failed: ':'فشل اتصال القياس: ')+errorDetail));
                 if(tryonClient){try{tryonClient.disconnect();}catch(e){}}
-                tryonClient=null;if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());tryonCameraStream=null;
-                document.getElementById('tryonLocal').srcObject=null;start.disabled=false;stop.disabled=true;
-                document.getElementById('tryonSwitchCamera').disabled=true;document.getElementById('tryonCapture').disabled=true;
-            }finally{tryonStarting=false;}
+                tryonClient=null;
+                if(tryonCameraStream)tryonCameraStream.getTracks().forEach(t=>t.stop());
+                tryonCameraStream=null;
+                document.getElementById('tryonLocal').srcObject=null;
+                document.getElementById('tryonOutput').srcObject=null;
+                document.querySelector('.tryon-stage')?.classList.remove('is-live');
+                start.disabled=false;
+                stop.disabled=true;
+                document.getElementById('tryonSwitchCamera').disabled=true;
+                document.getElementById('tryonCapture').disabled=true;
+            }finally{
+                tryonStarting=false;
+                if(!tryonActive&&start)start.disabled=false;
+            }
         }
         async function switchTryOnCamera(){
             if(!tryonActive||tryonStarting)return;
