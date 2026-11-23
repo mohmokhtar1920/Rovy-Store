@@ -474,7 +474,10 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
 
             appliedCouponCode = code;
 
-            const discountAmount = (originalTotal * discount) / 100;
+            if(Number(data.min_order_amount||0)>originalTotal) throw new Error('قيمة الطلب أقل من الحد الأدنى لاستخدام الكوبون.');
+            let discountAmount = (originalTotal * discount) / 100;
+            if(data.max_discount_amount!==null&&data.max_discount_amount!==undefined) discountAmount=Math.min(discountAmount,Number(data.max_discount_amount));
+            discountAmount=Math.min(discountAmount,originalTotal);
             finalTotal = originalTotal - discountAmount;
 
             msg.style.color = 'green';
