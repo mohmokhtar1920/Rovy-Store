@@ -279,6 +279,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
 .rovy-dialog-primary{background:linear-gradient(135deg,#b58a61,#8f6748);color:white}.rovy-dialog-secondary{background:#f2eee9;color:#65584d}
 @media(max-width:480px){.rovy-dialog-body{padding:22px 18px 18px}.rovy-dialog-actions button{font-size:13px}}
 
+.hero-media-preview{width:100%;min-height:220px;max-height:440px;border:1px dashed #cbd2dc;border-radius:14px;background:#f4f5f7;display:grid;place-items:center;overflow:hidden;color:#788292;text-align:center;padding:12px}.hero-media-preview img,.hero-media-preview video{display:block;width:100%;max-height:410px;object-fit:contain;border-radius:9px}
 </style>
 <meta name="theme-color" content="#171717"><link rel="icon" type="image/svg+xml" href="favicon.svg"><meta name="description" content="لوحة إدارة ROVY STORE لإدارة الطلبات والمنتجات والمخزون والشحن."><meta name="theme-color" content="#171717">    <meta name="robots" content="noindex,nofollow">
 
@@ -329,6 +330,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <button class="navbtn manager-only" data-page="coupons">٪ الكوبونات</button><button class="navbtn manager-only" data-page="promotions">✦ العروض الترويجية</button>
       <button class="navbtn manager-only" data-page="reports">▥ التقارير</button>
       <button class="navbtn owner-only" data-page="finance">◆ المركز المالي</button>
+      <button class="navbtn owner-only" data-page="homepage">▧ واجهة الصفحة الرئيسية</button>
     </aside>
     <main>
       <section id="page-dashboard" class="page">
@@ -577,6 +579,19 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
           </div>
         </div>
       </section>
+      <section id="page-homepage" class="page hidden owner-only">
+        <div class="pagehead"><div><h1>واجهة الصفحة الرئيسية</h1><div class="muted">غيّر صورة أو فيديو واجهة «اكتشف ستايلك» من هنا مباشرة.</div></div></div>
+        <div class="panel" style="max-width:900px">
+          <div class="panel-heading"><div><h3>وسائط الواجهة الرئيسية</h3><p>اختار صورة أو فيديو، وشوف معاينة قبل النشر.</p></div><span class="pill green">متاح للمالك فقط</span></div>
+          <div class="formgrid">
+            <div class="field full"><label for="heroMediaType">نوع الواجهة</label><select id="heroMediaType"><option value="image">صورة</option><option value="video">فيديو</option></select></div>
+            <div class="field full"><label for="heroMediaFile">اختيار صورة أو فيديو جديد</label><input id="heroMediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm"><small class="hint">الصورة: JPG أو PNG أو WEBP أو AVIF. الفيديو: MP4 أو WEBM. الحد الأقصى 50 ميجابايت، ويفضل فيديو قصير ومضغوط.</small></div>
+            <div class="field full"><label>المعاينة</label><div id="heroMediaPreview" class="hero-media-preview"><span>اختار صورة أو فيديو لعرض المعاينة هنا.</span></div></div>
+            <div class="field full" style="display:flex;flex-direction:row;gap:9px;flex-wrap:wrap"><button class="btn gold" type="button" id="saveHeroMedia">حفظ ونشر الواجهة</button><button class="btn light" type="button" id="resetHeroMedia">الرجوع للصورة الافتراضية</button><span id="heroMediaStatus" class="hint" style="align-self:center"></span></div>
+            <div id="heroMediaError" class="error field full"></div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 </section>
@@ -720,7 +735,67 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     clearTimeout(toastTimer); toastTimer = setTimeout(()=>$('toast').classList.add('hidden'),3500);
   }
   function showLogin(message='') {
-    $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); $('loginError').textContent=message;
+    $('appView').classList.add('hidden'); 
+  let heroMediaPreviewUrl=null, heroMediaCurrent=null;
+  function renderHeroMediaPreview(url,type){
+    const box=$('heroMediaPreview');box.replaceChildren();
+    if(!url){const note=document.createElement('span');note.textContent='لا توجد معاينة حالية. ستظهر الصورة الافتراضية للموقع.';box.append(note);return;}
+    const el=document.createElement(type==='video'?'video':'img');el.src=url;
+    if(type==='video'){el.controls=true;el.muted=true;el.playsInline=true;}else el.alt='معاينة واجهة ROVY';
+    box.append(el);
+  }
+  async function loadHeroMediaSettings(){
+    const {data,error}=await client.from('site_hero_settings').select('media_type,media_url').eq('id',1).maybeSingle();
+    if(error)throw error;
+    heroMediaCurrent=data||null;$('heroMediaType').value=data?.media_type||'image';
+    renderHeroMediaPreview(data?.media_url||'',data?.media_type||'image');
+    $('heroMediaStatus').textContent=data?.media_url?'الوسائط الحالية منشورة على الموقع.':'يتم استخدام الصورة الافتراضية حاليًا.';
+  }
+  $('heroMediaType').addEventListener('change',()=>{const f=$('heroMediaFile').files?.[0];if(f)previewSelectedHeroMedia(f);else renderHeroMediaPreview(heroMediaCurrent?.media_url||'',$('heroMediaType').value);});
+  function previewSelectedHeroMedia(file){
+    if(heroMediaPreviewUrl)URL.revokeObjectURL(heroMediaPreviewUrl);
+    heroMediaPreviewUrl=URL.createObjectURL(file);renderHeroMediaPreview(heroMediaPreviewUrl,file.type.startsWith('video/')?'video':'image');
+  }
+  $('heroMediaFile').addEventListener('change',()=>{
+    const f=$('heroMediaFile').files?.[0];$('heroMediaError').textContent='';
+    if(!f){renderHeroMediaPreview(heroMediaCurrent?.media_url||'',heroMediaCurrent?.media_type||'image');return;}
+    if(f.size>50*1024*1024){$('heroMediaError').textContent='حجم الملف أكبر من 50 ميجابايت.';$('heroMediaFile').value='';return;}
+    const isImage=['image/jpeg','image/png','image/webp','image/avif'].includes(f.type),isVideo=['video/mp4','video/webm'].includes(f.type);
+    if(!isImage&&!isVideo){$('heroMediaError').textContent='نوع الملف غير مدعوم. اختار صورة أو MP4 أو WEBM.';$('heroMediaFile').value='';return;}
+    $('heroMediaType').value=isVideo?'video':'image';previewSelectedHeroMedia(f);
+  });
+  $('saveHeroMedia').addEventListener('click',async()=>{
+    const btn=$('saveHeroMedia'),file=$('heroMediaFile').files?.[0];btn.disabled=true;$('heroMediaError').textContent='';$('heroMediaStatus').textContent='جاري الحفظ والرفع…';
+    try{
+      if(staff?.role!=='owner')throw new Error('هذه الخاصية متاحة لمالك المتجر فقط.');
+      let mediaUrl=heroMediaCurrent?.media_url||null;const mediaType=$('heroMediaType').value;
+      if(file){
+        const ext=(file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
+        const path='hero/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
+        const {error:uploadError}=await client.storage.from('homepage-media').upload(path,file,{contentType:file.type,upsert:false});
+        if(uploadError)throw uploadError;
+        mediaUrl=client.storage.from('homepage-media').getPublicUrl(path).data.publicUrl;
+      }else if(!mediaUrl)throw new Error('اختار صورة أو فيديو الأول.');
+      const {error}=await client.from('site_hero_settings').upsert({id:1,media_type:mediaType,media_url:mediaUrl,updated_at:new Date().toISOString(),updated_by:currentUser.id},{onConflict:'id'});
+      if(error)throw error;
+      heroMediaCurrent={media_type:mediaType,media_url:mediaUrl};$('heroMediaFile').value='';renderHeroMediaPreview(mediaUrl,mediaType);
+      $('heroMediaStatus').textContent='تم الحفظ. حدّث الصفحة الرئيسية لمشاهدة التغيير.';notify('تم تحديث واجهة الصفحة الرئيسية بنجاح.');
+    }catch(err){$('heroMediaError').textContent=err.message||'تعذر حفظ وسائط الواجهة.';$('heroMediaStatus').textContent='';}
+    finally{btn.disabled=false;}
+  });
+  $('resetHeroMedia').addEventListener('click',async()=>{
+    if(staff?.role!=='owner')return;if(!await rovyConfirm('الرجوع للصورة الافتراضية في واجهة الموقع؟'))return;
+    const btn=$('resetHeroMedia');btn.disabled=true;$('heroMediaError').textContent='';
+    try{
+      const {error}=await client.from('site_hero_settings').upsert({id:1,media_type:'image',media_url:null,updated_at:new Date().toISOString(),updated_by:currentUser.id},{onConflict:'id'});
+      if(error)throw error;
+      heroMediaCurrent={media_type:'image',media_url:null};$('heroMediaType').value='image';$('heroMediaFile').value='';
+      renderHeroMediaPreview('','image');$('heroMediaStatus').textContent='تم الرجوع للصورة الافتراضية.';notify('تمت إعادة الصورة الافتراضية.');
+    }catch(err){$('heroMediaError').textContent=err.message||'تعذر إعادة الصورة الافتراضية.';}
+    finally{btn.disabled=false;}
+  });
+
+  $('loginView').classList.remove('hidden'); $('loginError').textContent=message;
   }
   function showApp() { $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); }
   function parseData(data) {
@@ -1373,6 +1448,7 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     const nav=e.target.closest('[data-page]');
     if(nav){const page=nav.dataset.page;if(['products','categories','shipping','coupons','promotions','reports'].includes(page)&&!isManager())return;
       if(page==='finance'&&staff?.role!=='owner')return;
+      if(page==='homepage'&&staff?.role!=='owner')return;
       if(page==='refunds'&&!isManager())return;
       if(page==='returns'&&!['owner','manager','customer_service','shipping'].includes(staff?.role))return;
       if(page==='returns')loadReturnRequests().catch(err=>notify(err.message||'تعذر تحميل المرتجعات.',true));
@@ -1386,6 +1462,7 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
       document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==`page-${page}`));
       if(page==='analytics')loadAnalytics().catch(err=>notify(err.message||'تعذر تحميل التحليلات.',true));
       if(page==='finance')loadFinancialCenter().catch(err=>notify(err.message||'تعذر تحميل المركز المالي.',true));
+       if(page==='homepage')loadHeroMediaSettings().catch(err=>{$('heroMediaError').textContent=err.message||'تعذر تحميل إعدادات الواجهة.';});
       if(page==='invoices')loadStoreInvoices().catch(err=>notify(err.message||'تعذر تحميل الفواتير.',true));
       if(page==='waybills')loadStoreWaybills().catch(err=>notify(err.message||'تعذر تحميل البوليصات.',true));
       return;
