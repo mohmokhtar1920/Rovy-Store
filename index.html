@@ -128,7 +128,7 @@
 .cart-shipping-hint{font-size:11px;color:#8a7b6c;text-align:center;margin:10px 0 0;line-height:1.7}
 @media(max-width:480px){.cart-sidebar{width:min(92vw,390px)}.cart-items{padding-inline:15px}.cart-item{grid-template-columns:60px minmax(0,1fr);gap:10px}.cart-item>img{width:60px;height:70px}}
 
-</style>
+ .promotion-banner{background:linear-gradient(90deg,#171717,#3b3024);color:#f6e6c5;text-align:center;padding:9px 12px;font-weight:800;font-size:13px;line-height:1.7}.promotion-banner[hidden]{display:none}\n</style>
     <meta name="description" content="اكتشف أحدث الملابس والإكسسوارات من ROVY STORE. تسوق بسهولة، اختر المقاس واللون، واطلب مع الدفع عند الاستلام.">
     <meta name="theme-color" content="#171717">
     <meta property="og:site_name" content="ROVY STORE">
@@ -144,7 +144,7 @@
 
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
-    <div class="top-bar" id="topBar">🚚 التوصيل متاح للمحافظات التي تظهر في صفحة إتمام الطلب | للاستفسار عن محافظة أخرى تواصل معنا</div>
+    <div class="top-bar" id="topBar">🚚 التوصيل متاح للمحافظات التي تظهر في صفحة إتمام الطلب | للاستفسار عن محافظة أخرى تواصل معنا</div><div id="promotionBanner" class="promotion-banner" hidden></div>
 
     <header>
         <a class="logo" href="index.html" style="text-decoration:none;color:inherit">ROVY<span>.</span></a>
@@ -422,6 +422,15 @@
             renderHomeSections();
         }
 
+        async function fetchActivePromotions(){
+            const {data,error}=await supabaseClient.rpc('public_list_active_promotions');
+            const banner=document.getElementById('promotionBanner');
+            if(error||!banner){if(error)console.warn('Active promotions unavailable:',error);return;}
+            const items=Array.isArray(data)?data:[];
+            if(!items.length){banner.hidden=true;return;}
+            banner.textContent=items.slice(0,2).map(p=>[p.name,p.description].filter(Boolean).join(' — ')).join('  |  ');
+            banner.hidden=false;
+        }
         async function fetchActiveCategories() {
             const { data, error } = await supabaseClient.rpc('public_list_active_categories');
             if (error) { activeCategories = []; return; }
