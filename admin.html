@@ -768,7 +768,9 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     const btn=$('saveHeroMedia'),file=$('heroMediaFile').files?.[0];btn.disabled=true;$('heroMediaError').textContent='';$('heroMediaStatus').textContent='جاري الحفظ والرفع…';
     try{
       if(staff?.role!=='owner')throw new Error('هذه الخاصية متاحة لمالك المتجر فقط.');
-      let mediaUrl=heroMediaCurrent?.media_url||null;const mediaType=$('heroMediaType').value;
+      let mediaUrl=heroMediaCurrent?.media_url||null;const mediaType=file?(file.type.startsWith('video/')?'video':'image'):$('heroMediaType').value;
+      if(!file&&mediaUrl&&heroMediaCurrent?.media_type&&mediaType!==heroMediaCurrent.media_type)throw new Error('اختار ملف جديد عند التبديل بين الصورة والفيديو.');
+      $('heroMediaType').value=mediaType;
       if(file){
         const ext=(file.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'');
         const path='hero/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
