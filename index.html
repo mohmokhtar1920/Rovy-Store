@@ -625,6 +625,7 @@
         }
         document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('cartSidebar').classList.contains('open'))toggleCart();});
         fetchProducts();
+        fetchActivePromotions();
         if (window.location.hash === '#cart') setTimeout(() => toggleCart(), 350);
         updateCart();
     </script>
