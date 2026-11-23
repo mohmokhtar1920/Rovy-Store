@@ -247,6 +247,16 @@ footer p,footer a{line-height:2!important}
 }
 @media(max-width:360px){.products-grid{gap:16px 9px!important}.category{height:190px!important}.header-icons{gap:9px!important}}
 
+
+/* Refined announcement and offer ribbons */
+.top-bar{min-height:32px;display:flex;align-items:center;justify-content:center;background:#171512!important;color:#e9dfd1!important;padding:7px 14px!important;font-size:10px!important;letter-spacing:.35px;line-height:1.6}
+.promotion-banner{min-height:42px;display:flex;align-items:center;justify-content:center;gap:13px;padding:8px 18px!important;background:#eee6d8!important;color:#403629!important;border:0!important;border-bottom:1px solid #dfd2be;font-size:11px!important;font-weight:700!important;letter-spacing:.1px}
+.promotion-banner[hidden]{display:none!important}
+.rovy-promo-label{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;color:#8b693a;font-size:9px;font-weight:900;letter-spacing:1.6px;white-space:nowrap}
+.rovy-promo-label:before{content:"";width:5px;height:5px;border-radius:50%;background:#b38c50;box-shadow:0 0 0 3px #b38c501f}
+.rovy-promo-message{min-width:0;line-height:1.7;text-align:center}
+@media(max-width:640px){.top-bar{font-size:9px!important;padding:7px 10px!important}.promotion-banner{gap:8px;flex-direction:column;padding:9px 12px!important;font-size:10px!important}.rovy-promo-label{font-size:8px}.rovy-promo-message{line-height:1.6}}
+
 </style>
     <meta name="description" content="اكتشف أحدث الملابس والإكسسوارات من ROVY STORE. تسوق بسهولة، اختر المقاس واللون، واطلب مع الدفع عند الاستلام.">
     <meta name="theme-color" content="#171717">
@@ -562,7 +572,14 @@ footer p,footer a{line-height:2!important}
             if(error||!banner){if(error)console.warn('Active promotions unavailable:',error);return;}
             const items=Array.isArray(data)?data:[];
             if(!items.length){banner.hidden=true;return;}
-            banner.textContent=items.slice(0,2).map(p=>[p.name,p.description].filter(Boolean).join(' — ')).join('  |  ');
+            banner.replaceChildren();
+            const label=document.createElement('span');
+            label.className='rovy-promo-label';
+            label.textContent=english?'ROVY OFFERS':'عروض ROVY';
+            const message=document.createElement('span');
+            message.className='rovy-promo-message';
+            message.textContent=items.slice(0,2).map(p=>[p.name,p.description].filter(Boolean).join(' — ')).join('   ·   ');
+            banner.append(label,message);
             banner.hidden=false;
         }
         async function fetchActiveCategories() {
