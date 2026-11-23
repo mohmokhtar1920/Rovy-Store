@@ -732,6 +732,14 @@
         let tryonFacingMode='user', tryonPhotoBlob=null, tryonPhotoUrl=null;
         let tryonSelectedProduct = null, tryonProductsLoaded = false, tryonChangingGarment = false;
         function ensureTryOnNotCancelled(){if(tryonCancelRequested)throw new Error('TRYON_CANCELLED');}
+        async function applyTryOnImage(client,image,prompt){
+            if(!client)throw new Error('TRYON_CLIENT_MISSING');
+            // Decart's current documented API uses set() to replace prompt + reference image atomically.
+            if(typeof client.set==='function')return client.set({prompt,image,enhance:false});
+            // Backward compatibility with SDK builds that expose only setImage().
+            if(typeof client.setImage==='function')return client.setImage(image,{prompt,enhance:false});
+            throw new Error('SDK_IMAGE_UPDATE_UNAVAILABLE');
+        }
         function openVirtualTryOn(){
             if(tryonPhotoUrl){URL.revokeObjectURL(tryonPhotoUrl);tryonPhotoUrl=null;}
             tryonPhotoBlob=null;
@@ -808,7 +816,7 @@
                 const response=await fetch(safeVariantImage,{mode:'cors'});
                 if(!response.ok)throw new Error('VARIANT_IMAGE_FAILED');
                 const blob=await response.blob();
-                await tryonClient.setImage(blob,{prompt:'Use this exact garment variant. Preserve its color, fabric texture, pattern and cut.',enhance:false});
+                await applyTryOnImage(tryonClient,blob,'Use this exact garment variant. Preserve its color, fabric texture, pattern and cut.');
                 setTryOnGarmentPreview({...tryonSelectedProduct,image_url:variantImage});
                 hint.textContent=english?'Variant photo applied to the live try-on.':'تم تطبيق صورة اللون المختار على التجربة المباشرة.';
             }catch(error){
@@ -927,6 +935,12 @@
                 tryonClient=await client.realtime.connect(tryonCameraStream,{
                     model,
                     mirror:'auto',
+                    onConnectionChange:(connectionState)=>{
+                        if(!tryonCancelRequested){
+                            const labels={connecting:'جاري إنشاء اتصال الفيديو…',connected:'اتصال الفيديو جاهز. جاري تشغيل القياس…',generating:'جاري معالجة الفيديو المباشر…',reconnecting:'الاتصال انقطع مؤقتًا؛ جاري إعادة الاتصال…',disconnected:'انقطع اتصال الفيديو.'};
+                            if(labels[connectionState])status.textContent=labels[connectionState];
+                        }
+                    },
                     retries:2,
                     onCapacityWait:({retryAfterMs})=>{
                         if(!tryonCancelRequested)status.textContent='الخدمة مزدحمة؛ إعادة المحاولة خلال '+Math.max(1,Math.ceil(retryAfterMs/1000))+' ثانية…';
@@ -949,6 +963,13 @@
                 });
                 ensureTryOnNotCancelled();
                 if(tryonClient?.on){
+                    tryonClient.on('error',(sdkError)=>{
+                        if(!tryonCancelRequested){
+                            const detail=String(sdkError?.message||sdkError?.code||sdkError||'UNKNOWN_ERROR').slice(0,120);
+                            status.textContent=(english?'Video processing error: ':'خطأ أثناء معالجة الفيديو: ')+detail;
+                            console.error('Decart realtime session error:',sdkError);
+                        }
+                    });
                     tryonClient.on('sessionEnded',({reason})=>{
                         if(!tryonCancelRequested){
                             tryonActive=false;
@@ -972,7 +993,7 @@
                 const garmentBlob=await imageResponse.blob();
                 ensureTryOnNotCancelled();
                 const garmentName=initialGarment.name_en||initialGarment.name||'garment';
-                await tryonClient.setImage(garmentBlob,{prompt:'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.',enhance:false});
+                await applyTryOnImage(tryonClient,garmentBlob,'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.');
                 ensureTryOnNotCancelled();
                 setTryOnGarmentPreview(initialGarment);
 
@@ -1014,6 +1035,7 @@
                     RATE_LIMIT_NOT_CONFIGURED:'خدمة الحماية من المحاولات المتكررة غير جاهزة. تواصل مع الدعم.',
                     RATE_LIMIT_UNAVAILABLE:'تعذر التحقق من صلاحية تشغيل القياس. حاول مرة أخرى بعد قليل.',
                     PRODUCT_IMAGE_FAILED:'تعذر تحميل صورة المنتج. جرّب صورة أخرى.',
+                    SDK_IMAGE_UPDATE_UNAVAILABLE:'إصدار مكتبة Decart لا يدعم تحديث صورة الملابس. حدّث الصفحة وحاول مرة أخرى.',
                     REMOTE_VIDEO_TIMEOUT:'اتصلنا بالخدمة لكن الفيديو الناتج لم يصل. غالباً اتصال WebRTC محجوب أو ضعيف على الشبكة الحالية؛ جرّب شبكة مختلفة.'
                 };
                 const errorDetail=String(error?.message||error?.name||'UNKNOWN_ERROR').replace(/[<>]/g,'').slice(0,160);
