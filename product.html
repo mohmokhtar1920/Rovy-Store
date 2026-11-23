@@ -912,9 +912,26 @@
                 await localVideo.play().catch(()=>{});
                 ensureTryOnNotCancelled();
 
+                const initialGarment=tryonSelectedProduct||currentProduct;
+                const initialGarmentUrl=safeImageURL(initialGarment.image_url);
+                if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
+                status.textContent='جاري تجهيز صورة المنتج قبل فتح جلسة القياس…';
+                const imageResponse=await fetch(initialGarmentUrl,{mode:'cors',cache:'no-store'});
+                ensureTryOnNotCancelled();
+                if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
+                const garmentBlob=await imageResponse.blob();
+                ensureTryOnNotCancelled();
+                const garmentName=initialGarment.name_en||initialGarment.name||'garment';
+                const garmentPrompt='Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.';
                 status.textContent='جاري تجهيز تصريح آمن واتصال الفيديو…';
                 // Mint a fresh short-lived Decart token for every dial/reconnect.
                 const client=window.DecartSDK.createDecartClient({
+                    logger:{
+                        debug:(message,data)=>console.debug('[ROVY Decart]',message,data||''),
+                        info:(message,data)=>console.info('[ROVY Decart]',message,data||''),
+                        warn:(message,data)=>console.warn('[ROVY Decart]',message,data||''),
+                        error:(message,data)=>console.error('[ROVY Decart]',message,data||'')
+                    },
                     apiKeyProvider:async()=>{
                         const tokenResponse=await fetch('https://bkjwfmjxmxgxgaxwrnsh.supabase.co/functions/v1/decart-realtime-token',{
                             method:'POST',
@@ -934,6 +951,7 @@
                 status.textContent='جاري إنشاء اتصال الفيديو المباشر…';
                 tryonClient=await client.realtime.connect(tryonCameraStream,{
                     model,
+                    initialState:{image:garmentBlob,prompt:{text:garmentPrompt,enhance:false}},
                     mirror:'auto',
                     onConnectionChange:(connectionState)=>{
                         if(!tryonCancelRequested){
@@ -941,7 +959,7 @@
                             if(labels[connectionState])status.textContent=labels[connectionState];
                         }
                     },
-                    retries:2,
+                    retries:0,
                     onCapacityWait:({retryAfterMs})=>{
                         if(!tryonCancelRequested)status.textContent='الخدمة مزدحمة؛ إعادة المحاولة خلال '+Math.max(1,Math.ceil(retryAfterMs/1000))+' ثانية…';
                     },
@@ -983,21 +1001,10 @@
                     });
                 }
 
-                const initialGarment=tryonSelectedProduct||currentProduct;
-                const initialGarmentUrl=safeImageURL(initialGarment.image_url);
-                if(!initialGarmentUrl)throw new Error('INVALID_PRODUCT_IMAGE');
-                status.textContent='تم الاتصال. جاري تحميل صورة المنتج وتجهيزها…';
-                const imageResponse=await fetch(initialGarmentUrl,{mode:'cors',cache:'no-store'});
-                ensureTryOnNotCancelled();
-                if(!imageResponse.ok)throw new Error('PRODUCT_IMAGE_FAILED');
-                const garmentBlob=await imageResponse.blob();
-                ensureTryOnNotCancelled();
-                const garmentName=initialGarment.name_en||initialGarment.name||'garment';
-                await applyTryOnImage(tryonClient,garmentBlob,'Substitute the current garment with '+garmentName+'. Preserve its color, fabric texture, pattern and cut.');
                 ensureTryOnNotCancelled();
                 setTryOnGarmentPreview(initialGarment);
 
-                status.textContent='تم إرسال صورة المنتج. مستنيين أول صورة من غرفة القياس…';
+                status.textContent='اتصلنا بالخدمة بصورة المنتج. مستنيين أول صورة من غرفة القياس…';
                 const output=document.getElementById('tryonOutput');
                 await new Promise((resolve,reject)=>{
                     let settled=false;
