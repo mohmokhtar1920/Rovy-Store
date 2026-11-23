@@ -405,7 +405,12 @@ footer p,footer a{line-height:2!important}
                 }else{
                     video.pause();video.removeAttribute('src');video.load();video.hidden=true;
                     hero.classList.remove('rovy-custom-hero-video');
-                    hero.style.setProperty('--rovy-managed-hero-image','url("'+url.replace(/["\\\\()\s]/g,'\\\\        async function refreshAccountLink(session){')+'")');
+                    hero.style.setProperty('--rovy-managed-hero-image','url('+JSON.stringify(url)+')');
+                    hero.classList.add('rovy-custom-hero-image');
+                }
+            }catch(err){console.warn('Homepage hero media unavailable; using default artwork.',err);}
+        }
+        async function refreshAccountLink(session){')+'")');
                     hero.classList.add('rovy-custom-hero-image');
                 }
             }catch(err){console.warn('Homepage hero media unavailable; using default artwork.',err);}
