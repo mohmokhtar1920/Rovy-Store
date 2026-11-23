@@ -927,6 +927,7 @@
                 tryonClient=await client.realtime.connect(tryonCameraStream,{
                     model,
                     mirror:'auto',
+                    retries:2,
                     onCapacityWait:({retryAfterMs})=>{
                         if(!tryonCancelRequested)status.textContent='الخدمة مزدحمة؛ إعادة المحاولة خلال '+Math.max(1,Math.ceil(retryAfterMs/1000))+' ثانية…';
                     },
