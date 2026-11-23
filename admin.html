@@ -1160,13 +1160,13 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
       <td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-product="${esc(p.id)}">تعديل المنتج</button><button type="button" data-toggle-product="${esc(p.id)}" data-active="${p.is_active?'0':'1'}">${p.is_active?'إيقاف المنتج':'تفعيل المنتج'}</button></div></details></td>
     </tr>`}).join('')}</tbody></table>`:'<div class="empty">لا توجد منتجات مطابقة للفلاتر الحالية.</div>';
   }
-  function renderCoupons() {
+  function renderCoupons(){
     const q=$('couponSearch')?.value.trim().toLowerCase()||'',status=$('couponStatusFilter')?.value||'',sort=$('couponSort')?.value||'newest',active=coupons.filter(x=>x.is_active!==false).length;
     $('couponsCountAll').textContent=coupons.length;$('couponsCountActive').textContent=active;$('couponsCountInactive').textContent=coupons.length-active;
     let list=coupons.filter(x=>(x.code||'').toLowerCase().includes(q)&&(!status||(status==='active'?x.is_active!==false:x.is_active===false)));
-    list=[...list].sort((a,b)=>sort==='discountHigh'?Number(b.discount_percentage||0)-Number(a.discount_percentage||0):sort==='discountLow'?Number(a.discount_percentage||0)-Number(b.discount_percentage||0):new Date(b.created_at||0)-new Date(a.created_at||0));
-    $('couponsResultCount').textContent=`عرض ${list.length} من ${coupons.length} كوبون`;
-    $('couponsTable').innerHTML=list.length?`<table><thead><tr><th>الكود</th><th>الخصم</th><th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>${list.map(x=>`<tr><td><strong>${esc(x.code)}</strong></td><td><strong>${Number(x.discount_percentage)}%</strong></td><td>${esc(x.created_at?new Date(x.created_at).toLocaleDateString('ar-EG'):'—')}</td><td><span class="pill ${x.is_active!==false?'green':'red'}">${x.is_active!==false?'نشط':'موقوف'}</span></td><td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-coupon="${esc(x.id)}">تعديل الكوبون</button><button type="button" data-toggle-coupon="${esc(x.id)}" data-active="${x.is_active!==false?'0':'1'}">${x.is_active!==false?'إيقاف الكوبون':'تفعيل الكوبون'}</button></div></details></td></tr>`).join('')}</tbody></table>`:'<div class="empty">لا توجد كوبونات مطابقة للفلاتر.</div>';
+    list=list.sort((a,b)=>sort==='discountHigh'?Number(b.discount_percentage||0)-Number(a.discount_percentage||0):sort==='discountLow'?Number(a.discount_percentage||0)-Number(b.discount_percentage||0):new Date(b.created_at||0)-new Date(a.created_at||0));
+    $('couponsResultCount').textContent='عرض '+list.length+' من '+coupons.length+' كوبون';
+    $('couponsTable').innerHTML=list.length?'<table><thead><tr><th>الكود</th><th>الخصم</th><th>الاستخدام</th><th>لكل عميل</th><th>الصلاحية</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>'+list.map(x=>{const uses=Number(x.usage_count||0),limit=x.max_uses==null?'∞':Number(x.max_uses),now=Date.now(),expired=x.ends_at&&new Date(x.ends_at).getTime()<=now,scheduled=x.starts_at&&new Date(x.starts_at).getTime()>now;const state=x.is_active===false?'موقوف':expired?'منتهي':scheduled?'مجدول':'نشط';return '<tr><td><strong>'+esc(x.code)+'</strong></td><td><strong>'+Number(x.discount_percentage)+'%</strong></td><td>'+uses+' / '+limit+'</td><td>'+Number(x.per_customer_limit||1)+'</td><td><small>'+(x.starts_at?new Date(x.starts_at).toLocaleDateString('ar-EG'):'فوري')+' – '+(x.ends_at?new Date(x.ends_at).toLocaleDateString('ar-EG'):'مفتوح')+'</small></td><td><span class="pill '+(state==='نشط'?'green':'red')+'">'+state+'</span></td><td><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-coupon="'+esc(x.id)+'">تعديل الكوبون</button><button type="button" data-toggle-coupon="'+esc(x.id)+'" data-active="'+(x.is_active!==false?'0':'1')+'">'+(x.is_active!==false?'إيقاف الكوبون':'تفعيل الكوبون')+'</button></div></details></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">لا توجد كوبونات مطابقة للفلاتر.</div>';
   }
   function financialLocalDate(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   async function loadFinancialCenter(){
@@ -1771,17 +1771,19 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     }catch(err){$('productError').textContent=err.message||'تعذر حفظ المنتج.';}
     finally{$('saveProductBtn').disabled=false;}
   });
+  function toLocalDateTime(value){if(!value)return '';const d=new Date(value);if(!Number.isFinite(d.getTime()))return '';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T'+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+  function localDateTimeISO(value){return value?new Date(value).toISOString():null;}
   function openCoupon(c=null){
-    $('couponForm').reset();$('couponId').value=c?.id||'';
-    $('couponModalTitle').textContent=c?'تعديل كوبون':'إضافة كوبون';
-    $('cCode').value=c?.code||'';$('cDiscount').value=c?.discount_percentage??'';
+    $('couponForm').reset();$('couponId').value=c?.id||'';$('couponModalTitle').textContent=c?'تعديل كوبون':'إضافة كوبون';
+    $('cCode').value=c?.code||'';$('cDiscount').value=c?.discount_percentage??'';$('cMaxUses').value=c?.max_uses??'';$('cPerCustomer').value=c?.per_customer_limit??1;
+    $('cStartsAt').value=toLocalDateTime(c?.starts_at);$('cEndsAt').value=toLocalDateTime(c?.ends_at);$('cMinOrder').value=c?.min_order_amount??0;$('cMaxDiscount').value=c?.max_discount_amount??'';$('cStackable').checked=c?.allow_with_promotions===true;
     $('couponError').textContent='';$('couponModal').classList.remove('hidden');
   }
   $('couponForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveCouponBtn').disabled=true;$('couponError').textContent='';
     try{
-      await rpc('admin_save_coupon',{p_coupon_id:$('couponId').value?Number($('couponId').value):null,p_code:$('cCode').value.trim(),p_discount_percentage:Number($('cDiscount').value)});
-      $('couponModal').classList.add('hidden');notify('تم حفظ الكوبون.');await loadCoupons();
+      await rpc('admin_save_coupon_limits',{p_coupon_id:$('couponId').value?Number($('couponId').value):null,p_code:$('cCode').value.trim(),p_discount_percentage:Number($('cDiscount').value),p_max_uses:$('cMaxUses').value.trim()?Number($('cMaxUses').value):null,p_per_customer_limit:Number($('cPerCustomer').value),p_starts_at:localDateTimeISO($('cStartsAt').value),p_ends_at:localDateTimeISO($('cEndsAt').value),p_min_order_amount:Number($('cMinOrder').value||0),p_max_discount_amount:$('cMaxDiscount').value.trim()?Number($('cMaxDiscount').value):null,p_allow_with_promotions:$('cStackable').checked});
+      $('couponModal').classList.add('hidden');notify('تم حفظ الكوبون وحدود استخدامه.');await loadCoupons();
     }catch(err){$('couponError').textContent=err.message||'تعذر حفظ الكوبون.';}
     finally{$('saveCouponBtn').disabled=false;}
   });
