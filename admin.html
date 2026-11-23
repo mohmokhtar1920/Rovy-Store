@@ -639,7 +639,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     <form id="couponForm">
       <input type="hidden" id="couponId">
       <div class="field"><label for="cCode">كود الخصم *</label><input id="cCode" maxlength="30" pattern="[A-Za-z0-9_-]{3,30}" required placeholder="ROVY10"></div>
-      <div class="field"><label for="cDiscount">نسبة الخصم % *</label><input id="cDiscount" type="number" min="1" max="100" step="1" required></div>
+      <div class="field"><label for="cType">نوع الخصم *</label><select id="cType"><option value="percentage">نسبة مئوية %</option><option value="fixed">مبلغ ثابت بالجنيه</option></select></div><div class="field"><label for="cDiscount" id="cDiscountLabel">قيمة الخصم % *</label><input id="cDiscount" type="number" min="0.01" step="0.01" required></div>
       <div class="formgrid">
         <div class="field"><label for="cMaxUses">العدد الإجمالي للاستخدام</label><input id="cMaxUses" type="number" min="1" step="1" placeholder="اتركه فارغًا بلا حد"></div>
         <div class="field"><label for="cPerCustomer">مرات الاستخدام لكل عميل *</label><input id="cPerCustomer" type="number" min="1" max="100" value="1" required></div>
@@ -1808,14 +1808,15 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
   function localDateTimeISO(value){return value?new Date(value).toISOString():null;}
   function openCoupon(c=null){
     $('couponForm').reset();$('couponId').value=c?.id||'';$('couponModalTitle').textContent=c?'تعديل كوبون':'إضافة كوبون';
-    $('cCode').value=c?.code||'';$('cDiscount').value=c?.discount_percentage??'';$('cMaxUses').value=c?.max_uses??'';$('cPerCustomer').value=c?.per_customer_limit??1;
+    $('cCode').value=c?.code||'';$('cType').value=c?.discount_type||'percentage';$('cDiscount').value=c?.discount_value??c?.discount_percentage??'';$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';$('cMaxUses').value=c?.max_uses??'';$('cPerCustomer').value=c?.per_customer_limit??1;
     $('cStartsAt').value=toLocalDateTime(c?.starts_at);$('cEndsAt').value=toLocalDateTime(c?.ends_at);$('cMinOrder').value=c?.min_order_amount??0;$('cMaxDiscount').value=c?.max_discount_amount??'';$('cStackable').checked=c?.allow_with_promotions===true;
     $('couponError').textContent='';$('couponModal').classList.remove('hidden');
   }
+  $('cType').addEventListener('change',()=>{$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';});
   $('couponForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveCouponBtn').disabled=true;$('couponError').textContent='';
     try{
-      await rpc('admin_save_coupon_limits',{p_coupon_id:$('couponId').value?Number($('couponId').value):null,p_code:$('cCode').value.trim(),p_discount_percentage:Number($('cDiscount').value),p_max_uses:$('cMaxUses').value.trim()?Number($('cMaxUses').value):null,p_per_customer_limit:Number($('cPerCustomer').value),p_starts_at:localDateTimeISO($('cStartsAt').value),p_ends_at:localDateTimeISO($('cEndsAt').value),p_min_order_amount:Number($('cMinOrder').value||0),p_max_discount_amount:$('cMaxDiscount').value.trim()?Number($('cMaxDiscount').value):null,p_allow_with_promotions:$('cStackable').checked});
+      await rpc('admin_save_coupon_advanced',{p_coupon_id:$('couponId').value?Number($('couponId').value):null,p_code:$('cCode').value.trim(),p_discount_type:$('cType').value,p_discount_value:Number($('cDiscount').value),p_max_uses:$('cMaxUses').value.trim()?Number($('cMaxUses').value):null,p_per_customer_limit:Number($('cPerCustomer').value),p_starts_at:localDateTimeISO($('cStartsAt').value),p_ends_at:localDateTimeISO($('cEndsAt').value),p_min_order_amount:Number($('cMinOrder').value||0),p_max_discount_amount:$('cMaxDiscount').value.trim()?Number($('cMaxDiscount').value):null,p_allow_with_promotions:$('cStackable').checked});
       $('couponModal').classList.add('hidden');notify('تم حفظ الكوبون وحدود استخدامه.');await loadCoupons();
     }catch(err){$('couponError').textContent=err.message||'تعذر حفظ الكوبون.';}
     finally{$('saveCouponBtn').disabled=false;}
