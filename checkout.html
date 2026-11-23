@@ -319,6 +319,7 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
     let originalTotal = 0;
     let finalTotal = 0;
     let appliedCouponCode = null;
+    let lastOrderPreview = null;
     let promotionFreeShipping = false;
     let promotionName = '';
     let shippingGovernorates = [];
@@ -372,6 +373,7 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
             const items=cart.map(item=>({product_id:Number(item.product_id||item.id),quantity:Number(item.quantity)}));
             const {data,error}=await supabaseClient.rpc('preview_order_discounts',{p_items:items,p_coupon_code:appliedCouponCode});
             if(error)throw error;
+            lastOrderPreview=data||null;
             if(data&&Number.isFinite(Number(data.subtotal)))originalTotal=Number(data.subtotal);
             promotionFreeShipping=data?.free_shipping===true;promotionName=data?.promotion_name||'';
             finalTotal=Math.max(0,originalTotal-Number(data?.coupon_discount||0)-Number(data?.promotion_discount||0));
@@ -466,7 +468,7 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
         if (!code) {
             msg.style.color = 'red';
             msg.textContent = english ? 'Please enter a discount code first.' : 'اكتب كود الخصم أولاً.';
-            updateCheckoutTotals();
+            await refreshOrderPreview();
             return;
         }
 
@@ -490,8 +492,8 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
 
             appliedCouponCode = code;
 
-            await refreshOrderPreview();
-            if(finalTotal>=originalTotal) throw new Error('الكوبون غير مؤهل لهذا الطلب أو تم الوصول إلى حد استخدامه.');
+            const preview=await refreshOrderPreview();
+            if(!preview?.coupon_valid) throw new Error('الكوبون غير مؤهل لقيمة هذا الطلب أو تم الوصول إلى حد استخدامه.');
 
             msg.style.color = 'green';
             msg.textContent = english ? 'Code applied successfully.' : 'تم تطبيق الكوبون والعروض المتاحة.';
