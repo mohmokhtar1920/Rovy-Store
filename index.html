@@ -49,7 +49,7 @@
         .product-card img:hover { opacity: 0.9; }
         .product-info { padding: 15px; }
         .product-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
-        .product-price { color: #b58a61; font-weight: 900; font-size: 20px; margin-bottom: 15px; }
+        .product-price { color: #b58a61; font-weight: 900; font-size: 20px; margin-bottom: 8px; } .sale-price{display:flex;justify-content:center;align-items:center;gap:8px;margin:0 0 14px;font-size:12px;color:#9a343a}.sale-price s{color:#888;font-size:14px}
         .add-to-cart-btn { background: #171717; color: white; border: none; padding: 12px 20px; width: 90%; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-bottom: 10px; }
         .add-to-cart-btn:hover { background: #b58a61; }
         .add-to-cart-btn:disabled { background:#b8b8b8; color:#fff; cursor:not-allowed; opacity:.9; }
@@ -403,7 +403,7 @@
         }
         async function fetchProducts() {
             const [productsRes, variantsRes] = await Promise.all([
-                supabaseClient.from('products').select('id,name,name_en,description,description_en,price,image_url,category,stock,created_at').eq('is_active', true).order('id', { ascending: false }),
+                supabaseClient.from('products').select('id,name,name_en,description,description_en,price,compare_at_price,image_url,category,stock,created_at').eq('is_active', true).order('id', { ascending: false }),
                 supabaseClient.from('product_variants').select('product_id, stock')
             ]);
             const { data, error } = productsRes;
@@ -542,6 +542,7 @@
                     <div class="product-info">
                         <a href="product.html?id=${id}" style="text-decoration:none; color:inherit;"><div class="product-title" data-product-name="${id}">${name}</div></a>
                         <div class="product-price">${Number.isFinite(price)?price.toLocaleString('en-US'):'—'} ${english?'EGP':'جنيه'}</div>
+                        ${Number(p.compare_at_price)>price?'<div class="sale-price"><s>'+Number(p.compare_at_price).toLocaleString('en-US')+' '+(english?'EGP':'جنيه')+'</s><strong>خصم '+Math.round((Number(p.compare_at_price)-price)/Number(p.compare_at_price)*100)+'%</strong></div>':''}
                         ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> '+(english?'Sold out':'المنتج نفد')+'</span>' : ''}
                         <button class="add-to-cart-btn" onclick="openProductDetails(${p.id})">${english ? 'View Details' : 'التفاصيل'}</button>
                     </div>
