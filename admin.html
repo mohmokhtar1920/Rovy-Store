@@ -615,7 +615,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
     <div class="modal-head"><h2 id="categoryModalTitle">إضافة قسم جديد</h2><button class="close" data-close="categoryModal">✕</button></div>
     <form id="categoryForm">
       <input type="hidden" id="categoryId">
-      <div class="field"><label for="categoryName">اسم القسم *</label><input id="categoryName" maxlength="80" required placeholder="مثال: ملابس حريمي"></div>
+      <div class="field"><label for="categoryName">اسم القسم *</label><input id="categoryName" maxlength="80" required placeholder="مثال: ملابس حريمي"></div><div class="field"><label for="categoryParent">القسم الرئيسي</label><select id="categoryParent"><option value="">قسم رئيسي (بدون أب)</option></select><small class="hint">اختيار قسم هنا يجعل القسم الحالي فرعيًا بداخله.</small></div>
       <div class="modal-actions"><button class="btn gold" type="submit" id="saveCategoryBtn">حفظ القسم</button><button class="btn light" type="button" data-close="categoryModal">إلغاء</button></div>
       <div id="categoryError" class="error"></div>
     </form>
@@ -971,8 +971,8 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
   }
   function fillCategorySelect(selected='') {
     const active=categories.filter(c=>c.is_active!==false);
-    $('pCategory').innerHTML='<option value="">اختر القسم</option>'+active.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-    if(selected&&!active.some(c=>c.name===selected)) $('pCategory').insertAdjacentHTML('beforeend',`<option value="${esc(selected)}">${esc(selected)} (قديم)</option>`);
+    $('pCategory').innerHTML='<option value="">اختر القسم</option>'+active.map(c=>'<option value="'+esc(c.path||c.name)+'">'+esc(c.path||c.name)+'</option>').join('');
+    if(selected&&!active.some(c=>(c.path||c.name)===selected)) $('pCategory').insertAdjacentHTML('beforeend','<option value="'+esc(selected)+'">'+esc(selected)+' (قديم)</option>');
     $('pCategory').value=selected||'';
   }
   function renderCategories() {
@@ -980,7 +980,7 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     $('categoriesCountAll').textContent=categories.length;$('categoriesCountActive').textContent=active;$('categoriesCountInactive').textContent=categories.length-active;
     const list=categories.filter(x=>(x.name||'').toLowerCase().includes(q)&&(!status||(status==='active'?x.is_active!==false:x.is_active===false)));
     $('categoriesResultCount').textContent=`عرض ${list.length} من ${categories.length} قسم`;
-    $('categoriesList').innerHTML=list.length?list.map(x=>`<div class="category-row"><div><strong>${esc(x.name)}</strong><span class="muted">${x.is_active!==false?'قسم نشط':'قسم موقوف'}</span></div><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-category="${esc(x.id)}">تعديل القسم</button><button type="button" data-toggle-category="${esc(x.id)}" data-active="${x.is_active!==false?'0':'1'}">${x.is_active!==false?'إيقاف القسم':'تفعيل القسم'}</button></div></details></div>`).join(''):'<div class="empty">لا توجد أقسام مطابقة.</div>';
+    $('categoriesList').innerHTML=list.length?list.map(x=>'<div class="category-row"><div><strong>'+esc(x.path||x.name)+'</strong><span class="muted">'+(x.parent_name?'قسم فرعي داخل '+esc(x.parent_name):'قسم رئيسي')+' · '+(x.is_active!==false?'نشط':'موقوف')+'</span></div><details class="action-dropdown"><summary class="mini">الإجراءات ▾</summary><div class="dropdown-menu"><button type="button" data-edit-category="'+esc(x.id)+'">تعديل القسم</button><button type="button" data-toggle-category="'+esc(x.id)+'" data-active="'+(x.is_active!==false?'0':'1')+'">'+(x.is_active!==false?'إيقاف القسم':'تفعيل القسم')+'</button></div></details></div>').join(''):'<div class="empty">لا توجد أقسام مطابقة.</div>';
   }
   async function loadShippingGovernorates(){
     const data=await rpc('admin_list_shipping_governorates');
@@ -1624,13 +1624,19 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
     finally{$('saveShippingGovernorateBtn').disabled=false;}
   });
   $('quickAddCategory').addEventListener('click',openCategory);
-  function openCategory(category=null){ $('categoryForm').reset(); $('categoryError').textContent=''; $('categoryId').value=category?category.id:''; $('categoryModalTitle').textContent=category?'تعديل القسم':'إضافة قسم جديد'; $('saveCategoryBtn').textContent=category?'حفظ التعديلات':'حفظ القسم'; if(category)$('categoryName').value=category.name; $('categoryModal').classList.remove('hidden'); }
+  function openCategory(category=null){
+    $('categoryForm').reset();$('categoryError').textContent='';$('categoryId').value=category?category.id:'';$('categoryModalTitle').textContent=category?'تعديل القسم':'إضافة قسم جديد';$('saveCategoryBtn').textContent=category?'حفظ التعديلات':'حفظ القسم';
+    $('categoryName').value=category?.name||'';
+    const excluded=new Set();if(category){excluded.add(String(category.id));categories.filter(x=>(x.path||'').startsWith((category.path||category.name)+' / ')).forEach(x=>excluded.add(String(x.id)));}
+    $('categoryParent').innerHTML='<option value="">قسم رئيسي (بدون أب)</option>'+categories.filter(x=>x.is_active!==false&&!excluded.has(String(x.id))).map(x=>'<option value="'+esc(x.id)+'">'+esc(x.path||x.name)+'</option>').join('');
+    $('categoryParent').value=category?.parent_id?String(category.parent_id):'';$('categoryModal').classList.remove('hidden');
+  }
   $('categoryForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveCategoryBtn').disabled=true;$('categoryError').textContent='';
     try{
       const name=$('categoryName').value.trim();
       const categoryId=$('categoryId').value;
-      await rpc('admin_save_category',{p_category_id:categoryId?Number(categoryId):null,p_name:name});
+      await rpc('admin_save_category',{p_category_id:categoryId?Number(categoryId):null,p_name:name,p_parent_id:$('categoryParent').value?Number($('categoryParent').value):null});
       $('categoryModal').classList.add('hidden');notify(categoryId?'تم تعديل القسم.':'تم إضافة القسم.');await loadCategories();fillCategorySelect(name);
     }catch(err){$('categoryError').textContent=err.message||'تعذر حفظ القسم.';}
     finally{$('saveCategoryBtn').disabled=false;}
