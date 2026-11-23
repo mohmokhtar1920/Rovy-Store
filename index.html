@@ -202,10 +202,10 @@
         <div class="rovy-hero-mark" aria-hidden="true">R<span>.</span></div>
     </div>
     <section class="rovy-trust-strip" aria-label="مميزات التسوق">
-        <div><i class="fas fa-wallet" aria-hidden="true"></i><span><strong>الدفع عند الاستلام</strong><small>اطلب وادفع عند وصول طلبك</small></span></div>
-        <div><i class="fas fa-truck-fast" aria-hidden="true"></i><span><strong>شحن للمحافظات</strong><small>اختار عنوانك وقت الطلب</small></span></div>
-        <div><i class="fas fa-location-dot" aria-hidden="true"></i><span><strong>تابع طلبك</strong><small>اعرف آخر تحديث لحالة الطلب</small></span></div>
-        <div><i class="fab fa-whatsapp" aria-hidden="true"></i><span><strong>تواصل معانا</strong><small>دعم ومساعدة عبر واتساب</small></span></div>
+        <div><i class="fas fa-wallet" aria-hidden="true"></i><span><strong data-en="Cash on Delivery">الدفع عند الاستلام</strong><small data-en="Pay when your order arrives">اطلب وادفع عند وصول طلبك</small></span></div>
+        <div><i class="fas fa-truck-fast" aria-hidden="true"></i><span><strong data-en="Nationwide Shipping">شحن للمحافظات</strong><small data-en="Choose your address at checkout">اختار عنوانك وقت الطلب</small></span></div>
+        <div><i class="fas fa-location-dot" aria-hidden="true"></i><span><strong data-en="Track Your Order">تابع طلبك</strong><small data-en="Follow your order status">اعرف آخر تحديث لحالة الطلب</small></span></div>
+        <div><i class="fab fa-whatsapp" aria-hidden="true"></i><span><strong data-en="WhatsApp Support">تواصل معانا</strong><small data-en="We're here if you need help">دعم ومساعدة عبر واتساب</small></span></div>
     </section>
 
     <section id="styleStudioPromo" style="padding:28px 5% 10px;">
@@ -319,9 +319,11 @@
             document.getElementById('topBar').textContent = english
                 ? '🚚 Delivery available to listed governorates | Contact us for other areas'
                 : '🚚 التوصيل متاح للمحافظات التي تظهر في صفحة إتمام الطلب | للاستفسار عن محافظة أخرى تواصل معنا';
-            document.getElementById('heroTitle').textContent = english ? 'Discover Your Style' : 'اكتشف ستايلك';
-            document.getElementById('heroText').textContent = english ? 'The latest fashion trends for the whole family' : 'أحدث صيحات الموضة لجميع أفراد العائلة';
-            document.getElementById('shopBtn').textContent = english ? 'Shop Now' : 'تسوق الآن';
+            document.getElementById('heroTitle').innerHTML = english ? 'Find Your Style<br><span>Your Way.</span>' : 'اكتشف ستايلك<br><span>بطريقتك.</span>';
+            document.getElementById('heroText').textContent = english ? 'Modern picks. Thoughtful details. A look that feels like you.' : 'اختيارات عصرية.. تفاصيل تفرق.. وإطلالة تشبهك.';
+            document.getElementById('shopBtn').innerHTML = english ? 'Explore the Collection <i class="fas fa-arrow-right" aria-hidden="true"></i>' : 'اكتشف المجموعة <i class="fas fa-arrow-left" aria-hidden="true"></i>';
+            const trustLabels = document.querySelectorAll('.rovy-trust-strip [data-en]');
+            document.querySelector('.rovy-trust-strip')?.setAttribute('aria-label', english ? 'Shopping benefits' : 'مميزات التسوق');
             document.getElementById('catTitle').textContent = english ? 'Shop by Category' : 'تسوق حسب القسم';
             document.getElementById('newTitle').textContent = currentCategory === 'All'
                 ? (english ? 'New Arrivals' : 'وصل حديثاً')
