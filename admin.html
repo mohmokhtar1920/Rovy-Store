@@ -1808,11 +1808,11 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
   function localDateTimeISO(value){return value?new Date(value).toISOString():null;}
   function openCoupon(c=null){
     $('couponForm').reset();$('couponId').value=c?.id||'';$('couponModalTitle').textContent=c?'تعديل كوبون':'إضافة كوبون';
-    $('cCode').value=c?.code||'';$('cType').value=c?.discount_type||'percentage';$('cDiscount').value=c?.discount_value??c?.discount_percentage??'';$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';$('cMaxUses').value=c?.max_uses??'';$('cPerCustomer').value=c?.per_customer_limit??1;
+    $('cCode').value=c?.code||'';$('cType').value=c?.discount_type||'percentage';$('cDiscount').value=c?.discount_value??c?.discount_percentage??'';$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';$('cDiscount').step=$('cType').value==='percentage'?'1':'0.01';$('cMaxUses').value=c?.max_uses??'';$('cPerCustomer').value=c?.per_customer_limit??1;
     $('cStartsAt').value=toLocalDateTime(c?.starts_at);$('cEndsAt').value=toLocalDateTime(c?.ends_at);$('cMinOrder').value=c?.min_order_amount??0;$('cMaxDiscount').value=c?.max_discount_amount??'';$('cStackable').checked=c?.allow_with_promotions===true;
     $('couponError').textContent='';$('couponModal').classList.remove('hidden');
   }
-  $('cType').addEventListener('change',()=>{$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';});
+  $('cType').addEventListener('change',()=>{$('cDiscountLabel').textContent=$('cType').value==='fixed'?'قيمة الخصم بالجنيه *':'قيمة الخصم % *';$('cDiscount').max=$('cType').value==='percentage'?'100':'';$('cDiscount').step=$('cType').value==='percentage'?'1':'0.01';});
   $('couponForm').addEventListener('submit',async e=>{
     e.preventDefault();$('saveCouponBtn').disabled=true;$('couponError').textContent='';
     try{
