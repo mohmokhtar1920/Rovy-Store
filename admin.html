@@ -579,7 +579,7 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <input type="hidden" id="productId">
       <div class="formgrid">
         <div class="field full"><label for="pName">اسم المنتج *</label><input id="pName" maxlength="160" required></div>
-        <div class="field"><label for="pPrice">سعر البيع للعميل *</label><input id="pPrice" type="number" min="0.01" step="0.01" required></div>
+        <div class="field"><label for="pPrice">سعر البيع الحالي *</label><input id="pPrice" type="number" min="0.01" step="0.01" required></div><div class="field"><label for="pComparePrice">السعر قبل الخصم (اختياري)</label><input id="pComparePrice" type="number" min="0.01" step="0.01" placeholder="مثال: 1000"><small class="hint">اتركه فارغًا إذا لم يكن هناك تخفيض. يجب أن يكون أكبر من سعر البيع.</small></div>
         <div class="field owner-only"><label for="pPurchasePrice">سعر شراء القطعة (خاص بالإدارة)</label><input id="pPurchasePrice" type="number" min="0" step="0.01" value="0"><small class="hint">لن يظهر السعر ده للعميل أو موظفي خدمة العملاء.</small><div class="hint" id="productProfitPreview">الربح المتوقع للقطعة: —</div></div>
         <div class="field"><label for="pStock">المخزون *</label><input id="pStock" type="number" min="0" step="1" value="0" required></div>
         <div class="field full"><label for="pCategory">القسم *</label><div style="display:flex;gap:8px"><select id="pCategory" required style="flex:1;min-width:0"><option value="">اختر القسم</option></select><button class="btn light" type="button" id="quickAddCategory">＋ قسم</button></div></div>
@@ -635,6 +635,15 @@ td,th{border-bottom:1px solid #edf0f4;padding:13px 11px}
       <input type="hidden" id="couponId">
       <div class="field"><label for="cCode">كود الخصم *</label><input id="cCode" maxlength="30" pattern="[A-Za-z0-9_-]{3,30}" required placeholder="ROVY10"></div>
       <div class="field"><label for="cDiscount">نسبة الخصم % *</label><input id="cDiscount" type="number" min="1" max="100" step="1" required></div>
+      <div class="formgrid">
+        <div class="field"><label for="cMaxUses">العدد الإجمالي للاستخدام</label><input id="cMaxUses" type="number" min="1" step="1" placeholder="اتركه فارغًا بلا حد"></div>
+        <div class="field"><label for="cPerCustomer">مرات الاستخدام لكل عميل *</label><input id="cPerCustomer" type="number" min="1" max="100" value="1" required></div>
+        <div class="field"><label for="cStartsAt">بداية الكوبون</label><input id="cStartsAt" type="datetime-local"></div>
+        <div class="field"><label for="cEndsAt">نهاية الكوبون</label><input id="cEndsAt" type="datetime-local"></div>
+        <div class="field"><label for="cMinOrder">الحد الأدنى للطلب (جنيه)</label><input id="cMinOrder" type="number" min="0" step="0.01" value="0"></div>
+        <div class="field"><label for="cMaxDiscount">أقصى قيمة للخصم (جنيه)</label><input id="cMaxDiscount" type="number" min="0.01" step="0.01" placeholder="بدون حد أقصى"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:9px;margin:12px 0"><input id="cStackable" type="checkbox"> السماح باستخدامه مع عرض ترويجي قابل للجمع</label>
       <div class="modal-actions"><button class="btn gold" type="submit" id="saveCouponBtn">حفظ الكوبون</button><button class="btn light" type="button" data-close="couponModal">إلغاء</button></div>
       <div id="couponError" class="error"></div>
     </form>
@@ -1727,7 +1736,7 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
   async function openProduct(p=null){
     $('productForm').reset();$('productId').value=p?.id||'';$('pStock').value=p?.stock??0;
     $('productModalTitle').textContent=p?'تعديل منتج':'إضافة منتج';
-    $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';$('pPurchasePrice').value=p?.purchase_price??0;updateProductProfitPreview();fillCategorySelect(p?.category||'');
+    $('pName').value=p?.name||'';$('pPrice').value=p?.price??'';$('pComparePrice').value=p?.compare_at_price??'';$('pPurchasePrice').value=p?.purchase_price??0;updateProductProfitPreview();fillCategorySelect(p?.category||'');
     $('pDescription').value=p?.description||'';$('pNameEn').value='';$('pDescriptionEn').value='';$('productError').textContent='';
     productImages=[];productVariantDrafts=[];productVariantsLoaded=!p;productTranslationLoaded=!p;renderImagePreview();renderVariantAdminRows();$('productModal').classList.remove('hidden');
     if(p){
@@ -1750,7 +1759,8 @@ function rovyPrompt(message,options={}){return rovyDialog({kind:'prompt',title:'
         p_name:$('pName').value.trim(),p_price:Number($('pPrice').value),
         p_description:$('pDescription').value.trim()||null,p_category:$('pCategory').value.trim()||null,
         p_image_url:mainImage?.image_url||null,p_stock:Number($('pStock').value),
-        ...(staff?.role==='owner'?{p_purchase_price:Number($('pPurchasePrice').value)}:{})
+        p_purchase_price:staff?.role==='owner'?Number($('pPurchasePrice').value):0,
+        p_compare_at_price:$('pComparePrice').value.trim()?Number($('pComparePrice').value):null
       });
       const productId=saved?.product_id??saved?.[0]?.product_id??$('productId').value;
       if(!productId)throw new Error('تم حفظ المنتج لكن تعذر تحديد رقمه لربط الصور.');
