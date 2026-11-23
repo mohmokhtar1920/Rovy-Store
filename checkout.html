@@ -171,7 +171,7 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
                     <input type="text" id="couponCode" placeholder="أدخل كود الخصم هنا">
                     <button type="button" onclick="applyCoupon()">تطبيق</button>
                 </div>
-                <div class="coupon-msg" id="couponMsg"></div>
+                <div class="coupon-msg" id="couponMsg"></div><div id="promotionNotice" class="coupon-msg" aria-live="polite"></div>
             </div>
 
             <div class="checkout-total-line"><span id="subtotalLabel">قيمة المنتجات:</span><strong id="checkoutSubtotal">0 جنيه</strong></div>
@@ -319,6 +319,8 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
     let originalTotal = 0;
     let finalTotal = 0;
     let appliedCouponCode = null;
+    let promotionFreeShipping = false;
+    let promotionName = '';
     let shippingGovernorates = [];
     let shippingFee = null;
     let checkoutSubmitting = false;
@@ -363,7 +365,20 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
     const governorateEnglishNames={'القاهرة':'Cairo','الجيزة':'Giza','الإسكندرية':'Alexandria','القليوبية':'Qalyubia','الدقهلية':'Dakahlia','الشرقية':'Sharqia','الغربية':'Gharbia','المنوفية':'Menoufia','البحيرة':'Beheira','كفر الشيخ':'Kafr El Sheikh','دمياط':'Damietta','بورسعيد':'Port Said','الإسماعيلية':'Ismailia','السويس':'Suez','شمال سيناء':'North Sinai','جنوب سيناء':'South Sinai','الفيوم':'Fayoum','بني سويف':'Beni Suef','المنيا':'Minya','أسيوط':'Assiut','سوهاج':'Sohag','قنا':'Qena','الأقصر':'Luxor','أسوان':'Aswan','البحر الأحمر':'Red Sea','الوادي الجديد':'New Valley','مطروح':'Matrouh'};
     function renderGovernorateOptions(){const sel=document.getElementById('cGovernorate');if(!sel)return;const old=sel.value;sel.innerHTML='';const first=document.createElement('option');first.value='';first.textContent=english?'Choose governorate':'اختر المحافظة';sel.appendChild(first);shippingGovernorates.forEach(g=>{const o=document.createElement('option');o.value=String(g.id);o.textContent=english?(governorateEnglishNames[g.name]||g.name):g.name;sel.appendChild(o);});if(shippingGovernorates.some(g=>String(g.id)===old))sel.value=old;if(!shippingGovernorates.length){const o=document.createElement('option');o.value='';o.textContent=english?'Shipping is not configured yet':'لم يتم إعداد أسعار الشحن بعد';sel.appendChild(o);}const hint=document.getElementById('shippingHint');if(hint)hint.textContent=english?'Shipping fee is calculated automatically by governorate.':'سعر الشحن بيتحسب تلقائيًا حسب المحافظة.';}
     async function loadShippingGovernorates(){const {data,error}=await supabaseClient.rpc('get_active_shipping_governorates');if(error)throw error;shippingGovernorates=Array.isArray(data)?data.filter(g=>g&&g.is_active!==false&&g.shipping_fee!==null&&Number.isFinite(Number(g.shipping_fee))&&Number(g.shipping_fee)>=0):[];renderGovernorateOptions();const sel=document.getElementById('cGovernorate');if(sel)sel.addEventListener('change',()=>{const g=shippingGovernorates.find(x=>String(x.id)===sel.value);shippingFee=(g&&g.shipping_fee!==null)?Number(g.shipping_fee):null;updateCheckoutTotals();});}
-    function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer'),discountRow=document.getElementById('discountRow'),discountValue=document.getElementById('checkoutDiscount');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');const discountAmount=Math.max(0,originalTotal-finalTotal);if(discountRow&&discountValue){discountRow.hidden=discountAmount<=0;discountValue.textContent='− '+formatPrice(discountAmount)+(english?' EGP':' جنيه');}const selected=document.getElementById('cGovernorate')?.value;ship.textContent=shippingFee===null?(selected?(english?'Shipping price not set':'سعر الشحن غير محدد'):(english?'Choose governorate':'اختر المحافظة')):formatPrice(shippingFee)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingFee===null?0:shippingFee))+(english?' EGP':' جنيه');}
+    function updateCheckoutTotals(){const sub=document.getElementById('checkoutSubtotal'),ship=document.getElementById('checkoutShipping'),total=document.getElementById('checkoutTotalContainer'),discountRow=document.getElementById('discountRow'),discountValue=document.getElementById('checkoutDiscount'),discountLabel=document.getElementById('discountLabel');if(!sub||!ship||!total)return;sub.textContent=formatPrice(originalTotal)+(english?' EGP':' جنيه');const discountAmount=Math.max(0,originalTotal-finalTotal);if(discountRow&&discountValue){discountRow.hidden=discountAmount<=0;discountValue.textContent='− '+formatPrice(discountAmount)+(english?' EGP':' جنيه');if(discountLabel)discountLabel.textContent=promotionName?(english?'Discounts and offers ('+promotionName+')':'الخصومات والعروض ('+promotionName+')'):(english?'Discount':'الخصم');}const selected=document.getElementById('cGovernorate')?.value;const shippingToPay=promotionFreeShipping?0:shippingFee;ship.textContent=promotionFreeShipping?(english?'FREE — promotion applied':'مجاني — تم تطبيق العرض'):shippingToPay===null?(selected?(english?'Shipping price not set':'سعر الشحن غير محدد'):(english?'Choose governorate':'اختر المحافظة')):formatPrice(shippingToPay)+(english?' EGP':' جنيه');total.textContent=formatPrice(finalTotal+(shippingToPay===null?0:shippingToPay))+(english?' EGP':' جنيه');}
+    async function refreshOrderPreview(){
+        const notice=document.getElementById('promotionNotice');
+        try{
+            const items=cart.map(item=>({product_id:Number(item.product_id||item.id),quantity:Number(item.quantity)}));
+            const {data,error}=await supabaseClient.rpc('preview_order_discounts',{p_items:items,p_coupon_code:appliedCouponCode});
+            if(error)throw error;
+            if(data&&Number.isFinite(Number(data.subtotal)))originalTotal=Number(data.subtotal);
+            promotionFreeShipping=data?.free_shipping===true;promotionName=data?.promotion_name||'';
+            finalTotal=Math.max(0,originalTotal-Number(data?.coupon_discount||0)-Number(data?.promotion_discount||0));
+            if(notice){notice.textContent=promotionName?(english?'Automatic offer applied: '+promotionName:'تم تطبيق العرض تلقائيًا: '+promotionName):'';notice.style.color='#28734e';}
+        }catch(err){promotionFreeShipping=false;promotionName='';if(notice){notice.textContent=english?'Automatic offers will be recalculated when the order is placed.':'سيتم إعادة حساب العروض تلقائيًا عند تأكيد الطلب.';notice.style.color='#8a6b43';}console.warn('Order discount preview unavailable:',err);}
+        updateCheckoutTotals();
+    }
     function renderCheckout() {
         if (!Array.isArray(cart) || cart.length === 0) {
             window.location.href = 'index.html';
@@ -432,11 +447,12 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
 
         finalTotal = originalTotal;
         updateCheckoutTotals();
+        refreshOrderPreview();
     }
 
     document.getElementById('couponCode').addEventListener('input',()=>{
         const typed=document.getElementById('couponCode').value.trim().toUpperCase();
-        if(appliedCouponCode&&typed!==appliedCouponCode){appliedCouponCode=null;finalTotal=originalTotal;document.getElementById('couponMsg').textContent='';updateCheckoutTotals();}
+        if(appliedCouponCode&&typed!==appliedCouponCode){appliedCouponCode=null;finalTotal=originalTotal;document.getElementById('couponMsg').textContent='';refreshOrderPreview();}
     });
 
     async function applyCoupon() {
@@ -474,20 +490,18 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
 
             appliedCouponCode = code;
 
-            if(Number(data.min_order_amount||0)>originalTotal) throw new Error('قيمة الطلب أقل من الحد الأدنى لاستخدام الكوبون.');
-            let discountAmount = (originalTotal * discount) / 100;
-            if(data.max_discount_amount!==null&&data.max_discount_amount!==undefined) discountAmount=Math.min(discountAmount,Number(data.max_discount_amount));
-            discountAmount=Math.min(discountAmount,originalTotal);
-            finalTotal = originalTotal - discountAmount;
+            await refreshOrderPreview();
+            if(finalTotal>=originalTotal) throw new Error('الكوبون غير مؤهل لهذا الطلب أو تم الوصول إلى حد استخدامه.');
 
             msg.style.color = 'green';
-            msg.textContent = english ? 'Code verified. The final discount will be applied when your order is confirmed.' : 'تم التحقق من الكود. سيتم اعتماد الخصم النهائي عند تأكيد الطلب.';
+            msg.textContent = english ? 'Code applied successfully.' : 'تم تطبيق الكوبون والعروض المتاحة.';
 
             updateCheckoutTotals();
 
         } catch (error) {
             appliedCouponCode = null;
             finalTotal = originalTotal;
+            await refreshOrderPreview();
 
             msg.style.color = 'red';
             msg.textContent = english ? 'Could not verify the discount code. Please try again.' : (error.message || 'تعذر التحقق من كود الخصم.');
