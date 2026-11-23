@@ -113,7 +113,7 @@
             .product-cart-drawer{top:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));height:auto;max-height:none;border-radius:18px;overflow:hidden}
             .product-cart-bottom{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
         }
-    </style>
+    .sale-price{display:flex;align-items:center;gap:9px;margin:4px 0 12px;color:#9a343a;font-size:13px}.sale-price s{color:#888;font-size:15px;font-weight:500}\n</style>
     <meta name="description" content="تفاصيل المنتجات والمقاسات والألوان والتوافر في ROVY STORE.">
     <meta name="theme-color" content="#171717">
     <meta property="og:site_name" content="ROVY STORE">
@@ -466,6 +466,7 @@
                     <div class="product-category" data-product-category>${escapeHTML(currentProduct.category||'')}</div>
                     <h1 class="product-title" data-product-name>${escapeHTML(currentProduct.name_en || currentProduct.name || 'منتج')}</h1>
                     <div class="product-price">${currentProduct.price} ${english ? 'EGP' : 'جنيه'}</div>
+                    ${Number(currentProduct.compare_at_price)>Number(currentProduct.price)?'<div class="sale-price"><s>'+Number(currentProduct.compare_at_price).toLocaleString('en-US')+' جنيه</s><strong>خصم '+Math.round((Number(currentProduct.compare_at_price)-Number(currentProduct.price))/Number(currentProduct.compare_at_price)*100)+'%</strong></div>':''}
                     <div class="product-desc" data-product-description>${escapeHTML(currentProduct.description || (english ? 'No detailed description.' : 'لا يوجد وصف تفصيلي.'))}</div>
                     ${sizesHtml}${colorsHtml}
                     <div id="stockNotice"></div>
