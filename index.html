@@ -171,7 +171,9 @@ header{min-height:82px;padding:13px clamp(18px,5vw,76px)!important;display:grid!
 .rovy-premium-hero:after{background:linear-gradient(0deg,rgba(10,9,8,.24),transparent 48%)!important}
 .rovy-premium-hero .hero-content{width:min(720px,66%);margin-inline-start:clamp(18px,7vw,110px)}
 .rovy-hero-kicker{font-size:10px!important;letter-spacing:3.5px!important;color:#e8cb96!important}
-.rovy-premium-hero .hero-content h1{font-size:clamp(48px,7vw,88px)!important;line-height:1.12!important;letter-spacing:-2px!important;margin-bottom:22px!important}
+.rovy-premium-hero .hero-content h1{color:#fff!important;font-size:clamp(48px,7vw,88px)!important;line-height:1.12!important;letter-spacing:-2px!important;margin-bottom:22px!important;text-shadow:0 2px 18px rgba(0,0,0,.42)!important}
+.rovy-premium-hero .hero-content h1 span{color:#e3c48d!important}
+.rovy-premium-hero .hero-content p,.rovy-premium-hero .hero-content .rovy-hero-kicker{color:#f5eee3!important;text-shadow:0 1px 10px rgba(0,0,0,.35)!important}
 .rovy-premium-hero .hero-content h1 span{color:#e3c48d!important}
 .rovy-premium-hero .hero-content p{font-size:clamp(15px,1.4vw,19px)!important;color:#f4eee4!important;max-width:490px;line-height:2!important}
 .rovy-premium-hero .shop-btn{background:#e2c48e!important;color:#17130d!important;border-radius:2px!important;padding:16px 27px!important;font-size:13px!important;letter-spacing:.3px;min-width:190px;justify-content:center}
@@ -250,12 +252,10 @@ footer p,footer a{line-height:2!important}
 
 /* Refined announcement and offer ribbons */
 .top-bar{min-height:32px;display:flex;align-items:center;justify-content:center;background:#171512!important;color:#e9dfd1!important;padding:7px 14px!important;font-size:10px!important;letter-spacing:.35px;line-height:1.6}
-.promotion-banner{min-height:42px;display:flex;align-items:center;justify-content:center;gap:13px;padding:8px 18px!important;background:#eee6d8!important;color:#403629!important;border:0!important;border-bottom:1px solid #dfd2be;font-size:11px!important;font-weight:700!important;letter-spacing:.1px}
+.promotion-banner{min-height:34px;display:flex;align-items:center;justify-content:center;padding:7px 14px!important;background:#f2eadc!important;color:#241d14!important;border:0!important;border-bottom:1px solid #d9c49f;font-size:10px!important;font-weight:900!important;letter-spacing:1.1px}
 .promotion-banner[hidden]{display:none!important}
-.rovy-promo-label{display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;color:#8b693a;font-size:9px;font-weight:900;letter-spacing:1.6px;white-space:nowrap}
-.rovy-promo-label:before{content:"";width:5px;height:5px;border-radius:50%;background:#b38c50;box-shadow:0 0 0 3px #b38c501f}
-.rovy-promo-message{min-width:0;line-height:1.7;text-align:center}
-@media(max-width:640px){.top-bar{font-size:9px!important;padding:7px 10px!important}.promotion-banner{gap:8px;flex-direction:column;padding:9px 12px!important;font-size:10px!important}.rovy-promo-label{font-size:8px}.rovy-promo-message{line-height:1.6}}
+.rovy-promo-message{display:block;min-width:0;line-height:1.5;text-align:center;color:#241d14!important;font-weight:900!important}
+@media(max-width:640px){.top-bar{font-size:9px!important;padding:7px 10px!important}.promotion-banner{min-height:32px;padding:7px 10px!important;font-size:9px!important;letter-spacing:.7px}.rovy-promo-message{line-height:1.5}}
 
 </style>
     <meta name="description" content="اكتشف أحدث الملابس والإكسسوارات من ROVY STORE. تسوق بسهولة، اختر المقاس واللون، واطلب مع الدفع عند الاستلام.">
@@ -569,17 +569,26 @@ footer p,footer a{line-height:2!important}
         async function fetchActivePromotions(){
             const {data,error}=await supabaseClient.rpc('public_list_active_promotions');
             const banner=document.getElementById('promotionBanner');
-            if(error||!banner){if(error)console.warn('Active promotions unavailable:',error);return;}
+            if(!banner)return;
+            if(error){console.warn('Active promotions unavailable:',error);banner.replaceChildren();banner.hidden=true;return;}
             const items=Array.isArray(data)?data:[];
-            if(!items.length){banner.hidden=true;return;}
-            banner.replaceChildren();
-            const label=document.createElement('span');
-            label.className='rovy-promo-label';
-            label.textContent=english?'ROVY OFFERS':'عروض ROVY';
+            const offers=items.map(p=>{
+                if(p.promotion_type==='buy_x_get_y'){
+                    const buy=Number(p.buy_quantity)||2;
+                    const free=Number(p.free_quantity)||1;
+                    return `BUY ${buy} GET ${free} FREE`;
+                }
+                if(p.promotion_type==='free_shipping'){
+                    const min=Number(p.min_quantity)||3;
+                    return `BUY ${min} GET FREE DELIVERY`;
+                }
+                return '';
+            }).filter(Boolean);
+            if(!offers.length){banner.replaceChildren();banner.hidden=true;return;}
             const message=document.createElement('span');
             message.className='rovy-promo-message';
-            message.textContent=items.slice(0,2).map(p=>[p.name,p.description].filter(Boolean).join(' — ')).join('   ·   ');
-            banner.append(label,message);
+            message.textContent=offers.slice(0,2).join('   ·   ');
+            banner.replaceChildren(message);
             banner.hidden=false;
         }
         async function fetchActiveCategories() {
