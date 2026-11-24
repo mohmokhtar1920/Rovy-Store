@@ -138,6 +138,50 @@
     <link rel="stylesheet" href="assets/rovy-brand.css">
 
 <style id="rovy-demo-mode-style">.rovy-demo-banner{display:block;width:100%;padding:8px 12px;text-align:center;background:#fff4d6;color:#725500;border-bottom:1px solid #eed58e;font:800 12px/1.7 Cairo,Arial,sans-serif;position:relative;z-index:10001}.rovy-demo-banner strong{font-weight:900}@media(max-width:480px){.rovy-demo-banner{font-size:11px;padding:7px 8px}}</style>
+<style id="rovy-product-editorial-v1">
+/* ROVY product detail — editorial premium layout */
+body{background:#faf8f4;color:#211e19}
+header{background:rgba(255,255,255,.96)!important;backdrop-filter:blur(12px);position:sticky;top:0;z-index:1200;padding:13px clamp(16px,5vw,76px)!important;border-bottom:1px solid #e9e2d8!important}
+.product-container{max-width:1320px!important;margin:clamp(22px,4vw,58px) auto!important;padding:0 clamp(16px,4vw,54px)!important;grid-template-columns:minmax(0,1.08fr) minmax(360px,.92fr)!important;gap:clamp(28px,5vw,76px)!important;align-items:start}
+.gallery-container{gap:14px!important;position:relative}
+.main-image{height:auto!important;min-height:420px;max-height:760px;aspect-ratio:4/5!important;border-radius:2px!important;box-shadow:none!important;background:#f0ece5!important;padding:12px;object-fit:contain!important}
+.thumbnails{gap:10px!important;padding:2px 0 8px}
+.thumb-img{width:clamp(64px,8vw,94px)!important;height:clamp(72px,9vw,108px)!important;border:1px solid #e9e1d6!important;border-radius:2px!important;padding:3px;background:#f6f2ec!important}
+.thumb-img.active,.thumb-img:hover{border:1px solid #9a7954!important}
+.product-details{align-self:stretch;justify-content:flex-start!important;padding:clamp(8px,2vw,24px) 0;max-width:560px}
+.product-category{font-size:11px!important;letter-spacing:1.5px;color:#9a8267!important;margin-bottom:14px!important;text-transform:uppercase}
+.product-title{font-size:clamp(26px,3vw,42px)!important;line-height:1.45!important;letter-spacing:-.6px;color:#211e19;margin-bottom:12px!important}
+.product-price{font-size:25px!important;color:#211e19!important;font-weight:900!important;margin:10px 0 5px!important}
+.sale-price{justify-content:flex-start!important;margin:4px 0 18px!important}
+.product-desc{background:#f2eee8!important;border:0!important;border-right:2px solid #b58a61!important;border-radius:0!important;padding:15px 17px!important;color:#665d53!important;font-size:14px!important;line-height:2!important;margin:10px 0 24px!important}
+.options-group{padding:16px 0 4px;border-top:1px solid #e9e2d8;margin-bottom:12px!important}
+.options-label{font-size:13px!important;color:#383128;margin-bottom:12px!important}
+.options-list{gap:8px!important}
+.option-btn{min-width:48px;min-height:42px;border:1px solid #d9d0c5!important;border-radius:2px!important;background:#fff!important;color:#342d25!important;font-size:12px!important}
+.option-btn.selected{background:#211e19!important;border-color:#211e19!important;color:#fff!important}
+.option-btn.out-of-stock{background:#f0ece7!important;color:#aaa!important}
+.add-btn{width:100%;min-height:56px;margin-top:14px!important;border-radius:2px!important;background:#171512!important;color:#f7efe3!important;font-size:14px!important;letter-spacing:.4px;box-shadow:none!important}
+.add-btn:hover{background:#9b7952!important}
+.tryon-btn{border-radius:2px!important;background:#f3ebdf!important;color:#735535!important;border-color:#d6c2a7!important;font-size:13px!important}
+.stock-note{border-radius:2px!important}
+.reviews-section{max-width:1320px!important;margin:64px auto!important;padding:0 clamp(16px,4vw,54px)!important}
+.reviews-header{border-color:#e7dfd4!important}
+.reviews-title{font-size:22px!important;color:#211e19}
+.review-card,.add-review-form{border:1px solid #e9e2d8!important;border-radius:2px!important;box-shadow:none!important}
+#relatedSection .product-card{border-radius:2px!important}
+@media(max-width:768px){
+ .product-container{grid-template-columns:minmax(0,1fr)!important;gap:22px!important;margin:18px auto 30px!important;padding:0 14px!important}
+ .main-image{min-height:0;max-height:none;aspect-ratio:4/5!important;padding:7px}
+ .gallery-container{gap:9px!important}
+ .product-details{padding:4px 2px 0;max-width:none}
+ .product-title{font-size:27px!important;margin-bottom:7px!important}
+ .product-price{font-size:23px!important}
+ .product-desc{font-size:13px!important;margin-bottom:16px!important}
+ .reviews-section{margin:42px auto!important;padding:0 14px!important}
+ header{padding:11px 14px!important}
+}
+@media(min-width:769px){.product-details{position:sticky;top:100px}}
+</style>
 </head>
 <body>
 <div class="rovy-demo-banner" role="status">⚠️ <strong>نسخة تجريبية — DEMO</strong> | الأسعار والعروض والطلبات للاختبار فقط، ولا تعتمد أي طلب حقيقي حاليًا.</div>
