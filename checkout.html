@@ -112,6 +112,30 @@ header{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom
 @media(max-width:768px){.checkout-intro{margin-top:22px}.container{margin:18px auto 35px;gap:15px}.card{border-radius:17px;padding:20px}.checkout-progress{gap:7px}.checkout-progress-step{font-size:10px;gap:5px}.checkout-progress-step span{width:24px;height:24px}.checkout-assurance{grid-template-columns:1fr 1fr}}
 @media(max-width:390px){.checkout-assurance{grid-template-columns:1fr}.coupon-input-group{gap:7px}.coupon-input-group button{padding:9px 12px}}
 
+
+/* ROVY checkout finishing touches */
+.checkout-intro{max-width:1120px!important}
+.container{max-width:1120px!important;grid-template-columns:minmax(0,1fr) minmax(320px,.88fr)!important;gap:24px!important}
+.container>.card:nth-child(2){position:sticky;top:22px}
+.card{border-radius:4px!important;background:rgba(255,255,255,.97)!important}
+.card h2{display:flex;align-items:center;gap:10px}
+.card h2:before{content:"";width:4px;height:22px;background:#b58a61;display:inline-block}
+.form-group input,.form-group textarea,#cGovernorate{padding:13px 15px!important;color:#27221d}
+.form-group input::placeholder,.form-group textarea::placeholder{color:#aaa39b}
+.cart-item{align-items:center}
+.cart-item-info{flex:1}
+.cart-item img{border-radius:3px!important;border:1px solid #eee7df}
+.checkout-assurance div{border-radius:3px!important}
+.coupon-section{border-radius:3px!important}
+.btn-submit{border-radius:3px!important;letter-spacing:.5px}
+.checkout-note{border-radius:3px!important}
+@media(max-width:768px){
+ .container{grid-template-columns:minmax(0,1fr)!important}
+ .container>.card:nth-child(2){position:static}
+ .checkout-intro{padding:0 16px!important}
+ .container{padding:0 14px!important}
+}
+@media(min-width:769px){.container>.card:first-child{grid-column:1;grid-row:1}.container>.card:nth-child(2){grid-column:2;grid-row:1}}
 </style>
     <meta name="description" content="أكمل طلبك في ROVY STORE واختر عنوان التوصيل وطريقة الدفع عند الاستلام.">
     <meta name="theme-color" content="#171717">
