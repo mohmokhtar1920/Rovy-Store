@@ -263,6 +263,34 @@ footer p,footer a{line-height:2!important}
 .rovy-hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
 .rovy-premium-hero .hero-content{position:relative;z-index:2}
 .rovy-premium-hero .rovy-hero-mark{z-index:2}
+
+/* ROVY product cards — refined editorial presentation */
+#newProductsGrid .rovy-product-card,#bestProductsGrid .rovy-product-card{min-width:0;display:flex;flex-direction:column;gap:0}
+.rovy-product-card .rovy-card-media{display:block;position:relative;overflow:hidden;aspect-ratio:3/4;background:#f1eee8;color:inherit;text-decoration:none}
+.rovy-product-card .rovy-card-media img{display:block;width:100%;height:100%;object-fit:contain;background:#f1eee8;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.rovy-product-card:hover .rovy-card-media img{transform:scale(1.045)}
+.rovy-card-badge{position:absolute;top:13px;inset-inline-start:13px;padding:6px 9px;background:#171512;color:#f4e7d1;font-size:10px;font-weight:900;letter-spacing:.5px;z-index:2}
+.rovy-card-stock{position:absolute;top:13px;inset-inline-end:13px;padding:6px 9px;background:#fff;color:#8f3434;border:1px solid #ead2ce;font-size:10px;font-weight:800;z-index:2}
+.rovy-card-view{position:absolute;bottom:12px;inset-inline-end:12px;background:rgba(255,255,255,.94);color:#211d18;padding:8px 11px;font-size:10px;font-weight:900;opacity:0;transform:translateY(6px);transition:.25s}
+.rovy-product-card:hover .rovy-card-view,.rovy-card-media:focus-visible .rovy-card-view{opacity:1;transform:translateY(0)}
+.rovy-card-info{padding:14px 1px 2px!important}
+.rovy-card-category{font-size:10px;color:#9a8875;letter-spacing:.7px;margin-bottom:5px;text-transform:uppercase}
+.rovy-card-title-link{color:inherit;text-decoration:none}
+.rovy-product-card .product-title{font-size:13px!important;line-height:1.8;min-height:24px;margin-bottom:5px!important}
+.rovy-card-price-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-height:28px}
+.rovy-product-card .product-price{margin:0!important;font-size:15px!important}
+.rovy-card-old-price{font-size:11px;color:#9b8e81}
+.rovy-product-card .rovy-card-details{display:flex;align-items:center;justify-content:space-between;margin-top:11px!important;padding:10px 12px!important;font-size:10px!important;letter-spacing:.2px}
+.rovy-product-card .rovy-card-details i{font-size:10px}
+@media(max-width:768px){
+  #newProductsGrid.products-grid,#bestProductsGrid.products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:22px 12px!important}
+  .rovy-card-badge,.rovy-card-stock{top:8px;padding:5px 7px;font-size:9px}
+  .rovy-card-view{display:none}
+  .rovy-card-info{padding-top:10px!important}
+  .rovy-product-card .product-title{font-size:12px!important}
+  .rovy-product-card .product-price{font-size:13px!important}
+  .rovy-product-card .rovy-card-details{min-height:40px;padding:9px 10px!important}
+}
 </style>
     <meta name="description" content="اكتشف أحدث الملابس والإكسسوارات من ROVY STORE. تسوق بسهولة، اختر المقاس واللون، واطلب مع الدفع عند الاستلام.">
     <meta name="theme-color" content="#171717">
@@ -756,17 +784,28 @@ footer p,footer a{line-height:2!important}
             const name=escapeHTML((english&&p.name_en)||p.name||'منتج');
             const image=escapeHTML(safeImageURL(p.image_url)||PLACEHOLDER_IMG);
             const price=Number(p.price);
+            const compareAt=Number(p.compare_at_price);
+            const hasDiscount=Number.isFinite(compareAt)&&Number.isFinite(price)&&compareAt>price&&compareAt>0;
+            const discount=hasDiscount?Math.round((compareAt-price)/compareAt*100):0;
+            const category=escapeHTML(p.category||'');
             return `
-                <div class="product-card">
-                    <a href="product.html?id=${id}"><img src="${image}" alt="${escapeHTML(p.name||'منتج')}" loading="lazy"></a>
-                    <div class="product-info">
-                        <a href="product.html?id=${id}" style="text-decoration:none; color:inherit;"><div class="product-title" data-product-name="${id}">${name}</div></a>
-                        <div class="product-price">${Number.isFinite(price)?price.toLocaleString('en-US'):'—'} ${english?'EGP':'جنيه'}</div>
-                        ${Number(p.compare_at_price)>price?'<div class="sale-price"><s>'+Number(p.compare_at_price).toLocaleString('en-US')+' '+(english?'EGP':'جنيه')+'</s><strong>خصم '+Math.round((Number(p.compare_at_price)-price)/Number(p.compare_at_price)*100)+'%</strong></div>':''}
-                        ${!available ? '<span class="product-stock-badge"><i class="fas fa-ban"></i> '+(english?'Sold out':'المنتج نفد')+'</span>' : ''}
-                        <button class="add-to-cart-btn" onclick="openProductDetails(${p.id})">${english ? 'View Details' : 'التفاصيل'}</button>
+                <article class="product-card rovy-product-card">
+                    <a class="rovy-card-media" href="product.html?id=${id}" aria-label="${english?'View ':'عرض '}${name}">
+                        <img src="${image}" alt="${name}" loading="lazy">
+                        ${hasDiscount?'<span class="rovy-card-badge">'+(english?'SAVE ':'خصم ')+discount+'%</span>':''}
+                        ${!available?'<span class="rovy-card-stock">'+(english?'Sold out':'نفد المخزون')+'</span>':''}
+                        <span class="rovy-card-view"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> ${english?'Discover':'اكتشف'}</span>
+                    </a>
+                    <div class="product-info rovy-card-info">
+                        ${category?'<div class="rovy-card-category">'+category+'</div>':''}
+                        <a href="product.html?id=${id}" class="rovy-card-title-link"><div class="product-title" data-product-name="${id}">${name}</div></a>
+                        <div class="rovy-card-price-row">
+                            <div class="product-price">${Number.isFinite(price)?price.toLocaleString('en-US'):'—'} ${english?'EGP':'جنيه'}</div>
+                            ${hasDiscount?'<del class="rovy-card-old-price">'+compareAt.toLocaleString('en-US')+' '+(english?'EGP':'جنيه')+'</del>':''}
+                        </div>
+                        <button class="add-to-cart-btn rovy-card-details" type="button" onclick="openProductDetails(${id})">${english?'View details':'عرض التفاصيل'} <i class="fas fa-arrow-left" aria-hidden="true"></i></button>
                     </div>
-                </div>
+                </article>
             `;
         }
 
