@@ -98,8 +98,8 @@ let pendingSignupEmail=localStorage.getItem(PENDING_EMAIL_KEY)||sessionStorage.g
 if(pendingSignupEmail)localStorage.setItem(PENDING_EMAIL_KEY,pendingSignupEmail);
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
-const nextPage=requestedNext==='checkout.html'
- ? 'checkout.html'
+const nextPage=requestedNext==='checkout.html' || requestedNext==='account.html'
+ ? requestedNext
  : requestedNext==='returns.html'
    ? 'returns.html'
    : (/^payment\.html\?order=\d+$/.test(requestedNext) ? requestedNext : 'index.html');
