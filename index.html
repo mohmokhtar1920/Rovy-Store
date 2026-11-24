@@ -276,6 +276,51 @@ footer p,footer a{line-height:2!important}
     <link rel="stylesheet" href="assets/rovy-brand.css">
 
 <style id="rovy-demo-mode-style">.rovy-demo-banner{display:block;width:100%;padding:8px 12px;text-align:center;background:#fff4d6;color:#725500;border-bottom:1px solid #eed58e;font:800 12px/1.7 Cairo,Arial,sans-serif;position:relative;z-index:10001}.rovy-demo-banner strong{font-weight:900}@media(max-width:480px){.rovy-demo-banner{font-size:11px;padding:7px 8px}}</style>
+
+<style id="rovy-home-editorial-v1">
+/* ROVY homepage editorial layer — presentation only */
+.rovy-edit-section{padding:58px clamp(18px,6vw,92px) 30px!important}
+.rovy-edit-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin:0 0 24px}
+.rovy-edit-kicker{display:block;color:#9b7a4b;font-size:10px;font-weight:900;letter-spacing:3px;margin-bottom:8px}
+.rovy-edit-head h2{font-size:clamp(25px,3vw,36px);line-height:1.35;margin:0;font-weight:900;letter-spacing:-.5px}
+.rovy-edit-head p{margin:0;color:#82796e;font-size:12px;line-height:1.9;max-width:390px}
+.rovy-edit-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:14px}
+.rovy-edit-card{position:relative;display:flex;align-items:flex-end;min-height:320px;overflow:hidden;text-decoration:none;color:#fff;background:#29231d;background-size:cover;background-position:center}
+.rovy-edit-card:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(10,9,8,.76),rgba(10,9,8,.04) 75%);transition:background .35s}
+.rovy-edit-card:after{content:"";position:absolute;inset:12px;border:1px solid rgba(255,255,255,.26);pointer-events:none}
+.rovy-edit-card:hover{color:#fff}
+.rovy-edit-card:hover{background-size:cover}
+.rovy-edit-card:hover:before{background:linear-gradient(0deg,rgba(10,9,8,.84),rgba(10,9,8,.12) 90%)}
+.rovy-edit-card-content{position:relative;z-index:1;padding:28px 30px;width:100%}
+.rovy-edit-card small{display:block;color:#e5c994;font-size:9px;font-weight:900;letter-spacing:2px;margin-bottom:9px}
+.rovy-edit-card strong{display:block;font-size:clamp(21px,2.4vw,30px);font-weight:900;line-height:1.35}
+.rovy-edit-card span{display:inline-flex;align-items:center;gap:10px;margin-top:12px;font-size:11px;color:#f3eadc}
+.rovy-edit-card span i{transition:transform .25s}
+.rovy-edit-card:hover span i{transform:translateX(-4px)}
+.rovy-manifesto{display:grid;grid-template-columns:1fr 1fr;min-height:340px;background:#eee8de;margin:24px clamp(18px,6vw,92px) 60px}
+.rovy-manifesto-image{min-height:340px;background:#d8d0c4 url('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1200&q=85') center 35%/cover no-repeat}
+.rovy-manifesto-copy{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:clamp(28px,5vw,66px)}
+.rovy-manifesto-copy .rovy-edit-kicker{margin-bottom:14px}
+.rovy-manifesto-copy h2{font-size:clamp(25px,3.3vw,42px);line-height:1.45;margin:0 0 14px;font-weight:900}
+.rovy-manifesto-copy p{font-size:13px;line-height:2.1;color:#6f675d;margin:0 0 22px;max-width:470px}
+.rovy-manifesto-copy a{display:inline-flex;align-items:center;gap:12px;padding:13px 20px;background:#171512;color:#f4eadb;text-decoration:none;font-size:11px;font-weight:900}
+@media(max-width:760px){
+ .rovy-edit-section{padding:42px 16px 20px!important}
+ .rovy-edit-head{display:block;margin-bottom:17px}
+ .rovy-edit-head p{margin-top:8px}
+ .rovy-edit-grid{grid-template-columns:1fr 1fr;gap:9px}
+ .rovy-edit-card{min-height:235px}
+ .rovy-edit-card:first-child{grid-column:1/-1;min-height:300px}
+ .rovy-edit-card-content{padding:20px 18px}
+ .rovy-edit-card strong{font-size:20px}
+ .rovy-edit-card:after{inset:8px}
+ .rovy-manifesto{grid-template-columns:1fr;margin:18px 16px 42px}
+ .rovy-manifesto-image{min-height:260px}
+ .rovy-manifesto-copy{padding:28px 24px}
+}
+@media(max-width:380px){.rovy-edit-card{min-height:205px}.rovy-edit-card:first-child{min-height:260px}.rovy-edit-card-content{padding:17px 15px}.rovy-edit-card strong{font-size:18px}}
+</style>
+
 </head>
 <body>
 <div class="rovy-demo-banner" role="status">⚠️ <strong>نسخة تجريبية — DEMO</strong> | الأسعار والعروض والطلبات للاختبار فقط، ولا تعتمد أي طلب حقيقي حاليًا.</div>
@@ -317,6 +362,24 @@ footer p,footer a{line-height:2!important}
         <div><i class="fab fa-whatsapp" aria-hidden="true"></i><span><strong data-en="WhatsApp Support">تواصل معانا</strong><small data-en="We're here if you need help">دعم ومساعدة عبر واتساب</small></span></div>
     </section>
 
+    <section class="rovy-edit-section" aria-label="The ROVY Edit">
+        <div class="rovy-edit-head">
+            <div><span class="rovy-edit-kicker">THE ROVY EDIT</span><h2 data-en="Find your next favorite." data-ar="اكتشف اختيارك القادم.">اكتشف اختيارك القادم.</h2></div>
+            <p data-en="Explore the latest pieces, discover your style, and make every detail yours." data-ar="اكتشف أحدث القطع، واختار الستايل اللي يعبر عنك، وخلي كل تفصيلة على ذوقك.">اكتشف أحدث القطع، واختار الستايل اللي يعبر عنك، وخلي كل تفصيلة على ذوقك.</p>
+        </div>
+        <div class="rovy-edit-grid">
+            <a class="rovy-edit-card" href="#newArrivals" style="background-image:url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1100&q=85')">
+                <div class="rovy-edit-card-content"><small>01 / DISCOVER</small><strong data-en="The Latest Edit" data-ar="أحدث الاختيارات">أحدث الاختيارات</strong><span data-en="Explore new arrivals" data-ar="اكتشف وصل حديثًا">اكتشف وصل حديثًا <i class="fas fa-arrow-left" aria-hidden="true"></i></span></div>
+            </a>
+            <a class="rovy-edit-card" href="#categories" style="background-image:url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=85')">
+                <div class="rovy-edit-card-content"><small>02 / EXPLORE</small><strong data-en="Shop Your Style" data-ar="تسوق ستايلك">تسوق ستايلك</strong><span data-en="Browse categories" data-ar="تصفح الأقسام">تصفح الأقسام <i class="fas fa-arrow-left" aria-hidden="true"></i></span></div>
+            </a>
+            <a class="rovy-edit-card" href="style-studio.html" style="background-image:url('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=900&q=85')">
+                <div class="rovy-edit-card-content"><small>03 / CREATE</small><strong data-en="Make It Yours" data-ar="كوّن إطلالتك">كوّن إطلالتك</strong><span data-en="Open Style Studio" data-ar="جرّب استوديو التنسيق">جرّب استوديو التنسيق <i class="fas fa-arrow-left" aria-hidden="true"></i></span></div>
+            </a>
+        </div>
+    </section>
+
     <section id="styleStudioPromo" style="padding:28px 5% 10px;">
         <div style="max-width:1200px;margin:auto;border-radius:18px;padding:30px 5%;background:linear-gradient(115deg,#171717,#35291f);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;box-shadow:0 12px 30px rgba(0,0,0,.10)">
             <div style="max-width:650px">
@@ -341,6 +404,16 @@ footer p,footer a{line-height:2!important}
     <section id="bestSellers">
         <h2 class="section-title" id="bestTitle">منتجات مميزة</h2>
         <div class="products-grid" id="bestProductsGrid"></div>
+    </section>
+
+    <section class="rovy-manifesto" aria-label="About ROVY">
+        <div class="rovy-manifesto-image" role="img" aria-label="ROVY fashion editorial"></div>
+        <div class="rovy-manifesto-copy">
+            <span class="rovy-edit-kicker">A POINT OF VIEW. A WAY OF LIFE.</span>
+            <h2 data-en="Style is in the details." data-ar="الأناقة في التفاصيل.">الأناقة في التفاصيل.</h2>
+            <p data-en="At ROVY, we believe the right piece does more than complete an outfit. It reflects your mood, your confidence, and your own point of view." data-ar="في ROVY، بنؤمن إن القطعة الصح مش بس بتكمل إطلالتك؛ دي بتعبر عن مزاجك وثقتك بنفسك وطريقتك الخاصة.">في ROVY، بنؤمن إن القطعة الصح مش بس بتكمل إطلالتك؛ دي بتعبر عن مزاجك وثقتك بنفسك وطريقتك الخاصة.</p>
+            <a href="about.html"><span data-en="Discover ROVY" data-ar="اكتشف ROVY">اكتشف ROVY</span><i class="fas fa-arrow-left" aria-hidden="true"></i></a>
+        </div>
     </section>
 
     <div class="cart-sidebar" id="cartSidebar">
