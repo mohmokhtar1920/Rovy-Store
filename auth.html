@@ -83,7 +83,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <h1>حسابك جاهز</h1>
 <p class="subtitle">أنت مسجل الدخول حالياً في ROVY STORE.</p>
 <div id="accountName"></div><div class="account-email" id="accountEmail"></div>
-<div class="field" style="margin-top:18px;text-align:right"><label for="accountGender">النوع (اختياري لتحسين إحصائيات المتجر)</label><select id="accountGender"><option value="">لم أحدد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select><button class="secondary" id="saveGenderBtn" type="button" style="width:100%;margin-top:9px">حفظ الاختيار</button></div><div class="account-actions"><a class="submit" id="continueLink" href="index.html">متابعة التسوق</a><button class="secondary" id="signOutBtn" type="button">تسجيل الخروج</button></div>
+<div class="field" style="margin-top:18px;text-align:right"><label for="accountGender">النوع (اختياري لتحسين إحصائيات المتجر)</label><select id="accountGender"><option value="">لم أحدد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select><button class="secondary" id="saveGenderBtn" type="button" style="width:100%;margin-top:9px">حفظ الاختيار</button></div><div class="account-actions"><a class="submit" href="account.html"><i class="fas fa-box-open"></i> طلباتي ومتابعة الشحن</a><a class="secondary" id="continueLink" href="index.html">متابعة التسوق</a><button class="secondary" id="signOutBtn" type="button">تسجيل الخروج</button></div>
 </section>
 </main>
 <script>
@@ -174,7 +174,7 @@ async function checkSession(){
  if(data.session){
    if(localStorage.getItem('rovyPendingGender')!==null){try{await saveCustomerGender(data.session.user.id,localStorage.getItem('rovyPendingGender'));}catch(e){}localStorage.removeItem('rovyPendingGender');}
    clearPendingSignup();
-   if(nextPage==='checkout.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
+   if(nextPage==='checkout.html' || nextPage==='account.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
    else showAccount(data.session.user);
  }else if(pendingSignupEmail){
    $('authForm').style.display='none';
