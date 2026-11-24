@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171717"><meta name="robots" content="noindex,nofollow">
+<title>طلباتي | ROVY STORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#171717;--gold:#b58a61;--muted:#858585;--line:#eee9e3;--paper:#faf9f7}
+*{box-sizing:border-box;font-family:Cairo,sans-serif}body{margin:0;background:var(--paper);color:var(--ink)}
+header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(5%,calc((100% - 1160px)/2))}
+.logo{font-size:27px;font-weight:900;letter-spacing:2px;text-decoration:none;color:var(--ink)}.logo span{color:var(--gold)}
+.head-actions{display:flex;align-items:center;gap:10px}.head-actions a,.head-actions button{border:1px solid var(--line);background:#fff;border-radius:24px;padding:9px 14px;color:#555;text-decoration:none;font-size:13px;cursor:pointer}
+main{max-width:1050px;margin:36px auto;padding:0 18px}.intro{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:24px}.eyebrow{color:var(--gold);font-size:11px;font-weight:900;letter-spacing:2px}.intro h1{font-size:30px;margin:4px 0}.intro p{color:var(--muted);margin:0;font-size:13px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}.summary div{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px}.summary small{color:var(--muted);display:block}.summary strong{font-size:23px;display:block;margin-top:4px}
+#notice{display:none;padding:14px 16px;border-radius:12px;background:#fff0f0;color:#a32929;margin-bottom:16px;font-size:13px}#notice.show{display:block}
+.orders{display:grid;gap:15px}.order{background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden;box-shadow:0 6px 22px #24180d06}
+.order-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid #f2eee9}.order-ref{font-weight:900}.order-date{font-size:12px;color:var(--muted);margin-top:3px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:30px;font-size:12px;font-weight:800;white-space:nowrap;background:#f3f0eb;color:#6c5b4c}
+.badge.pending{background:#fff5dc;color:#8b6416}.badge.confirmed{background:#eaf5f6;color:#24666c}.badge.preparing{background:#f0eafb;color:#644c91}.badge.shipped{background:#e8f1fc;color:#285d91}.badge.delivered{background:#e8f6ed;color:#277044}.badge.cancelled{background:#fff0f0;color:#a32929}
+.order-body{padding:18px 20px}.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}.meta small{display:block;color:var(--muted);font-size:11px}.meta strong{font-size:14px}
+.items{border-top:1px dashed var(--line);padding-top:13px;display:grid;gap:10px}.item{display:flex;align-items:center;gap:12px}.item img{width:52px;height:60px;object-fit:cover;background:#f5f3f0;border-radius:8px}.item-placeholder{width:52px;height:60px;display:grid;place-items:center;background:#f5f3f0;border-radius:8px;color:#aaa}.item-info{flex:1;min-width:0}.item-info strong{font-size:13px;display:block}.item-info small{color:var(--muted);font-size:11px}.item-price{font-size:13px;font-weight:800;white-space:nowrap}
+.shipping{margin-top:14px;padding:12px 14px;background:#faf8f5;border-radius:11px;display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px}.shipping b{direction:ltr}.tracking{color:#8b6849;font-weight:900;direction:ltr}
+.order-foot{padding:14px 20px;background:#fcfbf9;border-top:1px solid #f2eee9;display:flex;justify-content:space-between;align-items:center;gap:10px}.total small{display:block;color:var(--muted);font-size:11px}.total strong{font-size:20px;color:var(--gold)}
+.empty{background:#fff;border:1px dashed #dfd5ca;border-radius:17px;padding:48px 20px;text-align:center}.empty i{font-size:34px;color:#c7b39f}.empty h2{font-size:19px;margin:12px 0 5px}.empty p{color:var(--muted);font-size:13px}.shop{display:inline-block;margin-top:12px;padding:11px 20px;background:var(--ink);color:#fff;text-decoration:none;border-radius:9px;font-size:13px}
+.loading{padding:45px;text-align:center;color:var(--muted)}footer{text-align:center;padding:28px;color:#999;font-size:11px}
+@media(max-width:650px){header{height:66px;padding:0 16px}.logo{font-size:23px}.head-actions a,.head-actions button{padding:8px 10px;font-size:11px}main{margin:24px auto;padding:0 12px}.intro{display:block}.intro h1{font-size:26px}.summary{gap:7px}.summary div{padding:12px 10px}.summary strong{font-size:19px}.order-head,.order-body,.order-foot{padding:14px}.meta{grid-template-columns:1fr 1fr;gap:10px}.order-head{align-items:flex-start}.badge{font-size:10px;padding:6px 9px}.shipping{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header><a class="logo" href="index.html">ROVY<span>.</span></a><div class="head-actions"><a href="index.html"><i class="fas fa-arrow-right"></i> المتجر</a><button id="logoutBtn" type="button">تسجيل الخروج</button></div></header>
+<main>
+<div class="intro"><div><span class="eyebrow">YOUR ROVY ACCOUNT</span><h1>طلباتي</h1><p id="welcome">تابع كل طلباتك وتفاصيل الشحن من مكان واحد.</p></div></div>
+<div class="summary"><div><small>إجمالي الطلبات</small><strong id="countAll">—</strong></div><div><small>طلبات قيد التنفيذ</small><strong id="countActive">—</strong></div><div><small>طلبات تم توصيلها</small><strong id="countDone">—</strong></div></div>
+<div id="notice"></div><section id="orders" class="orders"><div class="loading"><i class="fas fa-circle-notch fa-spin"></i> جاري تحميل طلباتك...</div></section>
+</main><footer>ROVY STORE · كل الحقوق محفوظة</footer>
+<script>
+'use strict';
+const SUPABASE_URL='https://bkjwfmjxmxgxgaxwrnsh.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_3nR3DUDrxahFNVH1j62Uow_YPexuzwb';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'sb-bkjwfmjxmxgxgaxwrnsh-auth-token'}});
+const $=id=>document.getElementById(id);
+const statuses={
+ pending:['قيد المراجعة','pending'],confirmed:['تم تأكيد الطلب','confirmed'],
+ preparing:['جاري تجهيز طلبك','preparing'],shipped:['خرج للشحن','shipped'],
+ delivered:['تم التوصيل','delivered'],cancelled:['ملغي','cancelled']
+};
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function money(v){return Number(v||0).toLocaleString('ar-EG',{maximumFractionDigits:2})+' ج.م';}
+function date(v){try{return new Date(v).toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});}catch{return '—';}}
+function showNotice(msg){$('notice').textContent=msg;$('notice').classList.add('show');}
+function renderOrder(o,items){
+ const st=statuses[o.status]||['حالة الطلب قيد التحديث',''];
+ const itemHtml=items.length?items.map(it=>{
+  const p=it.product||{};const details=[it.size?'المقاس '+esc(it.size):'',it.color?'اللون '+esc(it.color):''].filter(Boolean).join(' · ');
+  const img=p.image_url&&/^https?:\/\//i.test(p.image_url)?'<img src="'+esc(p.image_url)+'" alt="" loading="lazy">':'<div class="item-placeholder"><i class="fas fa-shirt"></i></div>';
+  return '<div class="item">'+img+'<div class="item-info"><strong>'+esc(p.name||'منتج ROVY')+'</strong><small>الكمية: '+esc(it.quantity)+(details?' · '+details:'')+'</small></div><span class="item-price">'+money(it.price*it.quantity)+'</span></div>';
+ }).join(''):'<p style="color:#999;font-size:12px">لا توجد تفاصيل منتجات متاحة لهذا الطلب.</p>';
+ const tracking=o.shipping_tracking_number?'<div class="shipping"><span><i class="fas fa-truck"></i> رقم تتبع الشحنة</span><b class="tracking">'+esc(o.shipping_tracking_number)+'</b></div>':'';
+ const shipNote=o.status==='shipped'?'تم تسليم طلبك لشركة الشحن. لا يمكن إلغاء الطلب بعد هذه المرحلة.':o.status==='delivered'?'تم استلام طلبك بنجاح.':'سيظهر رقم التتبع هنا بمجرد تسجيله من فريق الشحن.';
+ return '<article class="order"><div class="order-head"><div><div class="order-ref">طلب #'+esc(o.id)+'</div><div class="order-date">'+date(o.created_at)+'</div></div><span class="badge '+esc(st[1])+'">'+esc(st[0])+'</span></div><div class="order-body"><div class="meta"><div><small>الاسم</small><strong>'+esc(o.customer_name)+'</strong></div><div><small>المحافظة</small><strong>'+esc(o.governorate_name||'—')+'</strong></div><div><small>حالة شحن الرسوم</small><strong>'+esc(({unpaid:'غير مدفوعة',pending_review:'قيد المراجعة',approved:'تم التأكيد',rejected:'مرفوضة'})[o.shipping_payment_status]||'—')+'</strong></div></div><div class="items">'+itemHtml+'</div>'+tracking+'</div><div class="order-foot"><div class="total"><small>إجمالي الطلب</small><strong>'+money(o.total_price)+'</strong></div><span style="font-size:11px;color:#8a8178">'+esc(shipNote)+'</span></div></article>';
+}
+async function loadOrders(){
+ const {data:{user},error:userError}=await supabaseClient.auth.getUser();
+ if(userError||!user){location.replace('auth.html?next=account.html');return;}
+ $('welcome').textContent='مرحباً '+(user.user_metadata?.full_name||user.email)+'، دي كل طلباتك.';
+ const {data:orders,error}=await supabaseClient.from('orders').select('id,customer_name,customer_phone,customer_address,total_price,status,created_at,governorate_name,shipping_fee,shipping_payment_status,shipping_tracking_number').eq('customer_user_id',user.id).order('created_at',{ascending:false});
+ if(error){console.error(error);showNotice('تعذر تحميل الطلبات حالياً. حدّث الصفحة وحاول مرة أخرى.');$('orders').replaceChildren();return;}
+ $('countAll').textContent=orders.length;
+ $('countActive').textContent=orders.filter(o=>['pending','confirmed','preparing','shipped'].includes(o.status)).length;
+ $('countDone').textContent=orders.filter(o=>o.status==='delivered').length;
+ if(!orders.length){$('orders').innerHTML='<div class="empty"><i class="fas fa-box-open"></i><h2>لسه مفيش طلبات</h2><p>أول ما تعمل طلب، هتلاقي تفاصيله وحالة الشحن هنا.</p><a class="shop" href="index.html">ابدأ التسوق</a></div>';return;}
+ const ids=orders.map(o=>o.id);
+ const {data:items,error:itemsError}=await supabaseClient.from('order_items').select('id,order_id,quantity,price,size,color,product:products(name,image_url)').in('order_id',ids);
+ if(itemsError)console.warn('Order items unavailable',itemsError);
+ const byOrder={};(items||[]).forEach(it=>(byOrder[it.order_id]??=[]).push(it));
+ $('orders').innerHTML=orders.map(o=>renderOrder(o,byOrder[o.id]||[])).join('');
+}
+$('logoutBtn').addEventListener('click',async()=>{const {error}=await supabaseClient.auth.signOut();if(error){showNotice('تعذر تسجيل الخروج. حاول مرة أخرى.');return;}location.replace('index.html');});
+supabaseClient.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT')location.replace('auth.html?next=account.html');});
+loadOrders();
+</script>
+<script src="assets/analytics.js"></script>
+</body></html>
