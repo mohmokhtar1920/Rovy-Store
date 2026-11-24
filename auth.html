@@ -41,11 +41,11 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="assets/rovy-brand.css">
     <meta name="robots" content="noindex,nofollow">
-    <meta property="og:image" content="https://mohmokhtar1920.github.io/Rovy-Store/social-share.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="ROVY STORE">
-    <meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="https://mohmokhtar1920.github.io/Rovy-Store/social-share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ROVY STORE">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <header><a class="logo" href="index.html">ROVY<span>.</span></a><div style="display:flex;align-items:center;gap:14px"><button class="lang-btn" id="authLangBtn" type="button" onclick="toggleAuthLanguage()">English</button><a class="back" id="authBack" href="index.html"><i class="fas fa-arrow-right"></i> العودة للمتجر</a></div></header>
@@ -88,7 +88,7 @@ h1{text-align:center;font-size:25px;margin:0 0 7px;font-weight:900}.subtitle{tex
 <h1>حسابك جاهز</h1>
 <p class="subtitle">أنت مسجل الدخول حالياً في ROVY STORE.</p>
 <div id="accountName"></div><div class="account-email" id="accountEmail"></div>
-<div class="field" style="margin-top:18px;text-align:right"><label for="accountGender">النوع (اختياري لتحسين إحصائيات المتجر)</label><select id="accountGender"><option value="">لم أحدد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select><button class="secondary" id="saveGenderBtn" type="button" style="width:100%;margin-top:9px">حفظ الاختيار</button></div><div class="account-actions"><a class="submit" id="continueLink" href="index.html">متابعة التسوق</a><button class="secondary" id="signOutBtn" type="button">تسجيل الخروج</button></div>
+<div class="field" style="margin-top:18px;text-align:right"><label for="accountGender">النوع (اختياري لتحسين إحصائيات المتجر)</label><select id="accountGender"><option value="">لم أحدد</option><option value="male">ذكر</option><option value="female">أنثى</option><option value="prefer_not_to_say">أفضل عدم الإفصاح</option></select><button class="secondary" id="saveGenderBtn" type="button" style="width:100%;margin-top:9px">حفظ الاختيار</button></div><div class="account-actions"><a class="submit" href="account.html"><i class="fas fa-box-open"></i> طلباتي ومتابعة الشحن</a><a class="secondary" id="continueLink" href="index.html">متابعة التسوق</a><button class="secondary" id="signOutBtn" type="button">تسجيل الخروج</button></div>
 </section>
 </main>
 <script>
@@ -103,8 +103,8 @@ let pendingSignupEmail=localStorage.getItem(PENDING_EMAIL_KEY)||sessionStorage.g
 if(pendingSignupEmail)localStorage.setItem(PENDING_EMAIL_KEY,pendingSignupEmail);
 const params=new URLSearchParams(location.search);
 const requestedNext=params.get('next')||'index.html';
-const nextPage=requestedNext==='checkout.html'
- ? 'checkout.html'
+const nextPage=requestedNext==='checkout.html' || requestedNext==='account.html'
+ ? requestedNext
  : requestedNext==='returns.html'
    ? 'returns.html'
    : (/^payment\.html\?order=\d+$/.test(requestedNext) ? requestedNext : 'index.html');
@@ -179,7 +179,7 @@ async function checkSession(){
  if(data.session){
    if(localStorage.getItem('rovyPendingGender')!==null){try{await saveCustomerGender(data.session.user.id,localStorage.getItem('rovyPendingGender'));}catch(e){}localStorage.removeItem('rovyPendingGender');}
    clearPendingSignup();
-   if(nextPage==='checkout.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
+   if(nextPage==='checkout.html' || nextPage==='account.html' || nextPage.startsWith('payment.html?order=')) redirectAfterAuth();
    else showAccount(data.session.user);
  }else if(pendingSignupEmail){
    $('authForm').style.display='none';
