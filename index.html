@@ -585,6 +585,7 @@ footer p,footer a{line-height:2!important}
             renderCategoryCards();
             renderHomeSections();
             updateCart();
+            fetchActivePromotions();
         }
 
         function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
@@ -707,22 +708,42 @@ footer p,footer a{line-height:2!important}
             if(!banner)return;
             if(error){console.warn('Active promotions unavailable:',error);banner.replaceChildren();banner.hidden=true;return;}
             const items=Array.isArray(data)?data:[];
+            const AR_DIGITS='٠١٢٣٤٥٦٧٨٩';
+            const arNum=n=>String(n).replace(/\d/g,d=>AR_DIGITS[d]);
+            const AR_CATEGORIES={Men:'قسم الرجالي',Women:'قسم الحريمي',Sports:'قسم الرياضة',Kids:'قسم الأطفال'};
+            const AR_ORDINALS={1:'الأول',2:'الثاني',3:'الثالث',4:'الرابع',5:'الخامس'};
             const offers=items.map(p=>{
+                const cat=(p.target_category||'').trim();
                 if(p.promotion_type==='buy_x_get_y'){
                     const buy=Number(p.buy_quantity)||2;
                     const free=Number(p.free_quantity)||1;
-                    return `BUY ${buy} GET ${free} FREE`;
+                    if(english)return `BUY ${buy} GET ${free} FREE${cat?` on ${cat} items`:''}`;
+                    const ord=AR_ORDINALS[buy+free]||arNum(buy+free);
+                    return `اشترِ ${arNum(buy)}${cat?` من ${AR_CATEGORIES[cat]||cat}`:''} واحصل على ${ord} مجانًا`;
                 }
                 if(p.promotion_type==='free_shipping'){
                     const min=Number(p.min_quantity)||3;
-                    return `BUY ${min} GET FREE DELIVERY`;
+                    if(english)return `BUY ${min}+ GET FREE DELIVERY${cat?` on ${cat} items`:''}`;
+                    return `اشترِ ${arNum(min)} أو أكثر${cat?` من ${AR_CATEGORIES[cat]||cat}`:''} والتوصيل مجانًا`;
                 }
                 return '';
             }).filter(Boolean);
             if(!offers.length){banner.replaceChildren();banner.hidden=true;return;}
+            const first=items[0]||{};
+            const sameWindow=items.length>0&&items.every(p=>p.starts_at===first.starts_at&&p.ends_at===first.ends_at);
+            let windowSuffix='';
+            if(sameWindow&&first.starts_at&&first.ends_at){
+                const s=new Date(first.starts_at),e=new Date(first.ends_at);
+                if(!isNaN(s)&&!isNaN(e)&&s.getMonth()===e.getMonth()){
+                    if(english)windowSuffix=`${s.toLocaleString('en-US',{month:'short'})} ${s.getDate()}-${e.getDate()}`;
+                    else windowSuffix=`من ${arNum(s.getDate())} إلى ${arNum(e.getDate())} ${['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'][s.getMonth()]}`;
+                }
+            }
+            const parts=offers.slice(0,2);
+            if(windowSuffix)parts.push(windowSuffix);
             const message=document.createElement('span');
             message.className='rovy-promo-message';
-            message.textContent=offers.slice(0,2).join('   ·   ');
+            message.textContent=parts.join(' · ');
             banner.replaceChildren(message);
             banner.hidden=false;
         }
