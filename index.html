@@ -224,7 +224,7 @@ footer p,footer a{line-height:2!important}
  .logo{font-size:26px!important}
  .header-icons{gap:12px!important}
  .search-box{order:3;width:100%!important;max-width:none!important;margin:0!important}
- .rovy-premium-hero{min-height:570px!important;height:72vh!important;max-height:690px!important;padding:34px 22px!important;background-position:58% center!important;background-image:linear-gradient(90deg,rgba(10,9,8,.76),rgba(10,9,8,.35)),url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200&q=85')!important}
+ .rovy-premium-hero{min-height:380px!important;height:52vh!important;max-height:470px!important;padding:26px 22px!important;background-position:58% center!important;background-image:linear-gradient(90deg,rgba(10,9,8,.76),rgba(10,9,8,.35)),url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=1200&q=85')!important}
  .rovy-premium-hero .hero-content{width:100%;max-width:430px;margin:0!important}
  .rovy-premium-hero .hero-content h1{font-size:clamp(43px,12vw,62px)!important}
  .rovy-premium-hero .hero-content p{font-size:14px!important;max-width:300px}
@@ -266,8 +266,8 @@ footer p,footer a{line-height:2!important}
 
 /* ROVY product cards — refined editorial presentation */
 #newProductsGrid .rovy-product-card,#bestProductsGrid .rovy-product-card{min-width:0;display:flex;flex-direction:column;gap:0}
-.rovy-product-card .rovy-card-media{display:block;position:relative;overflow:hidden;aspect-ratio:3/4;background:#f1eee8;color:inherit;text-decoration:none}
-.rovy-product-card .rovy-card-media img{display:block;width:100%;height:100%;object-fit:contain;background:#f1eee8;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+.rovy-product-card .rovy-card-media{display:block;position:relative;overflow:hidden;aspect-ratio:3/4;background:#f1eee8;color:inherit;text-decoration:none;padding:14px}
+.rovy-product-card .rovy-card-media img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#f1eee8;transition:transform .65s cubic-bezier(.2,.7,.2,1)}
 .rovy-product-card:hover .rovy-card-media img{transform:scale(1.045)}
 .rovy-card-badge{position:absolute;top:13px;inset-inline-start:13px;padding:6px 9px;background:#171512;color:#f4e7d1;font-size:10px;font-weight:900;letter-spacing:.5px;z-index:2}
 .rovy-card-stock{position:absolute;top:13px;inset-inline-end:13px;padding:6px 9px;background:#fff;color:#8f3434;border:1px solid #ead2ce;font-size:10px;font-weight:800;z-index:2}
@@ -284,6 +284,7 @@ footer p,footer a{line-height:2!important}
 .rovy-product-card .rovy-card-details i{font-size:10px}
 @media(max-width:768px){
   #newProductsGrid.products-grid,#bestProductsGrid.products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:22px 12px!important}
+  .rovy-product-card .rovy-card-media{padding:10px}
   .rovy-card-badge,.rovy-card-stock{top:8px;padding:5px 7px;font-size:9px}
   .rovy-card-view{display:none}
   .rovy-card-info{padding-top:10px!important}
@@ -393,6 +394,16 @@ footer p,footer a{line-height:2!important}
         <div><i class="fab fa-whatsapp" aria-hidden="true"></i><span><strong data-en="WhatsApp Support">تواصل معانا</strong><small data-en="We're here if you need help">دعم ومساعدة عبر واتساب</small></span></div>
     </section>
 
+    <section id="categories">
+        <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
+        <div class="categories" id="homeCategories"></div>
+    </section>
+
+    <section id="newArrivals">
+        <h2 class="section-title" id="newTitle">وصل حديثاً</h2>
+        <div class="products-grid" id="newProductsGrid"><p style="text-align:center; width:100%;">جاري التحميل...</p></div>
+    </section>
+
     <section class="rovy-edit-section" aria-label="The ROVY Edit">
         <div class="rovy-edit-head">
             <div><span class="rovy-edit-kicker">THE ROVY EDIT</span><h2 data-en="Find your next favorite." data-ar="اكتشف اختيارك القادم.">اكتشف اختيارك القادم.</h2></div>
@@ -422,15 +433,6 @@ footer p,footer a{line-height:2!important}
         </div>
     </section>
 
-    <section id="categories">
-        <h2 class="section-title" id="catTitle">تسوق حسب القسم</h2>
-        <div class="categories" id="homeCategories"></div>
-    </section>
-
-    <section id="newArrivals">
-        <h2 class="section-title" id="newTitle">وصل حديثاً</h2>
-        <div class="products-grid" id="newProductsGrid"><p style="text-align:center; width:100%;">جاري التحميل...</p></div>
-    </section>
 
     <section id="bestSellers">
         <h2 class="section-title" id="bestTitle">منتجات مميزة</h2>
