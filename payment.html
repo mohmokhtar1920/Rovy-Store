@@ -28,6 +28,31 @@ h1{font-size:25px;margin:0 0 6px}h2{font-size:18px;margin:0 0 14px}.muted{color:
 .status{padding:13px 15px;border-radius:12px;background:#eef3fa;color:#29486d;line-height:1.8}.status.ok{background:#e8f6ef;color:#176746}.status.bad{background:#fff0f1;color:#a52e3b}
 .hidden{display:none!important}.error{color:var(--red);font-size:13px;min-height:20px}
 @media(max-width:560px){main{margin-top:17px}.card{padding:17px}.summary,.methods{grid-template-columns:1fr 1fr}h1{font-size:22px}.sum strong{font-size:18px}}
+
+/* ROVY payment — matching premium checkout */
+body{background:linear-gradient(180deg,#f5f1eb 0,#fbfaf8 320px,#fbfaf8 100%);color:#211e19}
+header{height:74px;background:#171512;border-bottom:1px solid rgba(216,180,91,.25);padding-inline:max(18px,calc((100% - 960px)/2))}
+.logo{letter-spacing:2px}
+main{width:min(820px,calc(100% - 28px));margin:34px auto 60px}
+.card{border:1px solid #e9e1d8;border-radius:4px;padding:clamp(18px,3vw,28px);box-shadow:0 14px 40px rgba(42,31,20,.055)}
+h1{font-size:clamp(23px,4vw,30px);font-weight:900;color:#211e19}
+h2{font-size:17px;font-weight:900;color:#302921}
+.muted{color:#81776d}
+.summary{gap:10px}
+.sum{background:#f8f5f1;border:1px solid #eee7df;border-radius:3px;padding:14px}
+.sum small{font-size:11px;color:#8a8076}
+.sum strong{display:block;margin-top:4px;font-size:20px;color:#2c261f;overflow-wrap:anywhere}
+.shipping{background:#fff9ed;border:1px solid #e6d4ae}
+.shipping strong{color:#8a663f}
+.method{border-radius:3px;background:#fff;transition:border-color .2s,background .2s}
+.method:has(input:checked){border-color:#b58a61;background:#faf5ed}
+.account{background:#f8f5f1;border:1px solid #eee7df;border-radius:3px}
+.copy{border-radius:3px;background:#211e19;color:#fff}
+.file{border-radius:3px!important;background:#fbfaf8!important;border:1px dashed #c8b8a5!important}
+.submit{border-radius:3px;background:#171512;color:#f6ead7;letter-spacing:.3px}
+.submit:hover{background:#9b7952}
+.status{border-radius:3px}
+@media(max-width:560px){main{margin-top:18px}.summary,.methods{grid-template-columns:repeat(2,minmax(0,1fr))}.sum strong{font-size:17px}.card{padding:17px}}
 </style>
     <meta name="robots" content="noindex,nofollow">
     <meta name="description" content="تابع دفع مصاريف الشحن وأرسل إثبات التحويل لطلبك من ROVY STORE.">
