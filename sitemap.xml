@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/about.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/contact.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/faq.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
- <url><loc>https://mohmokhtar1920.github.io/Rovy-Store/return-policy.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+ <url><loc>https://rovy-store.pages.dev/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+ <url><loc>https://rovy-store.pages.dev/about.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+ <url><loc>https://rovy-store.pages.dev/contact.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+ <url><loc>https://rovy-store.pages.dev/faq.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+ <url><loc>https://rovy-store.pages.dev/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+ <url><loc>https://rovy-store.pages.dev/return-policy.html</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
 </urlset>

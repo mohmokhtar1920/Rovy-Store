@@ -5,4 +5,4 @@ Disallow: /payment.html
 Disallow: /auth.html
 Disallow: /track.html
 
-Sitemap: https://mohmokhtar1920.github.io/Rovy-Store/sitemap.xml
+Sitemap: https://rovy-store.pages.dev/sitemap.xml
