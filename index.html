@@ -958,5 +958,75 @@ footer p,footer a{line-height:2!important}
     </script>
 
 <script src="assets/analytics.js"></script>
+
+<style id="premium-pass-live">
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap');
+.top-bar{font-size:11px!important;padding:7px 10px!important}
+.rovy-premium-hero{min-height:640px!important;background-position:center 27%!important;height:auto!important;padding-top:34px!important;padding-bottom:34px!important}
+.rovy-premium-hero .hero-content h1{font-size:clamp(36px,5.2vw,62px)!important}
+.rovy-product-card .rovy-card-media,.product-card>a:first-child{aspect-ratio:3/4!important;padding:0!important}
+.rovy-product-card .rovy-card-media img,.product-card img{object-fit:cover!important;object-position:center!important;width:100%!important;height:100%!important}
+.whatsapp-float{width:44px!important;height:44px!important;font-size:22px!important;bottom:14px!important;left:14px!important;opacity:.92}
+.rovy-edit-kicker{display:none!important}
+.rovy-edit-card-content small{display:none!important}
+.rovy-manifesto-copy a{background:#dfc18a!important;color:#17130d!important}
+.rovy-premium-hero .hero-content h1,.section-title,.rovy-edit-head h2,#styleStudioPromo h2,.rovy-manifesto-copy h2{font-family:'Amiri',serif!important}
+.rovy-premium-hero .hero-content h1{line-height:1.28!important}
+.section-title{letter-spacing:0!important}
+.rovy-card-details{display:none!important}
+.rovy-card-info{padding-top:12px!important}
+@media(min-width:901px){
+ .products-grid{grid-auto-flow:dense}
+ #newProductsGrid.products-grid,#bestProductsGrid.products-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:28px 22px!important}
+ #newProductsGrid>.product-card:first-child,#bestProductsGrid>.product-card:first-child{grid-column:span 2;grid-row:span 2}
+ #newProductsGrid>.product-card:first-child .rovy-card-media,#bestProductsGrid>.product-card:first-child .rovy-card-media,#newProductsGrid>.product-card:first-child>a:first-child,#bestProductsGrid>.product-card:first-child>a:first-child{aspect-ratio:auto!important;flex:1 1 auto!important;min-height:0!important}
+ #newProductsGrid>.product-card:nth-child(2),#bestProductsGrid>.product-card:nth-child(2){grid-column:span 2}
+ #newProductsGrid>.product-card:nth-child(2) .rovy-card-media,#bestProductsGrid>.product-card:nth-child(2) .rovy-card-media,#newProductsGrid>.product-card:nth-child(2)>a:first-child,#bestProductsGrid>.product-card:nth-child(2)>a:first-child{aspect-ratio:3/2!important}
+ section:not(.rovy-trust-strip){padding-top:52px!important;padding-bottom:52px!important}
+}
+@media(max-width:768px){
+ header{position:static!important}
+ .top-bar{font-size:10.5px!important}
+ .rovy-premium-hero{min-height:560px!important;display:flex!important;align-items:flex-end!important;background-size:cover!important;background-position:44% 0%!important;background-image:linear-gradient(0deg,rgba(10,9,8,.88) 0%,rgba(10,9,8,.66) 36%,rgba(10,9,8,.0) 62%),url('https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=2200&q=90')!important;height:auto!important;padding:26px 20px 24px!important}
+ html,body{overflow-x:hidden!important}
+ .cart-sidebar:not(.open):not(.active){display:none!important}
+ .rovy-premium-hero .hero-content{width:100%!important;margin:0!important}
+ .rovy-premium-hero .hero-content h1{font-size:32px!important;margin-bottom:10px!important;line-height:1.32!important}
+ .rovy-premium-hero .hero-content p{margin-bottom:16px!important;line-height:1.7!important}
+ .rovy-hero-note{margin-top:14px!important}
+ .rovy-trust-strip{padding:12px 14px!important;gap:10px 8px!important}
+ section:not(.rovy-trust-strip){padding:28px 16px!important}
+ .rovy-edit-section{padding:28px 16px 14px!important}
+ .section-title{margin-bottom:16px!important}
+ #newProductsGrid>.product-card:first-child,#bestProductsGrid>.product-card:first-child{grid-column:span 2}
+ #newProductsGrid>.product-card:first-child .rovy-card-media,#bestProductsGrid>.product-card:first-child .rovy-card-media,#newProductsGrid>.product-card:first-child>a:first-child,#bestProductsGrid>.product-card:first-child>a:first-child{aspect-ratio:4/3!important}
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const cat={Men:'رجالي',Women:'حريمي',Sports:'رياضة',MEN:'رجالي',WOMEN:'حريمي',SPORTS:'رياضة',ACCESSORIES:'إكسسوارات',Accessories:'إكسسوارات'};
+ const names={'شنطة كتف سوداء':'شنطة كتف حمراء','سنيكرز أبيض':'سنيكرز أحمر','قميص كاجوال بيج':'قميص أبيض كاجوال','بنطلون جينز أزرق':'بنطلون جينز داكن'};
+ const clean=t=>{let c=t.replace('[TEST]','').replace('[تجريبي]','').trim();return names[c]||c};
+ const set=(e,v)=>{ if(e&&e.textContent.trim()!==v) e.textContent=v; };
+ const fix=()=>{
+  const ar=(typeof english==='undefined')||!english;
+  const tb=document.getElementById('topBar'); if(tb&&tb.textContent.includes('🚚')) tb.textContent=tb.textContent.replace('🚚','').trim();
+  document.querySelectorAll('*').forEach(e=>{ if(e.children.length) return; const t=e.textContent.trim();
+   if(ar&&e.closest('.category,[class*=category]')&&cat[t]) set(e,cat[t]);
+   if(t.includes('[TEST]')||t.includes('[تجريبي]')) set(e,clean(t));
+  });
+  document.querySelectorAll('[class*=discount],[class*=badge],[class*=old],del,s').forEach(e=>{ if(!e.closest('.cart-sidebar')&&(/خصم|SAVE/i.test(e.textContent)||e.tagName=='DEL'||e.tagName=='S'||/old/.test(e.className))&&/(%|جنيه|EGP)/.test(e.textContent))e.style.display='none'});
+  document.querySelectorAll('#styleStudioPromo div').forEach(e=>{ if(!e.children.length&&e.textContent.trim()==='ROVY STYLE STUDIO') e.style.display='none' });
+  document.querySelectorAll('a.rovy-edit-card[href="style-studio.html"]').forEach(a=>{
+   a.setAttribute('href','#bestSellers');
+   const st=a.querySelector('strong'), sp=a.querySelector('span[data-ar]');
+   if(ar){ set(st,'منتجات مميزة'); if(sp&&!sp.textContent.includes('شوف المنتجات')) sp.innerHTML='شوف المنتجات المميزة <i class="fas fa-arrow-left" aria-hidden="true"></i>'; }
+   else{ set(st,'Best sellers'); if(sp&&!sp.textContent.includes('featured')) sp.innerHTML='Shop featured products <i class="fas fa-arrow-left" aria-hidden="true"></i>'; }
+  });
+ };
+ fix(); new MutationObserver(fix).observe(document.body,{childList:true,subtree:true});
+});
+</script>
+
 </body>
 </html>

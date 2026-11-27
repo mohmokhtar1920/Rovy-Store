@@ -1197,5 +1197,57 @@ header{background:rgba(255,255,255,.96)!important;backdrop-filter:blur(12px);pos
     </script>
 
 <script src="assets/analytics.js"></script>
+
+<style id="premium-pass-product-live">
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&display=swap');
+body{background:#f7f4ee!important}
+.product-container{max-width:1240px!important;grid-template-columns:1.15fr 1fr!important;gap:56px!important;margin-top:32px!important}
+.main-image{height:auto!important;aspect-ratio:3/4!important;min-height:560px;border-radius:2px!important;box-shadow:none!important;background:#f1eee8!important;object-fit:cover!important}
+.thumb-img{border-radius:2px!important;background:#f1eee8!important}
+.thumb-img:hover,.thumb-img.active{border-color:#9c7b4b!important}
+.product-title{font-family:'Amiri',serif!important;font-size:44px!important;line-height:1.3!important}
+.product-category{letter-spacing:1.5px!important;font-size:12px!important}
+.product-price{color:#17130d!important;font-size:26px!important}
+.product-desc{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;font-size:15px!important;color:#4a443c!important}
+.add-btn{background:#dfc18a!important;color:#17130d!important;border-radius:2px!important}
+.add-btn:hover{background:#c9a962!important}
+.add-btn:disabled{background:#e8e2d6!important;color:#777!important;border:1px solid #ddd5c6!important}
+.option-btn{border-radius:2px!important}
+.option-btn.selected{border-color:#9c7b4b!important;background:#9c7b4b!important}
+.sale-price{display:none!important}
+.tryon-btn{border-radius:2px!important}
+@media(max-width:768px){
+ .product-container{grid-template-columns:1fr!important;gap:26px!important;padding:0 16px!important}
+ .main-image{min-height:0;height:min(120vw,520px)!important}
+ .product-title{font-size:32px!important}
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const cat={Men:'رجالي',Women:'حريمي',Sports:'رياضة',MEN:'رجالي',WOMEN:'حريمي',SPORTS:'رياضة',ACCESSORIES:'إكسسوارات',Accessories:'إكسسوارات'};
+ const names={'شنطة كتف سوداء':'شنطة كتف حمراء','سنيكرز أبيض':'سنيكرز أحمر','قميص كاجوال بيج':'قميص أبيض كاجوال','بنطلون جينز أزرق':'بنطلون جينز داكن'};
+ const clean=t=>{let c=t.replace('[TEST]','').replace('[تجريبي]','').trim();return names[c]||c};
+ const fix=()=>{
+  const ar=(typeof english==='undefined')||!english;
+  document.querySelectorAll('.tryon-btn').forEach(b=>{ if(b.textContent.includes('✨')) b.textContent=b.textContent.replace('✨','').trim() });
+  const tb=document.getElementById('topBar'); if(tb&&tb.textContent.includes('🚚')) tb.textContent=tb.textContent.replace('🚚','').trim();
+  try{ if(typeof currentProduct!=='undefined'&&currentProduct&&currentProduct.name){
+   const h=document.querySelector('.product-title[data-product-name]');
+   const want=clean(ar?currentProduct.name:(currentProduct.name_en||currentProduct.name));
+   if(h&&h.textContent.trim()!==want) h.textContent=want;
+   const c=document.querySelector('[data-product-category]'); if(ar&&c&&cat[c.textContent.trim()]) c.textContent=cat[c.textContent.trim()];
+  }}catch(e){}
+  document.querySelectorAll('*').forEach(e=>{ if(e.children.length) return; const t=e.textContent.trim();
+   if(t.includes('[TEST]')||t.includes('[تجريبي]')){const w=clean(t); if(t!==w) e.textContent=w;}
+  });
+ };
+ let nameMap=null;
+ const applyNames=()=>{ if(!nameMap)return; const ar=(typeof english==='undefined')||!english; if(!ar)return; document.querySelectorAll('[data-related-name]').forEach(e=>{const nm=nameMap[e.getAttribute('data-related-name')];if(nm&&e.textContent.trim()!==nm)e.textContent=nm;}); };
+ (async()=>{ try{ const {data}=await supabaseClient.from('products').select('id,name'); if(data){nameMap={};data.forEach(p=>nameMap[String(p.id)]=clean(p.name||''));applyNames();} }catch(e){} })();
+ const fixAll=()=>{fix();applyNames();};
+ fixAll(); new MutationObserver(fixAll).observe(document.body,{childList:true,subtree:true});
+});
+</script>
+
 </body>
     </html>
