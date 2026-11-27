@@ -1,7 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+const SITE_ORIGINS = ["https://mohmokhtar1920.github.io", "https://rovy-store.pages.dev"];
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://mohmokhtar1920.github.io",
+  "Access-Control-Allow-Origin": SITE_ORIGINS[0],
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
@@ -11,10 +12,10 @@ const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 const WINDOW_MS = 60_000;
 const MAX_PER_WINDOW = 6;
 
-function json(body: unknown, status = 200) {
+function jsonFor(body: unknown, status = 200, origin: string | null = null) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
+    headers: { ...corsHeaders, "Access-Control-Allow-Origin": SITE_ORIGINS.includes(origin ?? "") ? (origin as string) : SITE_ORIGINS[0], "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
@@ -55,12 +56,13 @@ function extractOutputText(data: Record<string, unknown>): string {
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
+  const json = (body: unknown, status = 200) => jsonFor(body, status, origin);
   if (req.method === "OPTIONS") {
-    if (origin && origin !== corsHeaders["Access-Control-Allow-Origin"]) return new Response("Origin not allowed", { status: 403 });
-    return new Response("ok", { headers: corsHeaders });
+    if (origin && !SITE_ORIGINS.includes(origin)) return new Response("Origin not allowed", { status: 403 });
+    return new Response("ok", { headers: { ...corsHeaders, "Access-Control-Allow-Origin": SITE_ORIGINS.includes(origin ?? "") ? (origin as string) : "null" } });
   }
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  if (origin && origin !== corsHeaders["Access-Control-Allow-Origin"]) return json({ error: "Origin not allowed" }, 403);
+  if (origin && !SITE_ORIGINS.includes(origin)) return json({ error: "Origin not allowed" }, 403);
 
   const ip = (req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "unknown").split(",")[0].trim();
   if (!takeRate(ip)) return json({ error: "طلبات كتير في وقت قصير. استنى دقيقة وجرب تاني." }, 429);
